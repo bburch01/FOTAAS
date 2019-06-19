@@ -1,0 +1,1 @@
+FOTAAS telemetry service support code.

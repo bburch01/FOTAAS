@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose --file docker-compose.yml convert
+    kompose.version: 1.18.0 (06a2e56)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: fotaasctl
+  name: fotaasctl
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: fotaasctl
+    spec:
+      containers:
+      - image: localhost:5000/fotaas2/fotaasctl
+        name: fotaasctl
+        resources: {}
+      restartPolicy: Always
+status: {}

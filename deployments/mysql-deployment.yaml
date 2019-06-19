@@ -1,0 +1,39 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose --file docker-compose.yml convert
+    kompose.version: 1.18.0 (06a2e56)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: mysql
+  name: mysql
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: mysql
+    spec:
+      containers:
+      - command:
+        - sh
+        - -c
+        - ' echo ''CREATE DATABASE IF NOT EXISTS fotaas_telemetry; CREATE DATABASE
+          IF NOT EXISTS fotaas_analysis; CREATE DATABASE IF NOT EXISTS fotaas_simulation''
+          > /docker-entrypoint-initdb.d/init.sql; /usr/local/bin/docker-entrypoint.sh
+          --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci'
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: mysql-1234
+        - name: MYSQL_USER
+          value: root
+        image: mysql:5.6
+        name: mysql
+        ports:
+        - containerPort: 3306
+        resources: {}
+      restartPolicy: Always
+status: {}

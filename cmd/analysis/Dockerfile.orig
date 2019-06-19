@@ -1,0 +1,66 @@
+# analysis/Dockerfile
+
+# We use the official golang image, which contains all the 
+# correct build tools and libraries. Notice `as builder`,
+# this gives this container a name that we can reference later on. 
+FROM golang:1.12
+FROM golang:alpine as builder
+
+RUN apk --no-cache add --update git gcc libc-dev net-tools
+
+# Set our workdir to our current service in the gopath
+WORKDIR /app
+
+# Copy the current code into our workdir
+RUN git config --global url.https://bba4029d32b08e2cac769354b2663530b612c144@github.com/.insteadOf https://github.com/
+COPY . .
+RUN go get github.com/bburch01/FOTAAS/api/...
+<<<<<<< HEAD
+=======
+RUN go get github.com/bburch01/FOTAAS/fotaas-internal/app/analysis/models/...
+RUN go get github.com/bburch01/FOTAAS/fotaas-internal/pkg/logging/...
+>>>>>>> e1700c19b9a93f3749f0435473d66138f524de93
+RUN go get github.com/go-sql-driver/mysql/
+RUN go get github.com/joho/godotenv/
+RUN go get github.com/openzipkin/zipkin-go/
+RUN go get github.com/openzipkin/zipkin-go/middleware/grpc/
+RUN go get github.com/openzipkin/zipkin-go/reporter/http/
+RUN go get google.golang.org/grpc/
+<<<<<<< HEAD
+=======
+RUN go get github.com/google/uuid
+RUN go get go.uber.org/zap
+
+
+>>>>>>> e1700c19b9a93f3749f0435473d66138f524de93
+
+RUN go mod download
+
+# Build the binary, with a few flags which will allow
+# us to run this binary in Alpine. 
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o analysis
+
+
+# Here we're using a second FROM statement, which is strange,
+# but this tells Docker to start a new build process with this
+# image.
+FROM alpine:latest
+
+# Security related package, good to have.
+RUN apk --no-cache add ca-certificates procps
+
+# Same as before, create a directory for our app.
+RUN mkdir /app
+COPY . /app
+WORKDIR /app
+
+# Here, instead of copying the binary from our host machine,
+# we pull the binary from the container named `builder`, within
+# this build context. This reaches into our previous image, finds
+# the binary we built, and pulls it into this container. Amazing!
+COPY --from=builder /app/analysis .
+
+# Run the binary as per usual! This time with a binary build in a
+# separate container, with all of the correct dependencies and
+# run time libraries.
+CMD ["./analysis"]

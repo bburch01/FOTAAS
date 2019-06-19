@@ -1,0 +1,216 @@
+syntax = "proto3";
+
+package proto;
+
+import "google/protobuf/timestamp.proto";
+
+enum Track {
+    AUSTIN = 0;
+    BAKU = 1;
+    CATALUNYA_BARCELONA = 2;
+    HOCKENHEIM = 3;
+    HUNGARORING = 4;
+    INTERLAGOS_SAU_PAULO = 5;
+    MARINA_BAY = 6;
+    MELBOURNE = 7;
+    MEXICO_CITY = 8;
+    MONTE_CARLO = 9;
+    MONTREAL = 10;
+    MONZA = 11;
+    PAUL_RICARD_LE_CASTELLET = 12;
+    SAKHIR = 13;
+    SHANGHAI = 14;
+    SILVERSTONE = 15;
+    SOCHI = 16;
+    SPA_FRANCORCHAMPS = 17;
+    SPIELBERG_RED_BULL_RING = 18;
+    SUZUKA = 19;
+    YAS_MARINA = 20;
+}
+
+enum GrandPrix {
+    UNITED_STATES = 0;
+    AZERBAIJAN = 1;
+    SPANISH = 2;
+    GERMAN = 3;
+    HUNGARIAN = 4;
+    BRAZILIAN = 5;
+    SINGAPORE = 6;
+    AUSTRALIAN = 7;
+    MEXICAN = 8;
+    MONACO = 9;
+    CANADIAN = 10;
+    ITALIAN = 11;
+    FRENCH = 12;
+    BAHRAIN = 13;
+    CHINESE = 14;
+    BRITISH = 15;
+    RUSSIAN = 16;
+    BELGIAN = 17;
+    AUSTRIAN = 18;
+    JAPANESE = 19;
+    ABU_DHABI = 20;
+}
+enum Constructor {
+    ALPHA_ROMEO = 0;
+    FERRARI = 1;
+    HAAS = 2;
+    MCLAREN = 3;
+    MERCEDES = 4;
+    RACING_POINT = 5;
+    RED_BULL_RACING = 6;
+    SCUDERIA_TORO_ROSO = 7;
+    WILLIAMS = 8;
+}
+
+enum TelemetryDatumUnit {
+    G = 0;
+    KG_PER_HOUR = 1;
+    DEGREE_CELCIUS = 2;
+    MJ = 3;
+    JPS = 4;
+    RPM = 5;
+    BAR = 6;
+    KG = 7;
+    KPH = 8;
+    METER = 9;
+    RADIAN = 10;
+    KPA = 11;        
+}
+enum TelemetryDatumDescription {
+    G_FORCE = 0;
+    G_FORCE_DIRECTION = 1;
+    FUEL_CONSUMED = 2;
+    FUEL_FLOW = 3;
+    ENGINE_COOLANT_TEMP = 4;
+    ENGINE_OIL_PRESSURE = 5;
+    ENGINE_OIL_TEMP = 6;
+    ENGINE_RPM = 7;
+    BRAKE_TEMP_FR = 8;
+    BRAKE_TEMP_FL = 9;
+    BRAKE_TEMP_RR = 10;
+    BRAKE_TEMP_RL = 11;
+    ENERGY_STORAGE_LEVEL = 12;
+    ENERGY_STORAGE_TEMP = 13;
+    MGUK_OUTPUT = 14;
+    MGUH_OUTPUT = 15;
+    SPEED = 16;
+    TIRE_PRESSURE_FR = 17;
+    TIRE_PRESSURE_FL = 18;
+    TIRE_PRESSURE_RR = 19;
+    TIRE_PRESSURE_RL = 20;
+    TIRE_TEMP_FR = 21;
+    TIRE_TEMP_FL = 22;
+    TIRE_TEMP_RR = 23;
+    TIRE_TEMP_RL = 24;        
+}
+
+enum StatusCode {
+    OK = 0;
+    ERROR = 1;
+}
+
+message ServerStatus {
+    StatusCode code = 1;
+    string message = 2;
+}
+
+message HealthCheckRequest {
+}
+
+message HealthCheckResponse {
+    ServerStatus server_status = 1;
+}
+
+enum SimulationRateMultiplier {
+    X1 = 0;
+    X2 = 1;
+    X4 = 2;
+    X8 = 3;
+    X10 = 4;
+    X20 = 5;
+}
+
+enum SampleRate {
+    SR_1_MS = 0;
+    SR_10_MS = 1;
+    SR_100_MS = 2;
+    SR_1000_MS = 3;
+}
+
+message TelemetryDatum {
+    string uuid = 1;
+    TelemetryDatumDescription description = 2;
+    TelemetryDatumUnit unit = 3;
+    google.protobuf.Timestamp timestamp = 4;
+    double latitude = 5;
+    double longitude = 6;
+    double elevation = 7;
+    double value = 8;
+    bool high_alarm = 9;
+    bool low_alarm = 10;
+    bool simulated = 11;
+    string simulation_uuid = 12;
+    int32 simulation_transmit_sequence_number = 13;
+}
+
+message TelemetryData {
+    GrandPrix grand_prix = 1;
+    Track track = 2;
+    Constructor constructor = 3;
+    int32 car_number = 4;
+    map<string, TelemetryDatum> telemetry_datum_map = 5;   
+}
+
+message TransmitTelemetryRequest {
+    TelemetryData telemetry_data = 1;
+}
+
+message TransmitTelemetryResponse {
+    map<string, ServerStatus> server_status = 1;
+}
+
+message Simulation {
+    string uuid = 1;
+    int32 duration_in_minutes = 2;
+    SampleRate sample_rate = 3;
+    SimulationRateMultiplier simulation_rate_multiplier = 4;
+    GrandPrix grand_prix = 5;
+    Track track = 6;
+    Constructor constructor = 7;
+    int32 car_number = 8;
+    bool force_alarm = 9;
+    bool no_alarms = 10;
+}
+
+message RunSimulationRequest {
+    map<string, Simulation> simulation_map = 1;
+}
+
+message RunSimulationResponse {
+    map<string, ServerStatus> server_status = 1;
+}
+
+message GetSimulationStatusRequest {
+    string uuid = 1;
+}
+
+message GetSimulationStatusResponse {
+    ServerStatus server_status = 1;
+}
+
+
+service TelemetryService {
+    rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {};
+    rpc TransmitTelemetry (TransmitTelemetryRequest) returns (TransmitTelemetryResponse) {};    
+}
+
+service AnalysisService {
+    rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {};
+}
+
+service SimulationService {
+    rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {};
+    rpc RunSimulation (RunSimulationRequest) returns (RunSimulationResponse) {};
+    rpc GetSimulationStatus (GetSimulationStatusRequest) returns (GetSimulationStatusResponse) {};
+}
