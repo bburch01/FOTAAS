@@ -25,7 +25,7 @@ spec:
           value: :50051
         - name: WAIT_HOSTS
           value: mysql:3306
-        image: localhost:5000/fotaas2/telemetry
+        image: localhost:5000/fotaas/telemetry
         name: telemetry
         ports:
         - containerPort: 50051

@@ -6,7 +6,7 @@ services:
   # Some other service connecting to mysql
   fotaasctl:
     container_name: fotaasctl
-    image: localhost:5000/fotaas2/fotaasctl
+    image: localhost:5000/fotaas/fotaasctl
     build: ../cmd/fotaasctl
     links:
       - telemetry
@@ -15,7 +15,7 @@ services:
 
   telemetry:
     container_name: telemetry
-    image: localhost:5000/fotaas2/telemetry
+    image: localhost:5000/fotaas/telemetry
     build: ../cmd/telemetry
     links:
       - mysql
@@ -33,7 +33,7 @@ services:
 
   analysis:
     container_name: analysis
-    image: localhost:5000/fotaas2/analysis
+    image: localhost:5000/fotaas/analysis
     build: ../cmd/analysis
     links:
       - mysql
@@ -51,7 +51,7 @@ services:
 
   simulation:
     container_name: simulation
-    image: localhost:5000/fotaas2/simulation
+    image: localhost:5000/fotaas/simulation
     build: ../cmd/simulation
     links:
       - mysql

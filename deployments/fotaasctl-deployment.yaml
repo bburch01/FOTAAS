@@ -18,7 +18,7 @@ spec:
         io.kompose.service: fotaasctl
     spec:
       containers:
-      - image: localhost:5000/fotaas2/fotaasctl
+      - image: localhost:5000/fotaas/fotaasctl
         name: fotaasctl
         resources: {}
       restartPolicy: Always

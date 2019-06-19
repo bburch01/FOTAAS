@@ -25,7 +25,7 @@ spec:
           value: :50053
         - name: WAIT_HOSTS
           value: mysql:3306
-        image: localhost:5000/fotaas2/simulation
+        image: localhost:5000/fotaas/simulation
         name: simulation
         ports:
         - containerPort: 50053

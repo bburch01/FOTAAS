@@ -25,7 +25,7 @@ spec:
           value: :50052
         - name: WAIT_HOSTS
           value: mysql:3306
-        image: localhost:5000/fotaas2/analysis
+        image: localhost:5000/fotaas/analysis
         name: analysis
         ports:
         - containerPort: 50052
