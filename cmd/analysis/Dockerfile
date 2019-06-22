@@ -30,7 +30,7 @@ RUN go mod download
 
 # Build the binary, with a few flags which will allow
 # us to run this binary in Alpine. 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o analysis
+RUN GOOS=linux go build -a -o analysis
 
 
 # Here we're using a second FROM statement, which is strange,
