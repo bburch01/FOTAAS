@@ -12,7 +12,7 @@ RUN apk --no-cache add --update git gcc libc-dev net-tools
 WORKDIR /app
 
 # Copy the current code into our workdir
-RUN git config --global url.https://bba4029d32b08e2cac769354b2663530b612c144@github.com/.insteadOf https://github.com/
+RUN git config --global url.https://b88e1d7b0c34e88ad51a6641041bd55890d9f1fc@github.com/.insteadOf https://github.com/
 COPY . .
 RUN go get github.com/bburch01/FOTAAS/api/...
 RUN go get github.com/bburch01/FOTAAS/fotaas-internal/app/analysis/models/...
@@ -57,16 +57,4 @@ RUN chown fotaas /var/log/fotaas/fotaas.log
 # the binary we built, and pulls it into this container. Amazing!
 COPY --from=builder /app/analysis .
 
-
-# Need to wait for the database container to start MySQL and create the database if they don't exist.
-# This could take 30 secs!
-## THE LIFE SAVER
-ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
-RUN chmod +x /wait
-
-# Launch the wait tool and then your application
-# Run the binary as per usual! This time with a binary build in a
-# separate container, with all of the correct dependencies and
-# run time libraries.
-
-CMD /wait && ./analysis
+CMD ./analysis

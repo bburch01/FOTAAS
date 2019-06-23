@@ -12,7 +12,7 @@ RUN apk --no-cache add --update git gcc libc-dev net-tools
 WORKDIR /app
 
 # Copy the current code into our workdir
-RUN git config --global url.https://bba4029d32b08e2cac769354b2663530b612c144@github.com/.insteadOf https://github.com/
+RUN git config --global url.https://b88e1d7b0c34e88ad51a6641041bd55890d9f1fc@github.com/.insteadOf https://github.com/
 COPY . .
 RUN pwd;ls -a
 
@@ -21,12 +21,14 @@ RUN go get github.com/spf13/cobra/
 RUN go get github.com/mitchellh/go-homedir/
 RUN go get github.com/spf13/viper/
 RUN go get github.com/joho/godotenv/
+RUN go get github.com/google/uuid
 RUN go get google.golang.org/grpc/
+
 RUN go mod download
 
 # Build the binary, with a few flags which will allow
 # us to run this binary in Alpine. 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fotaasctl
+RUN GOOS=linux go build -a -o fotaasctl
 
 # Here we're using a second FROM statement, which is strange,
 # but this tells Docker to start a new build process with this
@@ -55,18 +57,6 @@ COPY --from=builder /app/fotaasctl .
 RUN mkdir -p /src/github.com/bburch01/FOTAAS/
 COPY --from=builder /app/.env /src/github.com/bburch01/FOTAAS/
 RUN ls -la /src/github.com/bburch01/FOTAAS/
-
-# Need to wait for the database container to start MySQL and create the database if they don't exist.
-# Need to wait for the database container to start MySQL and create the database if they don't exist.
-# This could take 30 secs!
-#
-## THE LIFE SAVER
-ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
-RUN chmod +x /wait
-
-## Launch the wait tool and then your application
-#CMD ["/wait && ./fotaasctl && tail -f /dev/null"]
-
 
 # Run the binary as per usual! This time with a binary build in a
 # separate container, with all of the correct dependencies and
