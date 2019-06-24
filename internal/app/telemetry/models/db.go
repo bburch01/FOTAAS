@@ -9,7 +9,7 @@ import (
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 
-	logging "github.com/bburch01/FOTAAS/fotaas-internal/pkg/logging"
+	logging "github.com/bburch01/FOTAAS/internal/pkg/logging"
 )
 
 var db *sql.DB

@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	pbts "github.com/bburch01/FOTAAS/fotaas-internal/pkg/protobuf/timestamp"
+	pbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 )
 

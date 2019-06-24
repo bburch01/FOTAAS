@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	pb "github.com/bburch01/FOTAAS/api"
-	mdl "github.com/bburch01/FOTAAS/fotaas-internal/app/analysis/models"
-	logging "github.com/bburch01/FOTAAS/fotaas-internal/pkg/logging"
+	mdl "github.com/bburch01/FOTAAS/internal/app/analysis/models"
+	logging "github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/joho/godotenv"
 	"github.com/openzipkin/zipkin-go"
 	zipkingrpc "github.com/openzipkin/zipkin-go/middleware/grpc"

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	pb "github.com/bburch01/FOTAAS/api"
-	ts "github.com/bburch01/FOTAAS/fotaas-internal/pkg/protobuf/timestamp"
+	ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/joho/godotenv"
 

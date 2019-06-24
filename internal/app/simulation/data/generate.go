@@ -12,14 +12,14 @@ import (
 	"time"
 
 	pb "github.com/bburch01/FOTAAS/api"
-	ts "github.com/bburch01/FOTAAS/fotaas-internal/pkg/protobuf/timestamp"
+	ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 
-	//tel "github.com/bburch01/FOTAAS/fotaas-internal/app/telemetry"
-	tel "github.com/bburch01/FOTAAS/fotaas-internal/app/telemetry"
+	//tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
+	tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
 
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 
-	//ts "github.com/bburch01/FOTAAS/fotaas-internal/pkg/protobuf/timestamp"
+	//ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 	//timestamp "github.com/golang/protobuf/ptypes/timestamp"
 
 	uid "github.com/google/uuid"
@@ -29,10 +29,10 @@ import (
 	//uid "github.com/google/uuid"
 	//uuid "github.com/satori/go.uuid"
 
-	logging "github.com/bburch01/FOTAAS/fotaas-internal/pkg/logging"
+	logging "github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
-	//logging "github.com/bburch01/FOTAAS/fotaas-internal/pkg/logging"
+	//logging "github.com/bburch01/FOTAAS/internal/pkg/logging"
 	//"github.com/joho/godotenv"
 	//"go.uber.org/zap"
 )

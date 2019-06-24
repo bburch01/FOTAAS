@@ -9,8 +9,8 @@ import (
 	"time"
 
 	pb "github.com/bburch01/FOTAAS/api"
-	tel "github.com/bburch01/FOTAAS/fotaas-internal/app/telemetry"
-	logging "github.com/bburch01/FOTAAS/fotaas-internal/pkg/logging"
+	tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
+	logging "github.com/bburch01/FOTAAS/internal/pkg/logging"
 
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"

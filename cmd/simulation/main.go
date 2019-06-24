@@ -10,17 +10,17 @@ import (
 	"sync"
 
 	pb "github.com/bburch01/FOTAAS/api"
-	//sim "github.com/bburch01/FOTAAS/fotaas-internal/app/simulation"
-	//tel "github.com/bburch01/FOTAAS/fotaas-internal/app/telemetry"
+	//sim "github.com/bburch01/FOTAAS/internal/app/simulation"
+	//tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
 
-	mdl "github.com/bburch01/FOTAAS/fotaas-internal/app/simulation/models"
+	mdl "github.com/bburch01/FOTAAS/internal/app/simulation/models"
 
-	//gen "github.com/bburch01/FOTAAS/fotaas-internal/app/simulation/data"
+	//gen "github.com/bburch01/FOTAAS/internal/app/simulation/data"
 
-	sim "github.com/bburch01/FOTAAS/fotaas-internal/app/simulation"
-	gen "github.com/bburch01/FOTAAS/fotaas-internal/app/simulation/data"
-	tel "github.com/bburch01/FOTAAS/fotaas-internal/app/telemetry"
-	logging "github.com/bburch01/FOTAAS/fotaas-internal/pkg/logging"
+	sim "github.com/bburch01/FOTAAS/internal/app/simulation"
+	gen "github.com/bburch01/FOTAAS/internal/app/simulation/data"
+	tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
+	logging "github.com/bburch01/FOTAAS/internal/pkg/logging"
 
 	uid "github.com/google/uuid"
 	"github.com/joho/godotenv"

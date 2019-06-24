@@ -6,14 +6,14 @@ import (
 	"time"
 
 	pb "github.com/bburch01/FOTAAS/api"
-	d "github.com/bburch01/FOTAAS/fotaas-internal/app/simulation/data"
-	tel "github.com/bburch01/FOTAAS/fotaas-internal/app/telemetry"
-	ts "github.com/bburch01/FOTAAS/fotaas-internal/pkg/protobuf/timestamp"
+	d "github.com/bburch01/FOTAAS/internal/app/simulation/data"
+	tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
+	ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 
-	//tel "github.com/bburch01/FOTAAS/fotaas-internal/app/telemetry"
+	//tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
 
 	uid "github.com/google/uuid"
-	//ts "github.com/bburch01/FOTAAS/fotaas-internal/pkg/protobuf/timestamp"
+	//ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 )
 
 func TestStartSimulation(t *testing.T) {

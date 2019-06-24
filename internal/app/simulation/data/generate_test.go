@@ -8,9 +8,9 @@ import (
 	pb "github.com/bburch01/FOTAAS/api"
 	uid "github.com/google/uuid"
 
-	tel "github.com/bburch01/FOTAAS/fotaas-internal/app/telemetry"
+	tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
 
-	//ts "github.com/bburch01/FOTAAS/fotaas-internal/pkg/protobuf/timestamp"
+	//ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 	//timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	//spinner "github.com/briandowns/spinner"
 
