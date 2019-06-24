@@ -3,11 +3,13 @@
 version: '3.1'
 
 services:
-  # Some other service connecting to mysql
+
   fotaasctl:
     container_name: fotaasctl
-    image: localhost:5000/fotaas/fotaasctl
-    build: ../cmd/fotaasctl
+    image: us.gcr.io/kubedemo-233218/fotaas/fotaasctl
+    build:
+      context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/fotaasctl/Dockerfile
     links:
       - telemetry
       - analysis
@@ -15,68 +17,37 @@ services:
 
   telemetry:
     container_name: telemetry
-    image: localhost:5000/fotaas/telemetry
-    build: ../cmd/telemetry
-    links:
-      - mysql
-    depends_on:
-      - mysql
+    image: us.gcr.io/kubedemo-233218/fotaas/telemetry
+    build:
+      context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/telemetry/Dockerfile    
     expose:
       - 9411
       - 50051
     ports:
       - "50051:50051"
-    environment:
-      MICRO_ADDRESS: ":50051"
-      DB_HOST: "mysql"
-      WAIT_HOSTS: "mysql:3306"
 
   analysis:
     container_name: analysis
-    image: localhost:5000/fotaas/analysis
-    build: ../cmd/analysis
-    links:
-      - mysql
-    depends_on:
-      - mysql
+    image: us.gcr.io/kubedemo-233218/fotaas/analysis
+    build:
+      context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/analysis/Dockerfile    
     expose:
       - 9411
       - 50052
     ports:
       - "50052:50052"
-    environment:
-      MICRO_ADDRESS: ":50052"
-      DB_HOST: "mysql"
-      WAIT_HOSTS: "mysql:3306"
 
   simulation:
     container_name: simulation
-    image: localhost:5000/fotaas/simulation
-    build: ../cmd/simulation
-    links:
-      - mysql
-    depends_on:
-      - mysql
+    image: us.gcr.io/kubedemo-233218/fotaas/simulation
+    build:
+      context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/simulation/Dockerfile
     expose:
       - 9411
       - 50053
     ports:
       - "50053:50053"
-    environment:
-      MICRO_ADDRESS: ":50053"
-      DB_HOST: "mysql"
-      WAIT_HOSTS: "mysql:3306"
-  mysql:
-    container_name: mysql
-    image: mysql:5.6
-    environment:
-      - MYSQL_USER=root
-      - MYSQL_ROOT_PASSWORD=mysql-1234
-    entrypoint:
-      sh -c "
-        echo 'CREATE DATABASE IF NOT EXISTS fotaas_telemetry; CREATE DATABASE IF NOT EXISTS fotaas_analysis; CREATE DATABASE IF NOT EXISTS fotaas_simulation' > /docker-entrypoint-initdb.d/init.sql;
-        /usr/local/bin/docker-entrypoint.sh --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
-    expose:
-      - 3306
-    ports:
-      - 3306:3306 
+
