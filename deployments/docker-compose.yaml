@@ -7,7 +7,9 @@ services:
   fotaasctl:
     container_name: fotaasctl
     image: us.gcr.io/kubedemo-233218/fotaas/fotaasctl
-    build: ../cmd/fotaasctl
+    build:
+      context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/fotaasctl/Dockerfile
     links:
       - telemetry
       - analysis
@@ -16,7 +18,9 @@ services:
   telemetry:
     container_name: telemetry
     image: us.gcr.io/kubedemo-233218/fotaas/telemetry
-    build: ../cmd/telemetry
+    build:
+      context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/telemetry/Dockerfile    
     expose:
       - 9411
       - 50051
@@ -26,7 +30,9 @@ services:
   analysis:
     container_name: analysis
     image: us.gcr.io/kubedemo-233218/fotaas/analysis
-    build: ../cmd/analysis
+    build:
+      context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/analysis/Dockerfile    
     expose:
       - 9411
       - 50052
@@ -36,7 +42,9 @@ services:
   simulation:
     container_name: simulation
     image: us.gcr.io/kubedemo-233218/fotaas/simulation
-    build: ../cmd/simulation
+    build:
+      context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/simulation/Dockerfile
     expose:
       - 9411
       - 50053

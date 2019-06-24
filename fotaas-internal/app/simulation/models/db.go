@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 
@@ -15,14 +14,6 @@ import (
 
 var db *sql.DB
 var logger *zap.Logger
-
-/*
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Printf("godotenv error: %v", err)
-	}
-}
-*/
 
 func init() {
 
@@ -51,21 +42,13 @@ func init() {
 func InitDB() error {
 	dbDriver := os.Getenv("DB_DRIVER")
 	dbHost := os.Getenv("DB_HOST")
-	//dbPort := os.Getenv("DB_PORT")
 	dbUser := os.Getenv("DB_USER")
 	dbPass := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("SIMULATION_SERVICE_DB_NAME")
 	var err error
 
-	logger.Debug(fmt.Sprintf("DB_DRIVER: %v DB_HOST: %v DB_USER: %v DB_PASSWORD: %v ANALYSIS_SERVICE_DB_NAME: %v",
-		dbDriver, dbHost, dbUser, dbPass, dbName))
-
 	dbConURL := dbUser + ":" + dbPass + "@tcp(" + dbHost + ")" + "/" + dbName
-
-	logger.Debug(fmt.Sprintf("Database Connection URL: %v", dbConURL))
-
-	//MySQLDB, err = sql.Open(dbDriver, dbUser+":"+dbPass+"@tcp("+dbHost+")"+"/"+dbName)
-
+	db, err = sql.Open(dbDriver, dbConURL)	
 	if err != nil {
 		return err
 	}

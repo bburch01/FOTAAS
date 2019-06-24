@@ -8,15 +8,18 @@ FROM golang:alpine as builder
 
 RUN apk --no-cache add --update git gcc libc-dev net-tools
 
-# Set our workdir to our current service in the gopath
-WORKDIR /app
+WORKDIR /app/go/src/github.com/bburch01/FOTAAS
+COPY . .
+#RUN pwd;ls -al
+
+ENV GOPATH /app/go
+ENV GO111MODULE=auto
+
+WORKDIR /app/go/src/github.com/bburch01/FOTAAS/cmd/simulation
+#RUN pwd;ls -al
 
 # Copy the current code into our workdir
 RUN git config --global url.https://b88e1d7b0c34e88ad51a6641041bd55890d9f1fc@github.com/.insteadOf https://github.com/
-COPY . .
-RUN go get github.com/bburch01/FOTAAS/api/...
-RUN go get github.com/bburch01/FOTAAS/fotaas-internal/app/simulation/models/...
-RUN go get github.com/bburch01/FOTAAS/fotaas-internal/pkg/logging/...
 RUN go get github.com/go-sql-driver/mysql/
 RUN go get github.com/joho/godotenv/
 RUN go get github.com/openzipkin/zipkin-go/
@@ -43,11 +46,10 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates procps
 
 # Same as before, create a directory for our app.
-RUN mkdir /app
-COPY . /app
-WORKDIR /app
-RUN ls -latr /app
-
+#RUN mkdir /app
+#COPY . /app
+WORKDIR /app/go/src/github.com/bburch01/FOTAAS/cmd/simulation
+#RUN pwd;ls -a
 
 RUN addgroup fotaas && adduser -H -D -G fotaas fotaas
 RUN mkdir -p /var/log/fotaas
@@ -58,6 +60,7 @@ RUN chown fotaas /var/log/fotaas/fotaas.log
 # we pull the binary from the container named `builder`, within
 # this build context. This reaches into our previous image, finds
 # the binary we built, and pulls it into this container. Amazing!
-COPY --from=builder /app/simulation .
+COPY --from=builder /app/go/src/github.com/bburch01/FOTAAS/cmd/simulation/simulation .
+COPY --from=builder /app/go/src/github.com/bburch01/FOTAAS/cmd/simulation/.env .
 
 CMD ./simulation
