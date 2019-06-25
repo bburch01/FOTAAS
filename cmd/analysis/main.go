@@ -28,7 +28,7 @@ func init() {
 	var lm logging.LogMode
 	var err error
 
-	// Loads values from .env into the system. 
+	// Loads values from .env into the system.
 	// NOTE: the .env file must be present in execution directory which is a
 	// deployment issue that will be handled via docker/k8s in production but
 	// the .env file may need to be manually copied into the execution directory
@@ -69,37 +69,41 @@ func (s *server) HealthCheck(ctx context.Context, in *pb.HealthCheckRequest) (*p
 
 func main() {
 
-	// setup a span reporter that will support trace information in the zipkin ui
+	var sb strings.Builder
+
 	reporter := reporterhttp.NewReporter(os.Getenv("ZIPKIN_ENDPOINT_URL"))
 	defer reporter.Close()
 
-	// create the local service endpoint
-	zipkinendpoint := []string {os.Getenv("ANALYSIS_SERVICE_HOST"), ":", os.Getenv("ANALYSIS_SERVICE_PORT")}
-	zipkinendpointstr := strings.Join(zipkinendpoint,"")
-	endpoint, err := zipkin.NewEndpoint("analysis-service", zipkinendpointstr)
+	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_HOST"))
+	sb.WriteString(":")
+	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_PORT"))
+	analysisSvcEndpoint := sb.String()
+
+	zipkinLocalEndpoint, err := zipkin.NewEndpoint("analysis-service", analysisSvcEndpoint)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to create local zipkin endpoint with error: %v", err))
+		logger.Fatal(fmt.Sprintf("failed to create zipkin local endpoint with error: %v", err))
 	}
 
-	// initialize the tracer
-	tracer, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(endpoint))
+	tracer, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(zipkinLocalEndpoint))
 	if err != nil {
 		logger.Fatal(fmt.Sprintf("failed to create zipkin tracer with error: %v", err))
 	}
 
-	zipkinendpoint = nil
-	zipkinendpoint = []string {":", os.Getenv("ANALYSIS_SERVICE_PORT")}
-	zipkinendpointstr = strings.Join(zipkinendpoint,"")
+	sb.Reset()
+	sb.WriteString(":")
+	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_PORT"))
+	analysisSvcPort := sb.String()
 
-	listen, err := net.Listen("tcp", zipkinendpointstr)
+	listener, err := net.Listen("tcp", analysisSvcPort)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to listen on tcp port with error: %v", err))
+		logger.Fatal(fmt.Sprintf("tcp failed to listen on analysis service port %v with error: %v", analysisSvcPort, err))
 	}
 
 	svr := grpc.NewServer(grpc.StatsHandler(zipkingrpc.NewServerHandler(tracer)))
 
 	pb.RegisterAnalysisServiceServer(svr, &server{})
-	if err := svr.Serve(listen); err != nil {
-		logger.Fatal(fmt.Sprintf("failed to serve on tcp port with error: %v", err))
+
+	if err := svr.Serve(listener); err != nil {
+		logger.Fatal(fmt.Sprintf("failed to serve on analysis service port %v with error: %v", analysisSvcPort, err))
 	}
 }

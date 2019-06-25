@@ -18,6 +18,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	pb "github.com/bburch01/FOTAAS/api"
@@ -100,7 +101,8 @@ var startSimulationCmd = &cobra.Command{
 
 func startSimulation() (*pb.RunSimulationResponse, error) {
 
-	var svcaddr string
+	var simulationSvcEndpoint string
+	var sb strings.Builder
 
 	var resp *pb.RunSimulationResponse
 	var req pb.RunSimulationRequest
@@ -124,9 +126,17 @@ func startSimulation() (*pb.RunSimulationResponse, error) {
 
 	req.SimulationMap = simmap
 
-	svcaddr = os.Getenv("SIMULATION_SERVICE_HOST") + os.Getenv("SIMULATION_SERVICE_PORT")
+	sb.WriteString(os.Getenv("SIMULATION_SERVICE_HOST"))
+	sb.WriteString(":")
+	sb.WriteString(os.Getenv("SIMULATION_SERVICE_PORT"))
+	simulationSvcEndpoint = sb.String()
 
-	conn, err := grpc.Dial(svcaddr, grpc.WithInsecure())
+	//serviceaddress := []string{os.Getenv("SIMULATION_SERVICE_HOST"), ":", os.Getenv("SIMULATION_SERVICE_PORT")}
+	//svcaddr = strings.Join(serviceaddress, "")
+
+	//svcaddr = os.Getenv("SIMULATION_SERVICE_HOST") + os.Getenv("SIMULATION_SERVICE_PORT")
+
+	conn, err := grpc.Dial(simulationSvcEndpoint, grpc.WithInsecure())
 	if err != nil {
 		return resp, err
 	}

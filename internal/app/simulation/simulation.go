@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -215,9 +216,10 @@ func StartSimulation(simData map[pb.TelemetryDatumDescription]tel.SimulatedTelem
 	var tdata pb.TelemetryData
 	var sampleRateInMillis int32
 	var simRateMultiplier int32
-	var svcaddr string
+	//var telemetrySvcEndpoint string
 	var resp *pb.TransmitTelemetryResponse
 	var req pb.TransmitTelemetryRequest
+	var sb strings.Builder
 
 	defer wg.Done()
 
@@ -287,9 +289,12 @@ func StartSimulation(simData map[pb.TelemetryDatumDescription]tel.SimulatedTelem
 
 	var transmissionCount int
 
-	svcaddr = os.Getenv("TELEMETRY_SERVICE_HOST") + os.Getenv("TELEMETRY_SERVICE_PORT")
+	sb.WriteString(os.Getenv("TELEMETRY_SERVICE_HOST"))
+	sb.WriteString(":")
+	sb.WriteString(os.Getenv("TELEMETRY_SERVICE_PORT"))
+	telemetrySvcEndpoint := sb.String()
 
-	conn, err := grpc.Dial(svcaddr, grpc.WithInsecure())
+	conn, err := grpc.Dial(telemetrySvcEndpoint, grpc.WithInsecure())
 	if err != nil {
 		msg := fmt.Sprintf("simulation service error: %v", err)
 		resultsChan <- SimResult{UUID: sim.Uuid, Status: pb.ServerStatus{Code: pb.StatusCode_ERROR, Message: msg}}

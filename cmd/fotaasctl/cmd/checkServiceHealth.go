@@ -88,27 +88,40 @@ var checkServiceHealthCmd = &cobra.Command{
 
 func checkByName(svcname string) (*pb.HealthCheckResponse, error) {
 
-	var svcaddr string
+	var svcEndpoint string
 	var resp *pb.HealthCheckResponse
+	var sb strings.Builder
 
 	switch svcname {
 	case "telemetry":
-		serviceaddress := []string{os.Getenv("TELEMETRY_SERVICE_HOST"), ":", os.Getenv("TELEMETRY_SERVICE_PORT")}
-		svcaddr = strings.Join(serviceaddress, "")
+		sb.WriteString(os.Getenv("TELEMETRY_SERVICE_HOST"))
+		sb.WriteString(":")
+		sb.WriteString(os.Getenv("TELEMETRY_SERVICE_PORT"))
+		svcEndpoint = sb.String()
+		//serviceaddress := []string{os.Getenv("TELEMETRY_SERVICE_HOST"), ":", os.Getenv("TELEMETRY_SERVICE_PORT")}
+		//svcEndpoint = strings.Join(serviceaddress, "")
 
 	case "analysis":
-		serviceaddress := []string{os.Getenv("ANALYSIS_SERVICE_HOST"), ":", os.Getenv("ANALYSIS_SERVICE_PORT")}
-		svcaddr = strings.Join(serviceaddress, "")
+		sb.WriteString(os.Getenv("ANALYSIS_SERVICE_HOST"))
+		sb.WriteString(":")
+		sb.WriteString(os.Getenv("ANALYSIS_SERVICE_PORT"))
+		svcEndpoint = sb.String()
+		//serviceaddress := []string{os.Getenv("ANALYSIS_SERVICE_HOST"), ":", os.Getenv("ANALYSIS_SERVICE_PORT")}
+		//svcEndpoint = strings.Join(serviceaddress, "")
 
 	case "simulation":
-		serviceaddress := []string{os.Getenv("SIMULATION_SERVICE_HOST"), ":", os.Getenv("SIMULATION_SERVICE_PORT")}
-		svcaddr = strings.Join(serviceaddress, "")
+		sb.WriteString(os.Getenv("SIMULATION_SERVICE_HOST"))
+		sb.WriteString(":")
+		sb.WriteString(os.Getenv("SIMULATION_SERVICE_PORT"))
+		svcEndpoint = sb.String()
+		//serviceaddress := []string{os.Getenv("SIMULATION_SERVICE_HOST"), ":", os.Getenv("SIMULATION_SERVICE_PORT")}
+		//svcEndpoint = strings.Join(serviceaddress, "")
 
 	default:
 		return resp, errors.New("invalid service name, valid service names are telemetry, analysis, and simulation")
 	}
 
-	conn, err := grpc.Dial(svcaddr, grpc.WithInsecure())
+	conn, err := grpc.Dial(svcEndpoint, grpc.WithInsecure())
 	if err != nil {
 		return resp, err
 	}
