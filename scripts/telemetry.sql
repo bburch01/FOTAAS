@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `telemetry_datum`
   `constructor` ENUM('ALPHA_ROMEO', 'FERRARI', 'HAAS', 'MCLAREN', 'MERCEDES',
         'RACING_POINT', 'RED_BULL_RACING', 'SCUDERIA_TORO_ROSO', 'WILLIAMS') NOT NULL,
   `car_number` INTEGER NOT NULL,
-  `timestamp` TIMESTAMP NOT NULL,
+  `timestamp` TIMESTAMP NULL,
   `latitude` INTEGER NOT NULL,
   `longitude` INTEGER NOT NULL,
   `elevation` INTEGER NOT NULL,

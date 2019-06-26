@@ -20,6 +20,16 @@ spec:
         image: us.gcr.io/kubedemo-233218/fotaas/telemetry
         ports:
         - containerPort: 50051
+        readinessProbe:
+          tcpSocket:
+            port: 50051
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 50051
+          initialDelaySeconds: 15
+          periodSeconds: 20        
         env:
          - name: DB_HOST
            value: 127.0.0.1:3306
@@ -39,6 +49,15 @@ spec:
         image: docker.io/openzipkin/zipkin:latest
         ports:
         - containerPort: 9411
+        livenessProbe:
+          exec:
+            command:
+            - nc
+            - -v
+            - -z
+            - 127.0.0.1:9411
+          initialDelaySeconds: 15
+          periodSeconds: 20           
       #END zipkin container
       #Start cloudsql-proxy container
       - name: cloudsql-proxy
@@ -51,6 +70,15 @@ spec:
          - name: cloudsql-instance-credentials
            mountPath: /secrets/cloudsql
            readOnly: true
+        livenessProbe:
+          exec:
+            command:
+            - nc
+            - -v
+            - -z
+            - 127.0.0.1:3306
+          initialDelaySeconds: 15
+          periodSeconds: 20           
       #END cloudsql-proxy container
       volumes:
        - name: cloudsql-instance-credentials
@@ -79,6 +107,16 @@ spec:
         image: us.gcr.io/kubedemo-233218/fotaas/analysis
         ports:
         - containerPort: 50052
+        readinessProbe:
+          tcpSocket:
+            port: 50052
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 50052
+          initialDelaySeconds: 15
+          periodSeconds: 20                
         env:
          - name: DB_HOST
            value: 127.0.0.1:3306
@@ -98,6 +136,15 @@ spec:
         image: docker.io/openzipkin/zipkin:latest
         ports:
         - containerPort: 9411
+        livenessProbe:
+          exec:
+            command:
+            - nc
+            - -v
+            - -z
+            - 127.0.0.1:9411
+          initialDelaySeconds: 15
+          periodSeconds: 20                
       #END zipkin container
       #Start cloudsql-proxy container
       - name: cloudsql-proxy
@@ -110,6 +157,15 @@ spec:
          - name: cloudsql-instance-credentials
            mountPath: /secrets/cloudsql
            readOnly: true
+        livenessProbe:
+          exec:
+            command:
+            - nc
+            - -v
+            - -z
+            - 127.0.0.1:3306
+          initialDelaySeconds: 15
+          periodSeconds: 20                               
       #END cloudsql-proxy container
       volumes:
        - name: cloudsql-instance-credentials
@@ -138,6 +194,16 @@ spec:
         image: us.gcr.io/kubedemo-233218/fotaas/simulation
         ports:
         - containerPort: 50053
+        readinessProbe:
+          tcpSocket:
+            port: 50053
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 50053
+          initialDelaySeconds: 15
+          periodSeconds: 20                
         env:
          - name: DB_HOST
            value: 127.0.0.1:3306
@@ -157,6 +223,15 @@ spec:
         image: docker.io/openzipkin/zipkin:latest
         ports:
         - containerPort: 9411
+        livenessProbe:
+          exec:
+            command:
+            - nc
+            - -v
+            - -z
+            - 127.0.0.1:9411
+          initialDelaySeconds: 15
+          periodSeconds: 20           
       #END zipkin container
       #Start cloudsql-proxy container
       - name: cloudsql-proxy
@@ -169,6 +244,15 @@ spec:
          - name: cloudsql-instance-credentials
            mountPath: /secrets/cloudsql
            readOnly: true
+        livenessProbe:
+          exec:
+            command:
+            - nc
+            - -v
+            - -z
+            - 127.0.0.1:3306
+          initialDelaySeconds: 15
+          periodSeconds: 20           
       #END cloudsql-proxy container
       volumes:
        - name: cloudsql-instance-credentials

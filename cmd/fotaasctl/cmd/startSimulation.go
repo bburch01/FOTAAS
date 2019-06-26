@@ -131,19 +131,11 @@ func startSimulation() (*pb.RunSimulationResponse, error) {
 	sb.WriteString(os.Getenv("SIMULATION_SERVICE_PORT"))
 	simulationSvcEndpoint = sb.String()
 
-	//serviceaddress := []string{os.Getenv("SIMULATION_SERVICE_HOST"), ":", os.Getenv("SIMULATION_SERVICE_PORT")}
-	//svcaddr = strings.Join(serviceaddress, "")
-
-	//svcaddr = os.Getenv("SIMULATION_SERVICE_HOST") + os.Getenv("SIMULATION_SERVICE_PORT")
-
 	conn, err := grpc.Dial(simulationSvcEndpoint, grpc.WithInsecure())
 	if err != nil {
 		return resp, err
 	}
 	defer conn.Close()
-
-	//ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	//ctx, cancel := context.WithTimeout(context.Background(), time.Duration(300)*time.Second)
 
 	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
 	// based on the size of SimulationMap.
@@ -156,6 +148,10 @@ func startSimulation() (*pb.RunSimulationResponse, error) {
 
 	client = pb.NewSimulationServiceClient(conn)
 
+	// Need to kick-off the simulation and return a response immediately
+	// Use a go routine call for client.RunSimulation
+	// Status and results of the simulation will need to be persisted to
+	// the simulation service db where clients can check for status/results
 	resp, err = client.RunSimulation(ctx, &req)
 	if err != nil {
 		return resp, err
