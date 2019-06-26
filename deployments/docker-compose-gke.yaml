@@ -1,4 +1,5 @@
-# FOTAAS docker-compose.yml
+# FOTAAS docker-compose-gke.yml
+# Used to create the FOTAAS docker images which will be deployed to Google GKE
 
 version: '3.1'
 

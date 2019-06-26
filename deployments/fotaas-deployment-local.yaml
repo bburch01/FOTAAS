@@ -17,7 +17,7 @@ spec:
       containers:
       #START telemetry service container
       - name: telemetry
-        image: us.gcr.io/kubedemo-233218/fotaas/telemetry
+        image: localhost:5000/fotaas/telemetry
         ports:
         - containerPort: 50051
         env:
@@ -36,7 +36,7 @@ spec:
       #END telemetry service container
       #START analysis service container
       - name: analysis
-        image: us.gcr.io/kubedemo-233218/fotaas/analysis
+        image: localhost:5000/fotaas/analysis
         ports:
         - containerPort: 50052
         env:
@@ -55,7 +55,7 @@ spec:
       #END analysis service container
       #START simulation service container
       - name: simulation
-        image: us.gcr.io/kubedemo-233218/fotaas/simulation
+        image: localhost:5000/fotaas/simulation
         ports:
         - containerPort: 50053
         env:
@@ -71,10 +71,10 @@ spec:
             secretKeyRef:
              name: cloudsql-db-credentials
              key: password
-      #END simulation service container
+      #END telemetry service container
       #START fotaasctl container
       - name: fotaasctl
-        image: us.gcr.io/kubedemo-233218/fotaas/fotaasctl
+        image: localhost:5000/fotaas/fotaasctl
       #END fotaasctl container
       #START zipkin container
       - name: zipkin

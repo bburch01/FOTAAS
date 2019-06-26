@@ -129,8 +129,9 @@ func checkByName(svcname string) (*pb.HealthCheckResponse, error) {
 
 	//ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	//ctx, cancel := context.WithTimeout(context.Background(), time.Duration(300)*time.Second)
-
-	clientDeadline := time.Now().Add(time.Duration(1) * time.Second)
+	
+	// TODO: determine what is the appropriate deadline for health check requests
+	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 
 	defer cancel()
