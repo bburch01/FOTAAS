@@ -13,10 +13,6 @@ type Simulation struct {
 	SampleRate         string
 	GrandPrix          string
 	Track              string
-	Constructor        string
-	CarNumber          int32
-	ForceAlarm         bool
-	NoAlarms           bool
 	State              string
 	StartTimestamp     *timestamp.Timestamp
 	EndTimestamp       *timestamp.Timestamp
@@ -25,15 +21,15 @@ type Simulation struct {
 	FinalStatusMessage string
 }
 
-func (sim Simulation) Create() error {
+func (sim *Simulation) Persist() error {
 
 	var t time.Time
 
 	sqlStatement := `
-		INSERT INTO simulation (id, duration_in_minutes, sample_rate, grand_prix, track, constructor,
-			car_number, force_alarm, no_alarms, state, start_timestamp, end_timestamp, percent_complete,
-		    final_status_code, final_status_message)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+			INSERT INTO simulation (id, duration_in_minutes, sample_rate, grand_prix, track,
+				 state, start_timestamp, end_timestamp, percent_complete, final_status_code,
+				  final_status_message)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	pstmt, err := db.Prepare(sqlStatement)
 	if err != nil {
@@ -55,9 +51,8 @@ func (sim Simulation) Create() error {
 	}
 	endTs := t.Format("2006-01-02 15:04:05")
 
-	_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate, sim.GrandPrix, sim.Track, sim.Constructor,
-		sim.CarNumber, sim.ForceAlarm, sim.NoAlarms, sim.State, startTs, endTs, sim.PercentComplete,
-		sim.FinalStatusCode, sim.FinalStatusMessage)
+	_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate, sim.GrandPrix, sim.Track,
+		sim.State, startTs, endTs, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
 	if err != nil {
 		return err
 	}
@@ -169,3 +164,22 @@ func (sim Simulation) UpdateFinalStatusMessage() error {
 	return nil
 
 }
+
+/*
+func NewFromProto(pbsim pb.Simulation) *Simulation {
+
+	s := new(Simulation)
+	s.ID = pbsim.Uuid
+	s.DurationInMinutes = pbsim.DurationInMinutes
+	s.SampleRate = pbsim.SampleRate.String()
+	s.GrandPrix = pbsim.GrandPrix.String()
+	s.Track = pbsim.Track.String()
+	State
+	StartTimestamp
+	EndTimestamp
+	PercentComplete
+	FinalStatusCode
+	FinalStatusMessage
+
+}
+*/

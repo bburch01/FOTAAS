@@ -98,8 +98,8 @@ func StartSimulation(simData map[pb.TelemetryDatumDescription]tel.SimulatedTelem
 
 	tdata.GrandPrix = sim.GrandPrix
 	tdata.Track = sim.Track
-	tdata.Constructor = sim.Constructor
-	tdata.CarNumber = sim.CarNumber
+	//tdata.Constructor = sim.Constructor
+	//tdata.CarNumber = sim.CarNumber
 
 	var transmissionCount int
 

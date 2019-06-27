@@ -170,6 +170,15 @@ message TransmitTelemetryResponse {
     map<string, ServerStatus> server_status = 1;
 }
 
+message SimulationMember {
+    string uuid = 1;
+    string simulation_uuid = 2;
+    Constructor constructor = 3;
+    int32 car_number = 4;
+    bool force_alarm = 5;
+    bool no_alarms = 6;
+}
+
 message Simulation {
     string uuid = 1;
     int32 duration_in_minutes = 2;
@@ -177,14 +186,11 @@ message Simulation {
     SimulationRateMultiplier simulation_rate_multiplier = 4;
     GrandPrix grand_prix = 5;
     Track track = 6;
-    Constructor constructor = 7;
-    int32 car_number = 8;
-    bool force_alarm = 9;
-    bool no_alarms = 10;
+    map<string, SimulationMember> simulation_member_map = 7;
 }
 
 message RunSimulationRequest {
-    map<string, Simulation> simulation_map = 1;
+    Simulation simulation = 1;
 }
 
 message RunSimulationResponse {

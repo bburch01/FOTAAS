@@ -27,7 +27,7 @@ type TelemetryDatum struct {
 	LoAlarm                          bool
 }
 
-func (td *TelemetryDatum) Create() error {
+func (td *TelemetryDatum) Persist() error {
 
 	sqlStatement := `
 		INSERT INTO telemetry_datum (id, simulated, simulation_id, simulation_transmit_sequence_number, grand_prix, track, constructor,

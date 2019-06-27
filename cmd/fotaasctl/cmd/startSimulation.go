@@ -103,28 +103,32 @@ func startSimulation() (*pb.RunSimulationResponse, error) {
 
 	var simulationSvcEndpoint string
 	var sb strings.Builder
-
 	var resp *pb.RunSimulationResponse
 	var req pb.RunSimulationRequest
+	//var statusMap = make(map[string]*pb.ServerStatus)
 	var simID string
+	var simMember pb.SimulationMember
 
-	simmap := make(map[string]*pb.Simulation)
-
+	simMemberMap := make(map[string]*pb.SimulationMember)
 	simID = uid.New().String()
+
+	simMemberID := uid.New().String()
+	simMember = pb.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: pb.Constructor_HAAS,
+		CarNumber: 8, ForceAlarm: false, NoAlarms: true,
+	}
+	simMemberMap[simMemberID] = &simMember
+
+	simMemberID = uid.New().String()
+	simMember = pb.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: pb.Constructor_MERCEDES,
+		CarNumber: 44, ForceAlarm: false, NoAlarms: true,
+	}
+	simMemberMap[simMemberID] = &simMember
+
 	sim := pb.Simulation{Uuid: simID, DurationInMinutes: int32(1), SampleRate: pb.SampleRate_SR_1000_MS,
-		SimulationRateMultiplier: pb.SimulationRateMultiplier_X2, GrandPrix: pb.GrandPrix_UNITED_STATES,
-		Track: pb.Track_AUSTIN, Constructor: pb.Constructor_HAAS, CarNumber: 8, ForceAlarm: false, NoAlarms: true,
-	}
-	simmap[simID] = &sim
+		SimulationRateMultiplier: pb.SimulationRateMultiplier_X1, GrandPrix: pb.GrandPrix_UNITED_STATES,
+		Track: pb.Track_AUSTIN, SimulationMemberMap: simMemberMap}
 
-	simID = uid.New().String()
-	sim = pb.Simulation{Uuid: simID, DurationInMinutes: int32(1), SampleRate: pb.SampleRate_SR_1000_MS,
-		SimulationRateMultiplier: pb.SimulationRateMultiplier_X2, GrandPrix: pb.GrandPrix_UNITED_STATES,
-		Track: pb.Track_AUSTIN, Constructor: pb.Constructor_MERCEDES, CarNumber: 44, ForceAlarm: false, NoAlarms: true,
-	}
-	simmap[simID] = &sim
-
-	req.SimulationMap = simmap
+	req.Simulation = &sim
 
 	sb.WriteString(os.Getenv("SIMULATION_SERVICE_HOST"))
 	sb.WriteString(":")
@@ -152,10 +156,14 @@ func startSimulation() (*pb.RunSimulationResponse, error) {
 	// Use a go routine call for client.RunSimulation
 	// Status and results of the simulation will need to be persisted to
 	// the simulation service db where clients can check for status/results
-	resp, err = client.RunSimulation(ctx, &req)
-	if err != nil {
-		return resp, err
-	}
+	//resp, err = client.RunSimulation(ctx, &req)
+	//if err != nil {
+	//	return resp, err
+	//}
+
+	go client.RunSimulation(ctx, &req)
+
+	//statusMap[]
 
 	return resp, nil
 

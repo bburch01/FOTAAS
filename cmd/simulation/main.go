@@ -10,7 +10,6 @@ import (
 	"sync"
 
 	pb "github.com/bburch01/FOTAAS/api"
-	sim "github.com/bburch01/FOTAAS/internal/app/simulation"
 	gen "github.com/bburch01/FOTAAS/internal/app/simulation/data"
 	mdl "github.com/bburch01/FOTAAS/internal/app/simulation/models"
 	tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
@@ -62,34 +61,40 @@ func (s *server) HealthCheck(ctx context.Context, in *pb.HealthCheckRequest) (*p
 // Need to update this function such that it no longer returns a pb.RunSimulationResponse or an error
 // All status/results information needs to be persisted to the simulation service db, then clients
 // will use this service to get simulation status/results during & after the simulation run
-func (s *server) RunSimulation(ctx context.Context, in *pb.RunSimulationRequest) (*pb.RunSimulationResponse, error) {
+func (s *server) RunSimulation(ctx context.Context, in *pb.RunSimulationRequest) {
 	var resp pb.RunSimulationResponse
-	var simmap = in.SimulationMap
+	var sim = in.Simulation
+	var simMemberMap = in.Simulation.SimulationMemberMap
 	var status pb.ServerStatus
-	var statusMap = make(map[string]*pb.ServerStatus)
-	var simData map[pb.TelemetryDatumDescription]tel.SimulatedTelemetryData
+	var simMemberData map[pb.TelemetryDatumDescription]tel.SimulatedTelemetryData
 	var wg sync.WaitGroup
 
-	resultsChan := make(chan sim.SimResult, len(simmap))
-	wg.Add(len(simmap))
+	resultsChan := make(chan sim.SimResult, len(simMemberMap))
+	wg.Add(len(simMemberMap))
 
-	// For each entry in the simmap (i.e. for each car running in the simulation), generate telemetry data
-	// and start a simulation worker.
-	for _, v := range simmap {
+	
+
+	// For each entry in the simMemberMap (i.e. for each car running in the simulation), validate the simMember
+	// and generate telemetry data for the simMember. If validation or data generation fails for any simMember,
+	// do not run the simulation.
+	for _, v := range simMemberMap {
 		err := validate(v)
 		if err != nil {
 			status.Code = pb.StatusCode_ERROR
-			status.Message = fmt.Sprintf("simulation validation failed with error: %v", err)
-			statusMap[v.Uuid] = &status
+			status.Message = fmt.Sprintf("simulation member validation failed with error: %v", err)
 			break
 		}
-		if simData, err = gen.GenerateSimulatedTelemetryData(*v); err != nil {
+		if simMemberData, err = gen.GenerateSimulatedTelemetryData(*v); err != nil {
 			status.Code = pb.StatusCode_ERROR
 			status.Message = fmt.Sprintf("failed to generate simulation data with error: %v", err)
 			statusMap[v.Uuid] = &status
 			logger.Error(fmt.Sprintf("failed to generate simulation data with error: %v", err))
 			break
 		}
+		go sim.StartSimulation(simData, *v, &wg, resultsChan)
+	}
+
+	for _, v := range simMemberMap {
 		go sim.StartSimulation(simData, *v, &wg, resultsChan)
 	}
 
@@ -101,8 +106,9 @@ func (s *server) RunSimulation(ctx context.Context, in *pb.RunSimulationRequest)
 		statusMap[res.UUID] = &res.Status
 	}
 
-	resp.ServerStatus = statusMap
-	return &resp, nil
+	//resp.ServerStatus = statusMap
+	//return &resp, nil
+	return
 }
 
 func (s *server) GetSimulationStatus(ctx context.Context, in *pb.GetSimulationStatusRequest) (*pb.GetSimulationStatusResponse, error) {
@@ -150,8 +156,8 @@ func main() {
 	}
 }
 
-func validate(sim *pb.Simulation) error {
-	if _, err := uid.Parse(sim.Uuid); err != nil {
+func validate(simMember *pb.SimulationMember) error {
+	if _, err := uid.Parse(simMember.Uuid); err != nil {
 		return err
 	}
 	return nil

@@ -1,10 +1,10 @@
-package simulation
+package models
 
 import (
 	"testing"
 	"time"
 
-	mdl "github.com/bburch01/FOTAAS/internal/app/simulation/models"
+	//mdl "github.com/bburch01/FOTAAS/internal/app/simulation/models"
 	ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	// 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
@@ -48,7 +48,7 @@ func TestStartSimulation(t *testing.T) {
 
 func TestSimulationModels(t *testing.T) {
 
-	var sim mdl.Simulation
+	var sim Simulation
 	var startTime *timestamp.Timestamp
 	var err error
 
