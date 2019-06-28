@@ -1,15 +1,19 @@
 package models
 
 type SimulationMember struct {
-	ID           string
-	SimulationID string
-	Constructor  string
-	CarNumber    int32
-	ForceAlarm   bool
-	NoAlarms     bool
+	ID                    string
+	SimulationID          string
+	Constructor           string
+	CarNumber             int32
+	ForceAlarm            bool
+	NoAlarms              bool
+	AlarmOccurred         bool
+	AlarmDatumDescription string
+	AlarmDatumUnit        string
+	AlarmDatumValue       float64
 }
 
-func (simMember SimulationMember) Persist() error {
+func (simMember SimulationMember) Create() error {
 
 	sqlStatement := `
 		INSERT INTO simulation_member (id, simulation_id, constructor, car_number, force_alarm, no_alarms)
@@ -28,6 +32,27 @@ func (simMember SimulationMember) Persist() error {
 	}
 
 	return nil
+}
+
+func (simMember SimulationMember) UpdateAlarmInfo() error {
+
+	sqlStatement := `UPDATE simulation_member SET alarm_occurred = ?, alarm_datum_description = ?,
+	alarm_datum_unit = ?, alarm_datum_value =? WHERE id = ?`
+
+	pstmt, err := db.Prepare(sqlStatement)
+	if err != nil {
+		return err
+	}
+	defer pstmt.Close()
+
+	_, err = pstmt.Exec(simMember.AlarmOccurred, simMember.AlarmDatumDescription,
+		simMember.AlarmDatumUnit, simMember.AlarmDatumValue, simMember.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
 func (simMember SimulationMember) FindAllBySimulationID() (*[]SimulationMember, error) {

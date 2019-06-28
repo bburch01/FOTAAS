@@ -109,7 +109,7 @@ func TestTelemetryModels(t *testing.T) {
 		td.LoAlarm = false
 	*/
 	/*
-		err = td.Persist()
+		err = td.Create()
 		if err != nil {
 			t.Error("failed to persist telemetry datum with error: ", err)
 		}
@@ -175,7 +175,7 @@ func TestTelemetryModels(t *testing.T) {
 	td.HiAlarm = false
 	td.LoAlarm = false
 
-	err = td.Persist()
+	err = td.Create()
 	if err != nil {
 		t.Error("failed to persist telemetry datum with error: ", err)
 	}

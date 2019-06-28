@@ -3,16 +3,18 @@ package simulation
 import (
 	"testing"
 	"time"
+	"fmt"
 
-	mdl "github.com/bburch01/FOTAAS/internal/app/simulation/models"
 	ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	d  "github.com/bburch01/FOTAAS/internal/app/simulation/data"
+    pb "github.com/bburch01/FOTAAS/api"
+
 	// 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	//tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
 	//ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 )
 
-/*
+
 func TestStartSimulation(t *testing.T) {
 
 	var simData map[pb.TelemetryDatumDescription]tel.SimulatedTelemetryData
@@ -41,42 +43,4 @@ func TestStartSimulation(t *testing.T) {
 				v2.Unit.String(), tstamp, v2.Value))
 		}
 	}
-
-
-}
-*/
-
-func TestSimulationModels(t *testing.T) {
-
-	var sim mdl.Simulation
-	var startTime *timestamp.Timestamp
-	var err error
-
-	startTime, err = ts.TimestampProto(time.Now())
-	if err != nil {
-		t.Error("failed to create timestamp with error: ", err)
-	}
-
-	/*
-		sim = mdl.Simulation{ID: "yyz100", DurationInMinutes: 60, SampleRate: "SR_1000_MS", GrandPrix: "ITALIAN", Track: "MONZA",
-			StartTimestamp: startTime, PercentComplete: 50}
-	*/
-
-	sim.ID = "yyz100"
-	sim.DurationInMinutes = 60
-	sim.SampleRate = "SR_1000_MS"
-	sim.GrandPrix = "ITALIAN"
-	sim.Track = "MONZA"
-	sim.State = "IN_PROGRESS"
-	sim.StartTimestamp = startTime
-	sim.EndTimestamp = startTime
-	sim.PercentComplete = 50
-	sim.FinalStatusCode = "OK"
-	sim.FinalStatusMessage = "RUNNING"
-
-	err = sim.Persist()
-	if err != nil {
-		t.Error("failed to persist simulation with error: ", err)
-	}
-
 }

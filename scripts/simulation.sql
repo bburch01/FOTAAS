@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `simulation`
   `start_timestamp` TIMESTAMP NULL,
   `end_timestamp` TIMESTAMP NULL,
   `percent_complete` INTEGER NOT NULL,
-  `final_status_code` VARCHAR(36) CHARACTER SET UTF8MB4 NOT NULL,
-  `final_status_message` VARCHAR(255) CHARACTER SET UTF8MB4 NOT NULL,
+  `final_status_code` VARCHAR(36) CHARACTER SET UTF8MB4 NULL,
+  `final_status_message` VARCHAR(255) CHARACTER SET UTF8MB4 NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;

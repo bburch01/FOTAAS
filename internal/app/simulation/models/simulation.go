@@ -21,7 +21,7 @@ type Simulation struct {
 	FinalStatusMessage string
 }
 
-func (sim *Simulation) Persist() error {
+func (sim *Simulation) Create() error {
 
 	var t time.Time
 
@@ -44,17 +44,26 @@ func (sim *Simulation) Persist() error {
 	}
 	startTs := t.Format("2006-01-02 15:04:05")
 
-	// Re-format the timestamp to mysql format
-	t, err = pbts.Timestamp(sim.EndTimestamp)
-	if err != nil {
-		return err
-	}
-	endTs := t.Format("2006-01-02 15:04:05")
+	// There must be a better way to insert a null timestamp into the mysql db
+	if sim.EndTimestamp != nil {
+		// Re-format the timestamp to mysql format
+		t, err = pbts.Timestamp(sim.EndTimestamp)
+		if err != nil {
+			return err
+		}
+		endTs := t.Format("2006-01-02 15:04:05")
 
-	_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate, sim.GrandPrix, sim.Track,
-		sim.State, startTs, endTs, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
-	if err != nil {
-		return err
+		_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate, sim.GrandPrix, sim.Track,
+			sim.State, startTs, endTs, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate, sim.GrandPrix, sim.Track,
+			sim.State, startTs, nil, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

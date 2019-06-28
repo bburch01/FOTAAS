@@ -101,7 +101,7 @@ func (s *server) TransmitTelemetry(ctx context.Context, in *pb.TransmitTelemetry
 			td.Value = v.Value
 			td.HiAlarm = v.HighAlarm
 			td.LoAlarm = v.LowAlarm
-			err = td.Persist()
+			err = td.Create()
 			if err != nil {
 				status.Code = pb.StatusCode_ERROR
 				status.Message = fmt.Sprintf("server side error: %v", err)
