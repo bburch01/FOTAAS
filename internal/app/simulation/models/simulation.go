@@ -80,7 +80,7 @@ func (sim Simulation) UpdateState() error {
 	}
 	defer pstmt.Close()
 
-	_, err = pstmt.Exec(sim.ID, sim.State)
+	_, err = pstmt.Exec(sim.State, sim.ID)
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func (sim Simulation) UpdateEndTimestamp() error {
 	}
 	endTs := t.Format("2006-01-02 15:04:05")
 
-	_, err = pstmt.Exec(sim.ID, endTs)
+	_, err = pstmt.Exec(endTs, sim.ID)
 	if err != nil {
 		return err
 	}
@@ -127,7 +127,7 @@ func (sim Simulation) UpdatePercentComplete() error {
 	}
 	defer pstmt.Close()
 
-	_, err = pstmt.Exec(sim.ID, sim.PercentComplete)
+	_, err = pstmt.Exec(sim.PercentComplete, sim.ID)
 	if err != nil {
 		return err
 	}
@@ -146,7 +146,7 @@ func (sim Simulation) UpdateFinalStatusCode() error {
 	}
 	defer pstmt.Close()
 
-	_, err = pstmt.Exec(sim.ID, sim.FinalStatusCode)
+	_, err = pstmt.Exec(sim.FinalStatusCode, sim.ID)
 	if err != nil {
 		return err
 	}
@@ -165,7 +165,7 @@ func (sim Simulation) UpdateFinalStatusMessage() error {
 	}
 	defer pstmt.Close()
 
-	_, err = pstmt.Exec(sim.ID, sim.FinalStatusMessage)
+	_, err = pstmt.Exec(sim.FinalStatusMessage, sim.ID)
 	if err != nil {
 		return err
 	}
