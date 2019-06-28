@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -105,21 +106,15 @@ func TestSimulationModels(t *testing.T) {
 		}
 	}
 
-	/*
-		err = simMember.Create()
-		if err != nil {
-			t.Error("failed to persist simulation_member with error: ", err)
-		}
-		simMember = SimulationMember{ID: "sm1001", SimulationID: "yyz1200", Constructor: "MERCEDES", CarNumber: 44, ForceAlarm: false, NoAlarms: false}
-		err = simMember.Create()
-		if err != nil {
-			t.Error("failed to persist simulation_member with error: ", err)
-		}
-		simMember = SimulationMember{ID: "sm1002", SimulationID: "yyz1200", Constructor: "WILLIAMS", CarNumber: 3, ForceAlarm: false, NoAlarms: false}
-		err = simMember.Create()
-		if err != nil {
-			t.Error("failed to persist simulation_member with error: ", err)
-		}
-	*/
+	var simMembers []SimulationMember
+
+	simMembers, err = sim.FindAllMembers()
+	if err != nil {
+		t.Error("failed to retrieve simulation members with error: ", err)
+	}
+
+	for _, m := range simMembers {
+		fmt.Printf("\nsimulation member: %v", m)
+	}
 
 }

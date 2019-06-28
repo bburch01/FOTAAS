@@ -174,6 +174,36 @@ func (sim Simulation) UpdateFinalStatusMessage() error {
 
 }
 
+func (sim Simulation) FindAllMembers() ([]SimulationMember, error) {
+
+	var simMembers []SimulationMember
+	var member SimulationMember
+
+	rows, err := db.Query("select * from simulation_member where simulation_id = ?", sim.ID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&member.ID, &member.SimulationID, &member.Constructor,
+			&member.CarNumber, &member.ForceAlarm, &member.NoAlarms, &member.AlarmOccurred, &member.AlarmDatumDescription,
+			&member.AlarmDatumUnit, &member.AlarmDatumValue)
+		if err != nil {
+			return nil, err
+		}
+		simMembers = append(simMembers, member)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return simMembers, nil
+
+}
+
 /*
 func NewFromProto(pbsim pb.Simulation) *Simulation {
 
