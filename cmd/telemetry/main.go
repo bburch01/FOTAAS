@@ -8,10 +8,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bburch01/FOTAAS/api"
 	zgrpc "github.com/openzipkin/zipkin-go/middleware/grpc"
 	zhttp "github.com/openzipkin/zipkin-go/reporter/http"
 
+	"github.com/bburch01/FOTAAS/api"
 	"github.com/bburch01/FOTAAS/internal/app/telemetry/models"
 	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/google/uuid"

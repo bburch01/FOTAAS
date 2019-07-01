@@ -10,18 +10,19 @@ import (
 )
 
 type Simulation struct {
-	ID                 string
-	DurationInMinutes  int32
-	SampleRate         string
-	GrandPrix          string
-	Track              string
-	State              string
-	StartTimestamp     *pbts.Timestamp
-	EndTimestamp       *pbts.Timestamp
-	PercentComplete    int32
-	FinalStatusCode    string
-	FinalStatusMessage string
-	SimulationMembers  map[string]SimulationMember
+	ID                       string
+	DurationInMinutes        int32
+	SampleRate               string
+	SimulationRateMultiplier string
+	GrandPrix                string
+	Track                    string
+	State                    string
+	StartTimestamp           *pbts.Timestamp
+	EndTimestamp             *pbts.Timestamp
+	PercentComplete          int32
+	FinalStatusCode          string
+	FinalStatusMessage       string
+	SimulationMembers        map[string]SimulationMember
 }
 
 func (sim *Simulation) Create() error {
@@ -220,6 +221,7 @@ func NewFromRunSimulationRequest(req api.RunSimulationRequest) *Simulation {
 	sim.ID = req.Simulation.Uuid
 	sim.DurationInMinutes = req.Simulation.DurationInMinutes
 	sim.SampleRate = req.Simulation.SampleRate.String()
+	sim.SimulationRateMultiplier = req.Simulation.SimulationRateMultiplier.String()
 	sim.GrandPrix = req.Simulation.GrandPrix.String()
 	sim.Track = req.Simulation.Track.String()
 

@@ -67,56 +67,59 @@ func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationReques
 
 	var resp api.RunSimulationResponse
 	//var sim = req.Simulation
-	var simMemberMap = req.Simulation.SimulationMemberMap
-	var status api.ServerStatus
-	var simMemberData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
+	//var simMemberMap = req.Simulation.SimulationMemberMap
+	//var status api.ServerStatus
+	var simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
+	var simMemberData map[string]map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
 	var wg sync.WaitGroup
+	var err error
 
 	//REFACTOR OPPORTUNITY
 	// This is really ugly but until there is a clever refactor, convert the proto objects
 	// contained in req into FOTAAS domain model objects in order to gain db CRUD behaviors
 	// This is necessary because the protobuf code cannot be modified. The refactor might
 	// be based on wrapping the protobuf objects by FOTAAS domain model objects.
+	var sim *models.Simulation = models.NewFromRunSimulationRequest(*req)
 
-	var sim *models.Simulation = models.NewFromRunSimulationRequest(req)
-
-	resultsChan := make(chan simulation.SimResult, len(simMemberMap))
-	wg.Add(len(simMemberMap))
+	resultsChan := make(chan simulation.SimResult, len(sim.SimulationMembers))
+	wg.Add(len(sim.SimulationMembers))
 
 	// For each entry in the simMemberMap (i.e. for each car running in the simulation), validate the simMember
-	// and generate telemetry data for it.
-	for _, v := range simMemberMap {
-		err := validate(v)
-		if err != nil {
-			status.Code = api.StatusCode_ERROR
-			status.Message = fmt.Sprintf("simulation member validation failed with error: %v", err)
-			break
+	// and generate telemetry data for it. If validation or data generation fails for any member, don't run
+	// the simulation.
+	for _, v := range sim.SimulationMembers {
+		if err = validate(v); err != nil {
+			resp.ServerStatus.Code = api.StatusCode_ERROR
+			resp.ServerStatus.Message = fmt.Sprintf("simulation member validation failed with error: %v", err)
+			return &resp, nil
 		}
-		if simMemberData, err = data.GenerateSimulatedTelemetryData(*v); err != nil {
-			status.Code = api.StatusCode_ERROR
-			status.Message = fmt.Sprintf("failed to generate simulation data with error: %v", err)
-			statusMap[v.Uuid] = &status
-			logger.Error(fmt.Sprintf("failed to generate simulation data with error: %v", err))
-			break
+		if simData, err = data.GenerateSimulatedTelemetryData(sim, v); err != nil {
+			resp.ServerStatus.Code = api.StatusCode_ERROR
+			resp.ServerStatus.Message = fmt.Sprintf("simulation member data generation failed with error: %v", err)
+			return &resp, nil
 		}
-		//go simulation.StartSimulation(simData, *v, &wg, resultsChan)
+		simMemberData[v.ID] = simData
 	}
 
-	for _, v := range simMemberMap {
-		go simulation.StartSimulation(simData, *v, &wg, resultsChan)
-	}
+	/*
+		for _, v := range sim.SimulationMembers {
+			go simulation.StartSimulation(simMemberData[v.ID], *v, &wg, resultsChan)
+		}
+	*/
 
 	wg.Wait()
 	close(resultsChan)
 
 	// Need to convert to persisting simulation results to the simulation service db
-	for res := range resultsChan {
-		statusMap[res.UUID] = &res.Status
-	}
+	/*
+		for res := range resultsChan {
+			statusMap[res.UUID] = &res.Status
+		}
+	*/
 
 	//resp.ServerStatus = statusMap
 	//return &resp, nil
-	return
+	return &resp, nil
 }
 
 func (s *server) GetSimulationStatus(ctx context.Context, in *api.GetSimulationStatusRequest) (*api.GetSimulationStatusResponse, error) {
@@ -164,8 +167,8 @@ func main() {
 	}
 }
 
-func validate(simMember *api.SimulationMember) error {
-	if _, err := uuid.Parse(simMember.Uuid); err != nil {
+func validate(simMember models.SimulationMember) error {
+	if _, err := uuid.Parse(simMember.ID); err != nil {
 		return err
 	}
 	return nil

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bburch01/FOTAAS/api"
+	"github.com/bburch01/FOTAAS/internal/app/simulation/models"
 	"github.com/bburch01/FOTAAS/internal/app/telemetry"
 	"github.com/briandowns/spinner"
 	"github.com/google/uuid"
@@ -16,21 +17,22 @@ import (
 
 func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 
-	var sim api.Simulation
+	var sim models.Simulation
 	//var tstamp time.Time
 	var simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
 	var err error
 	var simDurationInMinutes int32
-	var sampleRate api.SampleRate
+	var sampleRate string
 	var sampleRateInMilliseconds int32
 	var expectedSimDataLength int32
 	var actualSimDataLength int32
+	// comment
 
 	simDurationInMinutes = 1
-	sampleRate = api.SampleRate_SR_1000_MS
+	sampleRate = api.SampleRate_SR_1000_MS.String()
 
-	sim = api.Simulation{Uuid: uuid.New().String(), DurationInMinutes: simDurationInMinutes, SampleRate: sampleRate,
-		GrandPrix: api.GrandPrix_UNITED_STATES, Track: api.Track_AUSTIN,
+	sim = models.Simulation{ID: uuid.New().String(), DurationInMinutes: simDurationInMinutes, SampleRate: sampleRate,
+		GrandPrix: api.GrandPrix_UNITED_STATES.String(), Track: api.Track_AUSTIN.String(),
 	}
 
 	if simData, err = GenerateSimulatedTelemetryData(sim); err != nil {
@@ -57,13 +59,13 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 	simDurationInMilliseconds := sim.DurationInMinutes * 60000
 
 	switch sampleRate {
-	case api.SampleRate_SR_1_MS:
+	case api.SampleRate_SR_1_MS.String():
 		sampleRateInMilliseconds = 1
-	case api.SampleRate_SR_10_MS:
+	case api.SampleRate_SR_10_MS.String():
 		sampleRateInMilliseconds = 10
-	case api.SampleRate_SR_100_MS:
+	case api.SampleRate_SR_100_MS.String():
 		sampleRateInMilliseconds = 100
-	case api.SampleRate_SR_1000_MS:
+	case api.SampleRate_SR_1000_MS.String():
 		sampleRateInMilliseconds = 1000
 	default:
 		t.Error("invalid sample rate")
@@ -184,12 +186,12 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 
 func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 
-	var sim api.Simulation
+	var sim models.Simulation
 	//var tstamp time.Time
 	var simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
 	var err error
 	var simDurationInMinutes int32
-	var sampleRate api.SampleRate
+	var sampleRate string
 	var sampleRateInMilliseconds int32
 	var expectedSimDataLength int32
 	var actualSimDataLength int32
@@ -197,10 +199,10 @@ func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 	var elapsedTime time.Duration
 
 	simDurationInMinutes = 1
-	sampleRate = api.SampleRate_SR_1000_MS
+	sampleRate = api.SampleRate_SR_1000_MS.String()
 
-	sim = api.Simulation{Uuid: uuid.New().String(), DurationInMinutes: simDurationInMinutes, SampleRate: sampleRate,
-		GrandPrix: api.GrandPrix_UNITED_STATES, Track: api.Track_AUSTIN,
+	sim = models.Simulation{ID: uuid.New().String(), DurationInMinutes: simDurationInMinutes, SampleRate: sampleRate,
+		GrandPrix: api.GrandPrix_UNITED_STATES.String(), Track: api.Track_AUSTIN.String(),
 	}
 
 	/*
@@ -270,13 +272,13 @@ func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 	simDurationInMilliseconds := sim.DurationInMinutes * 60000
 
 	switch sampleRate {
-	case api.SampleRate_SR_1_MS:
+	case api.SampleRate_SR_1_MS.String():
 		sampleRateInMilliseconds = 1
-	case api.SampleRate_SR_10_MS:
+	case api.SampleRate_SR_10_MS.String():
 		sampleRateInMilliseconds = 10
-	case api.SampleRate_SR_100_MS:
+	case api.SampleRate_SR_100_MS.String():
 		sampleRateInMilliseconds = 100
-	case api.SampleRate_SR_1000_MS:
+	case api.SampleRate_SR_1000_MS.String():
 		sampleRateInMilliseconds = 1000
 	default:
 		t.Error("invalid sample rate")
@@ -306,16 +308,16 @@ func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 
 func BenchmarkGenerateSimulatedTelemetryDataNoAlarm(b *testing.B) {
 
-	var sim api.Simulation
+	var sim models.Simulation
 	var err error
 	var simDurationInMinutes int32
-	var sampleRate api.SampleRate
+	var sampleRate string
 
 	simDurationInMinutes = 1
-	sampleRate = api.SampleRate_SR_1000_MS
+	sampleRate = api.SampleRate_SR_1000_MS.String()
 
-	sim = api.Simulation{Uuid: uuid.New().String(), DurationInMinutes: simDurationInMinutes,
-		SampleRate: sampleRate, GrandPrix: api.GrandPrix_UNITED_STATES,
+	sim = models.Simulation{ID: uuid.New().String(), DurationInMinutes: simDurationInMinutes,
+		SampleRate: sampleRate, GrandPrix: api.GrandPrix_UNITED_STATES.String(), Track: api.Track_AUSTIN.String(),
 	}
 
 	s := spinner.New(spinner.CharSets[7], 100*time.Millisecond)

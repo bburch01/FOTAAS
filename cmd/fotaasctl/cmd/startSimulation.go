@@ -65,10 +65,8 @@ var startSimulationCmd = &cobra.Command{
 		if err != nil {
 			log.Printf("start simulation failed with error: %v", err)
 		} else {
-
 			log.Printf("start simulation status code   : %v", resp.ServerStatus.Code)
 			log.Printf("start simulation status message: %s", resp.ServerStatus.Message)
-
 		}
 		return nil
 	},
@@ -80,7 +78,6 @@ func startSimulation() (*api.RunSimulationResponse, error) {
 	var sb strings.Builder
 	var resp *api.RunSimulationResponse
 	var req api.RunSimulationRequest
-	//var statusMap = make(map[string]*api.ServerStatus)
 	var simID string
 	var simMember api.SimulationMember
 
@@ -123,26 +120,10 @@ func startSimulation() (*api.RunSimulationResponse, error) {
 
 	defer cancel()
 
-	//var client api.SimulationServiceClient
-
 	var client = api.NewSimulationServiceClient(conn)
 
-	// Need to kick-off the simulation and return a response immediately
-	// Use a go routine call for client.RunSimulation
-	// Status and results of the simulation will need to be persisted to
-	// the simulation service db where clients can check for status/results
-	//resp, err = client.RunSimulation(ctx, &req)
-	//if err != nil {
-	//	return resp, err
-	//}
+	resp, err = client.RunSimulation(ctx, &req)
 
-	// simulation service RunSimulation will kick-off the simulation as a goroutine
-	// and then immediately return a response indicating that the simulation was started.
-
-	go client.RunSimulation(ctx, &req)
-
-	//statusMap[]
-
-	return resp, nil
+	return resp, err
 
 }

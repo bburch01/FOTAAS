@@ -15,6 +15,7 @@ import (
 	pbts "github.com/golang/protobuf/ptypes/timestamp"
 
 	"github.com/bburch01/FOTAAS/api"
+	"github.com/bburch01/FOTAAS/internal/app/simulation/models"
 	"github.com/bburch01/FOTAAS/internal/app/telemetry"
 	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/google/uuid"
@@ -131,24 +132,6 @@ var alarmTypeChoices = []randutil.Choice{
 	{Weight: 2, Item: telemetry.AlarmParams{Desc: api.TelemetryDatumDescription_ENERGY_STORAGE_TEMP, Mode: telemetry.High}},
 }
 
-/*
-type telemetryDatumParameters struct {
-	unit           api.TelemetryDatumUnit
-	RangeLowValue  float64
-	RangeHighValue float64
-	highAlarmValue float64
-	lowAlarmValue  float64
-}
-
-type telemetry.SimulatedTelemetryData struct {
-	datumDesc   api.TelemetryDatumDescription
-	data        []api.TelemetryDatum
-	alarmExists bool
-	alarmMode   alarmMode
-	alarmIndex  int
-}
-*/
-
 var telemetryDatumParametersMap = map[api.TelemetryDatumDescription]telemetry.TelemetryDatumParameters{
 	api.TelemetryDatumDescription_BRAKE_TEMP_FL: telemetry.TelemetryDatumParameters{
 		Unit: api.TelemetryDatumUnit_DEGREE_CELCIUS, RangeLowValue: 750.0, RangeHighValue: 1050.0,
@@ -252,35 +235,28 @@ var telemetryDatumParametersMap = map[api.TelemetryDatumDescription]telemetry.Te
 	},
 }
 
-func GenerateSimulatedTelemetryData(sim api.Simulation) (map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData, error) {
-
-	//var datumCount = (sim.DurationInMinutes * 60000) / (sim.SampleRateInMilliseconds)
+func GenerateSimulatedTelemetryData(sim *models.Simulation, simMember models.SimulationMember) (map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData, error) {
 
 	var datumCount int32
 	var sampleRateInMillis int32
 	var simDurationInMillis int32
-
-	//TODO: will be refactored
-	//var genAlarmChoice randutil.Choice
-
+	var genAlarmChoice randutil.Choice
 	var alarmTypeChoice randutil.Choice
 	var err error
 	var simStartTime = time.Now()
-	//var currentSimTime time.Time
-	//var datumTimestamp *pbts.Timestamp
+
 	var genAlarm bool
-	//var stData = make([]telemetry.SimulatedTelemetryData, len(telemetryDatumParametersMap))
 	var simulatedTelemetryDataMap = make(map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData)
 
 	simDurationInMillis = sim.DurationInMinutes * 60000
 	switch sim.SampleRate {
-	case api.SampleRate_SR_1_MS:
+	case api.SampleRate_SR_1_MS.String():
 		sampleRateInMillis = 1
-	case api.SampleRate_SR_10_MS:
+	case api.SampleRate_SR_10_MS.String():
 		sampleRateInMillis = 10
-	case api.SampleRate_SR_100_MS:
+	case api.SampleRate_SR_100_MS.String():
 		sampleRateInMillis = 100
-	case api.SampleRate_SR_1000_MS:
+	case api.SampleRate_SR_1000_MS.String():
 		sampleRateInMillis = 1000
 	default:
 		return simulatedTelemetryDataMap, errors.New("invalid sample rate in millis")
@@ -291,37 +267,32 @@ func GenerateSimulatedTelemetryData(sim api.Simulation) (map[api.TelemetryDatumD
 	// ForceAlarm false, NoAlarms false: alarm generated based on the probabilities declared in alarmEventChoices
 	// ForceAlarm true, NoAlarms false: force the generation of an alarm
 	// ForceAlarm false, NoAlarms true: do not generate an alarm
-	/*
-		if !sim.ForceAlarm {
-			// Determine if there will be an alarm event during the simulation.
-			if genAlarmChoice, err = randutil.WeightedChoice(alarmEventChoices); err != nil {
-				return simulatedTelemetryDataMap, err
-			}
-			genAlarm = genAlarmChoice.Item.(bool)
-
-		} else {
-			genAlarm = true
+	if !simMember.ForceAlarm {
+		if genAlarmChoice, err = randutil.WeightedChoice(alarmEventChoices); err != nil {
+			return nil, err
 		}
+		genAlarm = genAlarmChoice.Item.(bool)
+	} else {
+		genAlarm = true
+	}
 
-		if !sim.ForceAlarm && !sim.NoAlarms {
-			// Determine if there will be an alarm event during the simulation.
-			if genAlarmChoice, err = randutil.WeightedChoice(alarmEventChoices); err != nil {
-				return simulatedTelemetryDataMap, err
-			}
-			genAlarm = genAlarmChoice.Item.(bool)
-
-		} else if sim.ForceAlarm && !sim.NoAlarms {
-			genAlarm = true
-		} else if !sim.ForceAlarm && sim.NoAlarms {
-			genAlarm = false
-		} else {
-			return simulatedTelemetryDataMap, errors.New("simulation ForceAlarm & NoAlarm must not both be set to true")
+	if !simMember.ForceAlarm && !simMember.NoAlarms {
+		if genAlarmChoice, err = randutil.WeightedChoice(alarmEventChoices); err != nil {
+			return nil, err
 		}
-	*/
+		genAlarm = genAlarmChoice.Item.(bool)
+
+	} else if simMember.ForceAlarm && !simMember.NoAlarms {
+		genAlarm = true
+	} else if !simMember.ForceAlarm && simMember.NoAlarms {
+		genAlarm = false
+	} else {
+		return nil, errors.New("simulation ForceAlarm & NoAlarm must not both be set to true")
+	}
 
 	// Alarm or not, get an alarmTypeChoice to keep the compiler happy.
 	if alarmTypeChoice, err = randutil.WeightedChoice(alarmTypeChoices); err != nil {
-		return simulatedTelemetryDataMap, err
+		return nil, err
 	}
 
 	errChan := make(chan error, len(telemetryDatumParametersMap))
@@ -332,7 +303,8 @@ func GenerateSimulatedTelemetryData(sim api.Simulation) (map[api.TelemetryDatumD
 	wg.Add(len(telemetryDatumParametersMap))
 
 	for datumDesc, datumParams := range telemetryDatumParametersMap {
-		go telemetryDataGenerationWorker(sim.Uuid, datumDesc, datumParams, sampleRateInMillis, alarmTypeChoice.Item.(telemetry.AlarmParams), datumCount,
+		go telemetryDataGenerationWorker(sim.ID, datumDesc, datumParams, sampleRateInMillis,
+			alarmTypeChoice.Item.(telemetry.AlarmParams), datumCount,
 			simStartTime, genAlarm, sem, &wg, resultsChan, errChan)
 	}
 
@@ -341,8 +313,7 @@ func GenerateSimulatedTelemetryData(sim api.Simulation) (map[api.TelemetryDatumD
 	close(resultsChan)
 
 	if err := <-errChan; err != nil {
-		logger.Error(fmt.Sprintf("goroutine error: %v", err))
-		return simulatedTelemetryDataMap, err
+		return nil, err
 	}
 
 	for std := range resultsChan {
@@ -352,133 +323,6 @@ func GenerateSimulatedTelemetryData(sim api.Simulation) (map[api.TelemetryDatumD
 
 	return simulatedTelemetryDataMap, nil
 }
-
-/*
-func generateSimulatedTelemetryDataSequential(sim api.Simulation) (map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData, error) {
-
-	//var datumCount = (sim.DurationInMinutes * 60000) / (sim.SampleRateInMilliseconds)
-
-	var datumCount int32
-	var sampleRateInMillis int32
-	var simDurationInMillis int32
-
-	var genAlarmChoice randutil.Choice
-	var alarmTypeChoice randutil.Choice
-	var err error
-	var simStartTime = time.Now()
-	var currentSimTime time.Time
-	var datumTimestamp *pbts.Timestamp
-	var genAlarm bool
-	var simulatedTelemetryDataMap = make(map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData)
-
-	simDurationInMillis = sim.DurationInMinutes * 60000
-	switch sim.SampleRate {
-	case api.SampleRate_SR_1_MS:
-		sampleRateInMillis = 1
-	case api.SampleRate_SR_10_MS:
-		sampleRateInMillis = 10
-	case api.SampleRate_SR_100_MS:
-		sampleRateInMillis = 100
-	case api.SampleRate_SR_1000_MS:
-		sampleRateInMillis = 1000
-	default:
-		return simulatedTelemetryDataMap, errors.New("invalid sample rate in millis")
-	}
-
-	datumCount = simDurationInMillis / sampleRateInMillis
-
-	// ForceAlarm false, NoAlarms false: alarm generated based on the probabilities declared in alarmEventChoices
-	// ForceAlarm true, NoAlarms false: force the generation of an alarm
-	// ForceAlarm false, NoAlarms true: do not generate an alarm
-	if !sim.ForceAlarm {
-		// Determine if there will be an alarm event during the simulation.
-		if genAlarmChoice, err = randutil.WeightedChoice(alarmEventChoices); err != nil {
-			return simulatedTelemetryDataMap, err
-		}
-		genAlarm = genAlarmChoice.Item.(bool)
-
-	} else {
-		genAlarm = true
-	}
-
-	if !sim.ForceAlarm && !sim.NoAlarms {
-		// Determine if there will be an alarm event during the simulation.
-		if genAlarmChoice, err = randutil.WeightedChoice(alarmEventChoices); err != nil {
-			return simulatedTelemetryDataMap, err
-		}
-		genAlarm = genAlarmChoice.Item.(bool)
-
-	} else if sim.ForceAlarm && !sim.NoAlarms {
-		genAlarm = true
-	} else if !sim.ForceAlarm && sim.NoAlarms {
-		genAlarm = false
-	} else {
-		return simulatedTelemetryDataMap, errors.New("simulation ForceAlarm & NoAlarm must not both be set to true")
-	}
-
-	// Alarm or not, get an alarmTypeChoice to keep the compiler happy.
-	if alarmTypeChoice, err = randutil.WeightedChoice(alarmTypeChoices); err != nil {
-		return simulatedTelemetryDataMap, err
-	}
-
-	ap := alarmTypeChoice.Item.(telemetry.AlarmParams)
-
-	for datumDesc, datumParams := range telemetryDatumParametersMap {
-		//logger.Debug(fmt.Sprintf("generating telemetry data for datum desc: %v", datumDesc.String()))
-		values := randFloatsInRange(datumParams.RangeLowValue, datumParams.RangeHighValue, datumCount)
-		data := make([]api.TelemetryDatum, datumCount)
-		for i, v := range values {
-			data[i].Value = v
-		}
-		simData := telemetry.SimulatedTelemetryData{DatumDesc: datumDesc, Data: data, AlarmExists: false,
-			AlarmMode: ap.Mode, AlarmIndex: 0}
-		if genAlarm {
-			if datumDesc.String() == ap.Desc.String() {
-				switch ap.Mode {
-				case telemetry.High:
-					logger.Debug(fmt.Sprintf("alarm.Desc: %v alarm.Mode: %v range low: %v range high: %v"+
-						"ramp dir: up high alarm level: %v", ap.Desc, ap.Mode.String(), datumParams.RangeLowValue,
-						datumParams.RangeHighValue, datumParams.HighAlarmValue))
-					if err := rampToAlarm(&simData, datumParams.RangeLowValue, datumParams.RangeHighValue, up,
-						datumParams.HighAlarmValue); err != nil {
-						return simulatedTelemetryDataMap, err
-					}
-				case telemetry.Low:
-					logger.Debug(fmt.Sprintf("alarm.Desc: %v alarm.Mode: %v range low: %v range high: %v"+
-						"ramp dir: down low alarm level: %v", ap.Desc, ap.Mode.String(), datumParams.RangeLowValue,
-						datumParams.RangeHighValue, datumParams.LowAlarmValue))
-					if err := rampToAlarm(&simData, datumParams.RangeLowValue, datumParams.RangeHighValue, down,
-						datumParams.LowAlarmValue); err != nil {
-						return simulatedTelemetryDataMap, err
-					}
-				}
-			}
-		}
-		currentSimTime = simStartTime
-		for i := range simData.Data {
-			if i > 0 {
-				currentSimTime = currentSimTime.Add(time.Second)
-			}
-			if datumTimestamp, err = ipbts.TimestampProto(currentSimTime); err != nil {
-				return simulatedTelemetryDataMap, err
-			}
-			simData.Data[i].Uuid = uuid.New().String()
-			simData.Data[i].Description = datumDesc
-			simData.Data[i].Unit = datumParams.Unit
-			simData.Data[i].Timestamp = datumTimestamp
-			//TODO: Currently, lat, long, & elevation are not modeled in the simulation.
-			simData.Data[i].Latitude = 0.0
-			simData.Data[i].Longitude = 0.0
-			simData.Data[i].Elevation = 0.0
-			// The datum Value and (if an alarm occurred) HighAlarm (or LowAlarm) were set in
-			// the rampToAlarm() function.
-		}
-		simulatedTelemetryDataMap[datumDesc] = simData
-	}
-
-	return simulatedTelemetryDataMap, nil
-}
-*/
 
 func telemetryDataGenerationWorker(simUUID string, tdd api.TelemetryDatumDescription, tdp telemetry.TelemetryDatumParameters, sampleRateInMillis int32, ap telemetry.AlarmParams, datumCount int32,
 	simStartTime time.Time, genAlarm bool, sem chan int, wg *sync.WaitGroup,

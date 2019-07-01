@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/bburch01/FOTAAS/api"
+	"github.com/bburch01/FOTAAS/internal/app/simulation/models"
 	"github.com/bburch01/FOTAAS/internal/app/telemetry"
 	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/joho/godotenv"
@@ -43,7 +44,7 @@ func init() {
 
 }
 
-func StartSimulation(simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData, sim api.Simulation,
+func StartSimulation(simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData, sim models.Simulation,
 	wg *sync.WaitGroup, resultsChan chan SimResult) {
 
 	var startTime time.Time
@@ -58,13 +59,13 @@ func StartSimulation(simData map[api.TelemetryDatumDescription]telemetry.Simulat
 	defer wg.Done()
 
 	switch sim.SampleRate {
-	case api.SampleRate_SR_1_MS:
+	case api.SampleRate_SR_1_MS.String():
 		sampleRateInMillis = 1
-	case api.SampleRate_SR_10_MS:
+	case api.SampleRate_SR_10_MS.String():
 		sampleRateInMillis = 10
-	case api.SampleRate_SR_100_MS:
+	case api.SampleRate_SR_100_MS.String():
 		sampleRateInMillis = 100
-	case api.SampleRate_SR_1000_MS:
+	case api.SampleRate_SR_1000_MS.String():
 		sampleRateInMillis = 1000
 	default:
 		resultsChan <- SimResult{UUID: sim.Uuid, Status: api.ServerStatus{Code: api.StatusCode_ERROR, Message: "invalid sample rate in millis"}}
@@ -72,17 +73,17 @@ func StartSimulation(simData map[api.TelemetryDatumDescription]telemetry.Simulat
 	}
 
 	switch sim.SimulationRateMultiplier {
-	case api.SimulationRateMultiplier_X1:
+	case api.SimulationRateMultiplier_X1.String():
 		simRateMultiplier = 1
-	case api.SimulationRateMultiplier_X2:
+	case api.SimulationRateMultiplier_X2.String():
 		simRateMultiplier = 2
-	case api.SimulationRateMultiplier_X4:
+	case api.SimulationRateMultiplier_X4.String():
 		simRateMultiplier = 4
-	case api.SimulationRateMultiplier_X8:
+	case api.SimulationRateMultiplier_X8.String():
 		simRateMultiplier = 8
-	case api.SimulationRateMultiplier_X10:
+	case api.SimulationRateMultiplier_X10.String():
 		simRateMultiplier = 10
-	case api.SimulationRateMultiplier_X20:
+	case api.SimulationRateMultiplier_X20.String():
 		simRateMultiplier = 20
 	default:
 		resultsChan <- SimResult{UUID: sim.Uuid, Status: api.ServerStatus{Code: api.StatusCode_ERROR, Message: "invalid simulation rate multiplier"}}
