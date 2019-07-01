@@ -8,19 +8,18 @@ import (
 	"testing"
 	"time"
 
-	pb "github.com/bburch01/FOTAAS/api"
-	ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
-	uid "github.com/google/uuid"
+	//pb "github.com/bburch01/FOTAAS/api"
+	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
+	pbts "github.com/golang/protobuf/ptypes/timestamp"
 
+	"github.com/bburch01/FOTAAS/api"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	//uid "github.com/google/uuid"
-	//timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	//tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
 	//ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 	//timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	//mdl "github.com/bburch01/FOTAAS/internal/app/simulation/models"
-	//pb "github.com/bburch01/FOTAAS/api"
 )
 
 func init() {
@@ -41,10 +40,10 @@ func init() {
 func TestSimulationModels(t *testing.T) {
 
 	var sim Simulation
-	var startTime *timestamp.Timestamp
+	var startTime *pbts.Timestamp
 	var err error
 
-	startTime, err = ts.TimestampProto(time.Now())
+	startTime, err = ipbts.TimestampProto(time.Now())
 	if err != nil {
 		t.Error("failed to create timestamp with error: ", err)
 	}
@@ -64,41 +63,34 @@ func TestSimulationModels(t *testing.T) {
 		t.Error("failed to ping db with error: ", err)
 	}
 
-	simID := uid.New().String()
+	simID := uuid.New().String()
+
+	simMemberMap := make(map[string]SimulationMember)
+
+	simMemberID := uuid.New().String()
+	simMember := SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: "HAAS", CarNumber: 10, ForceAlarm: false, NoAlarms: false}
+	simMemberMap[simMemberID] = simMember
+
+	simMemberID = uuid.New().String()
+	simMember = SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: "MERCEDES", CarNumber: 44, ForceAlarm: false, NoAlarms: false}
+	simMemberMap[simMemberID] = simMember
+
+	simMemberID = uuid.New().String()
+	simMember = SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: "WILLIAMS", CarNumber: 3, ForceAlarm: false, NoAlarms: false}
+	simMemberMap[simMemberID] = simMember
 
 	sim = Simulation{ID: simID, DurationInMinutes: 60, SampleRate: "SR_1000_MS", GrandPrix: "ITALIAN", Track: "MONZA",
-		State: "IN_PROGRESS", StartTimestamp: startTime, PercentComplete: 0}
+		State: "IN_PROGRESS", StartTimestamp: startTime, PercentComplete: 0, SimulationMembers: simMemberMap}
 
 	err = sim.Create()
 	if err != nil {
 		t.Error("failed to persist simulation with error: ", err)
 	}
 
-	simMemberMap := make(map[string]SimulationMember)
-
-	simMemberID := uid.New().String()
-	simMember := SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: "HAAS", CarNumber: 10, ForceAlarm: false, NoAlarms: false}
-	simMemberMap[simMemberID] = simMember
-
-	simMemberID = uid.New().String()
-	simMember = SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: "MERCEDES", CarNumber: 44, ForceAlarm: false, NoAlarms: false}
-	simMemberMap[simMemberID] = simMember
-
-	simMemberID = uid.New().String()
-	simMember = SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: "WILLIAMS", CarNumber: 3, ForceAlarm: false, NoAlarms: false}
-	simMemberMap[simMemberID] = simMember
-
-	for _, m := range simMemberMap {
-		err = m.Create()
-		if err != nil {
-			t.Error("failed to persist simulation_member with error: ", err)
-		}
-	}
-
-	for _, m := range simMemberMap {
+	for _, m := range sim.SimulationMembers {
 		m.AlarmOccurred = true
-		m.AlarmDatumDescription = pb.TelemetryDatumDescription_BRAKE_TEMP_FL.String()
-		m.AlarmDatumUnit = pb.TelemetryDatumUnit_DEGREE_CELCIUS.String()
+		m.AlarmDatumDescription = api.TelemetryDatumDescription_BRAKE_TEMP_FL.String()
+		m.AlarmDatumUnit = api.TelemetryDatumUnit_DEGREE_CELCIUS.String()
 		m.AlarmDatumValue = float64(458.055)
 		err = m.UpdateAlarmInfo()
 		if err != nil {

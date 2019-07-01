@@ -5,36 +5,32 @@ import (
 	"testing"
 	"time"
 
-	pb "github.com/bburch01/FOTAAS/api"
-	uid "github.com/google/uuid"
-
-	tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
-
+	"github.com/bburch01/FOTAAS/api"
+	"github.com/bburch01/FOTAAS/internal/app/telemetry"
+	"github.com/briandowns/spinner"
+	"github.com/google/uuid"
 	//ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 	//timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	//spinner "github.com/briandowns/spinner"
-
-	"github.com/briandowns/spinner"
 )
 
 func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 
-	var sim pb.Simulation
+	var sim api.Simulation
 	//var tstamp time.Time
-	var simData map[pb.TelemetryDatumDescription]tel.SimulatedTelemetryData
+	var simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
 	var err error
 	var simDurationInMinutes int32
-	var sampleRate pb.SampleRate
+	var sampleRate api.SampleRate
 	var sampleRateInMilliseconds int32
 	var expectedSimDataLength int32
 	var actualSimDataLength int32
 
 	simDurationInMinutes = 1
-	sampleRate = pb.SampleRate_SR_1000_MS
+	sampleRate = api.SampleRate_SR_1000_MS
 
-	sim = pb.Simulation{Uuid: uid.New().String(), DurationInMinutes: simDurationInMinutes, SampleRate: sampleRate,
-		GrandPrix: pb.GrandPrix_UNITED_STATES, Track: pb.Track_AUSTIN,
-		Constructor: pb.Constructor_HAAS, CarNumber: 8, ForceAlarm: true, NoAlarms: false,
+	sim = api.Simulation{Uuid: uuid.New().String(), DurationInMinutes: simDurationInMinutes, SampleRate: sampleRate,
+		GrandPrix: api.GrandPrix_UNITED_STATES, Track: api.Track_AUSTIN,
 	}
 
 	if simData, err = GenerateSimulatedTelemetryData(sim); err != nil {
@@ -61,13 +57,13 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 	simDurationInMilliseconds := sim.DurationInMinutes * 60000
 
 	switch sampleRate {
-	case pb.SampleRate_SR_1_MS:
+	case api.SampleRate_SR_1_MS:
 		sampleRateInMilliseconds = 1
-	case pb.SampleRate_SR_10_MS:
+	case api.SampleRate_SR_10_MS:
 		sampleRateInMilliseconds = 10
-	case pb.SampleRate_SR_100_MS:
+	case api.SampleRate_SR_100_MS:
 		sampleRateInMilliseconds = 100
-	case pb.SampleRate_SR_1000_MS:
+	case api.SampleRate_SR_1000_MS:
 		sampleRateInMilliseconds = 1000
 	default:
 		t.Error("invalid sample rate")
@@ -123,11 +119,11 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 			alarmDatum := v.Data[v.AlarmIndex]
 			dp := telemetryDatumParametersMap[v.DatumDesc]
 			switch v.AlarmMode {
-			case tel.Low:
+			case telemetry.Low:
 				if !(alarmDatum.Value <= dp.LowAlarmValue) {
 					t.Error("invalid datum value, expected ", alarmDatum.Value, " to be <= ", dp.LowAlarmValue)
 				}
-			case tel.High:
+			case telemetry.High:
 				if !(alarmDatum.Value >= dp.HighAlarmValue) {
 					t.Error("invalid datum value, expected ", alarmDatum.Value, " to be >= ", dp.HighAlarmValue)
 				}
@@ -146,12 +142,12 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 			for i, v2 := range v1.Data {
 				if i < v1.AlarmIndex {
 					switch v1.AlarmMode {
-					case tel.Low:
+					case telemetry.Low:
 						if !((dp.LowAlarmValue <= v2.Value) && (v2.Value <= dp.RangeHighValue)) {
 							t.Error("datum index: ", i, " invalid pre-alarm datum value ", v2.Value,
 								" expected to be between ", dp.LowAlarmValue, " and ", dp.RangeHighValue)
 						}
-					case tel.High:
+					case telemetry.High:
 						if !((dp.RangeLowValue <= v2.Value) && (v2.Value <= dp.HighAlarmValue)) {
 							t.Error("datum index: ", i, " invalid pre-alarm datum value ", v2.Value,
 								" expected to be between ", dp.RangeLowValue, " and ", dp.HighAlarmValue)
@@ -188,12 +184,12 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 
 func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 
-	var sim pb.Simulation
+	var sim api.Simulation
 	//var tstamp time.Time
-	var simData map[pb.TelemetryDatumDescription]tel.SimulatedTelemetryData
+	var simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
 	var err error
 	var simDurationInMinutes int32
-	var sampleRate pb.SampleRate
+	var sampleRate api.SampleRate
 	var sampleRateInMilliseconds int32
 	var expectedSimDataLength int32
 	var actualSimDataLength int32
@@ -201,17 +197,16 @@ func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 	var elapsedTime time.Duration
 
 	simDurationInMinutes = 1
-	sampleRate = pb.SampleRate_SR_1000_MS
+	sampleRate = api.SampleRate_SR_1000_MS
 
-	sim = pb.Simulation{Uuid: uid.New().String(), DurationInMinutes: simDurationInMinutes, SampleRate: sampleRate,
-		GrandPrix: pb.GrandPrix_UNITED_STATES, Track: pb.Track_AUSTIN,
-		Constructor: pb.Constructor_HAAS, CarNumber: 8, ForceAlarm: false, NoAlarms: true,
+	sim = api.Simulation{Uuid: uuid.New().String(), DurationInMinutes: simDurationInMinutes, SampleRate: sampleRate,
+		GrandPrix: api.GrandPrix_UNITED_STATES, Track: api.Track_AUSTIN,
 	}
 
 	/*
-		var sim pb.Simulation
+		var sim api.Simulation
 		//var tstamp time.Time
-		var simData map[pb.TelemetryDatumDescription]tel.SimulatedTelemetryData
+		var simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
 		var err error
 		var simDurationInMinutes int32
 		var sampleRateInMilliseconds int32
@@ -223,9 +218,9 @@ func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 		simDurationInMinutes = 1
 		sampleRateInMilliseconds = 1
 
-		sim = pb.Simulation{Uuid: uid.New().String(), DurationInMinutes: simDurationInMinutes,
-			SampleRateInMilliseconds: sampleRateInMilliseconds, TransmitRateInMilliseconds: 5, GrandPrix: pb.GrandPrix_UNITED_STATES,
-			Track: pb.Track_AUSTIN, Constructor: pb.Constructor_HAAS, CarNumber: 8, ForceAlarm: false, NoAlarms: true,
+		sim = api.Simulation{Uuid: uuid.New().String(), DurationInMinutes: simDurationInMinutes,
+			SampleRateInMilliseconds: sampleRateInMilliseconds, TransmitRateInMilliseconds: 5, GrandPrix: api.GrandPrix_UNITED_STATES,
+			Track: api.Track_AUSTIN, Constructor: api.Constructor_HAAS, CarNumber: 8, ForceAlarm: false, NoAlarms: true,
 		}
 	*/
 
@@ -275,13 +270,13 @@ func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 	simDurationInMilliseconds := sim.DurationInMinutes * 60000
 
 	switch sampleRate {
-	case pb.SampleRate_SR_1_MS:
+	case api.SampleRate_SR_1_MS:
 		sampleRateInMilliseconds = 1
-	case pb.SampleRate_SR_10_MS:
+	case api.SampleRate_SR_10_MS:
 		sampleRateInMilliseconds = 10
-	case pb.SampleRate_SR_100_MS:
+	case api.SampleRate_SR_100_MS:
 		sampleRateInMilliseconds = 100
-	case pb.SampleRate_SR_1000_MS:
+	case api.SampleRate_SR_1000_MS:
 		sampleRateInMilliseconds = 1000
 	default:
 		t.Error("invalid sample rate")
@@ -311,17 +306,16 @@ func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 
 func BenchmarkGenerateSimulatedTelemetryDataNoAlarm(b *testing.B) {
 
-	var sim pb.Simulation
+	var sim api.Simulation
 	var err error
 	var simDurationInMinutes int32
-	var sampleRate pb.SampleRate
+	var sampleRate api.SampleRate
 
 	simDurationInMinutes = 1
-	sampleRate = pb.SampleRate_SR_1000_MS
+	sampleRate = api.SampleRate_SR_1000_MS
 
-	sim = pb.Simulation{Uuid: uid.New().String(), DurationInMinutes: simDurationInMinutes,
-		SampleRate: sampleRate, GrandPrix: pb.GrandPrix_UNITED_STATES,
-		Track: pb.Track_AUSTIN, Constructor: pb.Constructor_HAAS, CarNumber: 8, ForceAlarm: false, NoAlarms: true,
+	sim = api.Simulation{Uuid: uuid.New().String(), DurationInMinutes: simDurationInMinutes,
+		SampleRate: sampleRate, GrandPrix: api.GrandPrix_UNITED_STATES,
 	}
 
 	s := spinner.New(spinner.CharSets[7], 100*time.Millisecond)
@@ -336,19 +330,20 @@ func BenchmarkGenerateSimulatedTelemetryDataNoAlarm(b *testing.B) {
 
 }
 
+/*
 func BenchmarkGenerateSimulatedTelemetryDataNoAlarmSequential(b *testing.B) {
 
-	var sim pb.Simulation
+	var sim api.Simulation
 	var err error
 	var simDurationInMinutes int32
-	var sampleRate pb.SampleRate
+	var sampleRate api.SampleRate
 
 	simDurationInMinutes = 1
-	sampleRate = pb.SampleRate_SR_1000_MS
+	sampleRate = api.SampleRate_SR_1000_MS
 
-	sim = pb.Simulation{Uuid: uid.New().String(), DurationInMinutes: simDurationInMinutes,
-		SampleRate: sampleRate, GrandPrix: pb.GrandPrix_UNITED_STATES,
-		Track: pb.Track_AUSTIN, Constructor: pb.Constructor_HAAS, CarNumber: 8, ForceAlarm: false, NoAlarms: true,
+	sim = api.Simulation{Uuid: uuid.New().String(), DurationInMinutes: simDurationInMinutes,
+		SampleRate: sampleRate, GrandPrix: api.GrandPrix_UNITED_STATES,
+		Track: api.Track_AUSTIN,
 	}
 
 	s := spinner.New(spinner.CharSets[7], 100*time.Millisecond)
@@ -362,3 +357,4 @@ func BenchmarkGenerateSimulatedTelemetryDataNoAlarmSequential(b *testing.B) {
 	s.Stop()
 
 }
+*/

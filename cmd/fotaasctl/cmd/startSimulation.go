@@ -21,8 +21,9 @@ import (
 	"strings"
 	"time"
 
-	pb "github.com/bburch01/FOTAAS/api"
-	uid "github.com/google/uuid"
+	"github.com/bburch01/FOTAAS/api"
+
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
@@ -60,73 +61,47 @@ var startSimulationCmd = &cobra.Command{
 	Short: "Starts a pre-defined FOTAAS simulation.",
 	Long:  `Starts a FOTAAS simulation that will generate and persist telemetry data`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-
-		/*
-			chkall, _ := cmd.Flags().GetBool("all")
-			if chkall {
-				checkAll()
-			} else {
-				svcname, _ := cmd.Flags().GetString("name")
-				if svcname == "" {
-					checkAll()
-				} else {
-					resp, err := checkByName(svcname)
-					if err != nil {
-						//log.Printf("%v service health check failed with error: %v", svcname, err)
-						log.Printf("%v service health check failed with error: %v", svcname, err)
-					} else {
-						log.Printf("%v service health status code   : %v", svcname, resp.ServerStatus.Code)
-						log.Printf("%v service health status message: %s", svcname, resp.ServerStatus.Message)
-					}
-				}
-			}
-		*/
-
 		resp, err := startSimulation()
 		if err != nil {
 			log.Printf("start simulation failed with error: %v", err)
 		} else {
 
-			for _, v := range resp.ServerStatus {
-				//log.Printf("uuid: %v status code: %v status msg: %v", i, v.Code, v.Message)
-				log.Printf("start simulation status code   : %v", v.Code)
-				log.Printf("start simulation status message: %s", v.Message)
-			}
+			log.Printf("start simulation status code   : %v", resp.ServerStatus.Code)
+			log.Printf("start simulation status message: %s", resp.ServerStatus.Message)
 
 		}
-
 		return nil
 	},
 }
 
-func startSimulation() (*pb.RunSimulationResponse, error) {
+func startSimulation() (*api.RunSimulationResponse, error) {
 
 	var simulationSvcEndpoint string
 	var sb strings.Builder
-	var resp *pb.RunSimulationResponse
-	var req pb.RunSimulationRequest
-	//var statusMap = make(map[string]*pb.ServerStatus)
+	var resp *api.RunSimulationResponse
+	var req api.RunSimulationRequest
+	//var statusMap = make(map[string]*api.ServerStatus)
 	var simID string
-	var simMember pb.SimulationMember
+	var simMember api.SimulationMember
 
-	simMemberMap := make(map[string]*pb.SimulationMember)
-	simID = uid.New().String()
+	simMemberMap := make(map[string]*api.SimulationMember)
+	simID = uuid.New().String()
 
-	simMemberID := uid.New().String()
-	simMember = pb.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: pb.Constructor_HAAS,
+	simMemberID := uuid.New().String()
+	simMember = api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_HAAS,
 		CarNumber: 8, ForceAlarm: false, NoAlarms: true,
 	}
 	simMemberMap[simMemberID] = &simMember
 
-	simMemberID = uid.New().String()
-	simMember = pb.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: pb.Constructor_MERCEDES,
+	simMemberID = uuid.New().String()
+	simMember = api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_MERCEDES,
 		CarNumber: 44, ForceAlarm: false, NoAlarms: true,
 	}
 	simMemberMap[simMemberID] = &simMember
 
-	sim := pb.Simulation{Uuid: simID, DurationInMinutes: int32(1), SampleRate: pb.SampleRate_SR_1000_MS,
-		SimulationRateMultiplier: pb.SimulationRateMultiplier_X1, GrandPrix: pb.GrandPrix_UNITED_STATES,
-		Track: pb.Track_AUSTIN, SimulationMemberMap: simMemberMap}
+	sim := api.Simulation{Uuid: simID, DurationInMinutes: int32(1), SampleRate: api.SampleRate_SR_1000_MS,
+		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GrandPrix: api.GrandPrix_UNITED_STATES,
+		Track: api.Track_AUSTIN, SimulationMemberMap: simMemberMap}
 
 	req.Simulation = &sim
 
@@ -148,9 +123,9 @@ func startSimulation() (*pb.RunSimulationResponse, error) {
 
 	defer cancel()
 
-	var client pb.SimulationServiceClient
+	//var client api.SimulationServiceClient
 
-	client = pb.NewSimulationServiceClient(conn)
+	var client = api.NewSimulationServiceClient(conn)
 
 	// Need to kick-off the simulation and return a response immediately
 	// Use a go routine call for client.RunSimulation
@@ -160,6 +135,9 @@ func startSimulation() (*pb.RunSimulationResponse, error) {
 	//if err != nil {
 	//	return resp, err
 	//}
+
+	// simulation service RunSimulation will kick-off the simulation as a goroutine
+	// and then immediately return a response indicating that the simulation was started.
 
 	go client.RunSimulation(ctx, &req)
 

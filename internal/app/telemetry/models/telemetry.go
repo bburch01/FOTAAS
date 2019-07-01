@@ -3,8 +3,8 @@ package models
 import (
 	"time"
 
-	pbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
+	pbts "github.com/golang/protobuf/ptypes/timestamp"
 )
 
 type TelemetryDatum struct {
@@ -16,7 +16,7 @@ type TelemetryDatum struct {
 	Track                            string
 	Constructor                      string
 	CarNumber                        int32
-	Timestamp                        *timestamp.Timestamp
+	Timestamp                        *pbts.Timestamp
 	Latitude                         float64
 	Longitude                        float64
 	Elevation                        float64
@@ -41,7 +41,7 @@ func (td *TelemetryDatum) Create() error {
 	defer pstmt.Close()
 
 	var t time.Time
-	t, err = pbts.Timestamp(td.Timestamp)
+	t, err = ipbts.Timestamp(td.Timestamp)
 	if err != nil {
 		return err
 	}

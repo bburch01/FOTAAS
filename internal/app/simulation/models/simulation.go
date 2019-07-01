@@ -3,8 +3,10 @@ package models
 import (
 	"time"
 
-	pbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
+	pbts "github.com/golang/protobuf/ptypes/timestamp"
+
+	"github.com/bburch01/FOTAAS/api"
 )
 
 type Simulation struct {
@@ -14,11 +16,12 @@ type Simulation struct {
 	GrandPrix          string
 	Track              string
 	State              string
-	StartTimestamp     *timestamp.Timestamp
-	EndTimestamp       *timestamp.Timestamp
+	StartTimestamp     *pbts.Timestamp
+	EndTimestamp       *pbts.Timestamp
 	PercentComplete    int32
 	FinalStatusCode    string
 	FinalStatusMessage string
+	SimulationMembers  map[string]SimulationMember
 }
 
 func (sim *Simulation) Create() error {
@@ -38,7 +41,7 @@ func (sim *Simulation) Create() error {
 	defer pstmt.Close()
 
 	// Re-format the timestamp to mysql format
-	t, err = pbts.Timestamp(sim.StartTimestamp)
+	t, err = ipbts.Timestamp(sim.StartTimestamp)
 	if err != nil {
 		return err
 	}
@@ -47,7 +50,7 @@ func (sim *Simulation) Create() error {
 	// There must be a better way to insert a null timestamp into the mysql db
 	if sim.EndTimestamp != nil {
 		// Re-format the timestamp to mysql format
-		t, err = pbts.Timestamp(sim.EndTimestamp)
+		t, err = ipbts.Timestamp(sim.EndTimestamp)
 		if err != nil {
 			return err
 		}
@@ -61,6 +64,13 @@ func (sim *Simulation) Create() error {
 	} else {
 		_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate, sim.GrandPrix, sim.Track,
 			sim.State, startTs, nil, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, v := range sim.SimulationMembers {
+		err := v.Create()
 		if err != nil {
 			return err
 		}
@@ -102,7 +112,7 @@ func (sim Simulation) UpdateEndTimestamp() error {
 	defer pstmt.Close()
 
 	// Re-format the timestamp to mysql format
-	t, err = pbts.Timestamp(sim.EndTimestamp)
+	t, err = ipbts.Timestamp(sim.EndTimestamp)
 	if err != nil {
 		return err
 	}
@@ -204,21 +214,25 @@ func (sim Simulation) FindAllMembers() ([]SimulationMember, error) {
 
 }
 
-/*
-func NewFromProto(pbsim pb.Simulation) *Simulation {
+func NewFromRunSimulationRequest(req api.RunSimulationRequest) *Simulation {
 
-	s := new(Simulation)
-	s.ID = pbsim.Uuid
-	s.DurationInMinutes = pbsim.DurationInMinutes
-	s.SampleRate = pbsim.SampleRate.String()
-	s.GrandPrix = pbsim.GrandPrix.String()
-	s.Track = pbsim.Track.String()
-	State
-	StartTimestamp
-	EndTimestamp
-	PercentComplete
-	FinalStatusCode
-	FinalStatusMessage
+	sim := new(Simulation)
+	sim.ID = req.Simulation.Uuid
+	sim.DurationInMinutes = req.Simulation.DurationInMinutes
+	sim.SampleRate = req.Simulation.SampleRate.String()
+	sim.GrandPrix = req.Simulation.GrandPrix.String()
+	sim.Track = req.Simulation.Track.String()
 
+	var simMember SimulationMember
+	for _, v := range req.Simulation.SimulationMemberMap {
+		simMember.ID = v.Uuid
+		simMember.SimulationID = v.SimulationUuid
+		simMember.Constructor = v.Constructor.String()
+		simMember.CarNumber = v.CarNumber
+		simMember.ForceAlarm = v.ForceAlarm
+		simMember.NoAlarms = v.NoAlarms
+		sim.SimulationMembers[simMember.ID] = simMember
+	}
+
+	return sim
 }
-*/

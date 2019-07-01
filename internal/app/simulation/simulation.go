@@ -9,10 +9,9 @@ import (
 	"sync"
 	"time"
 
-	pb "github.com/bburch01/FOTAAS/api"
-	tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
-	logging "github.com/bburch01/FOTAAS/internal/pkg/logging"
-
+	"github.com/bburch01/FOTAAS/api"
+	"github.com/bburch01/FOTAAS/internal/app/telemetry"
+	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -20,7 +19,7 @@ import (
 
 type SimResult struct {
 	UUID   string
-	Status pb.ServerStatus
+	Status api.ServerStatus
 }
 
 var logger *zap.Logger
@@ -44,55 +43,55 @@ func init() {
 
 }
 
-func StartSimulation(simData map[pb.TelemetryDatumDescription]tel.SimulatedTelemetryData, sim pb.Simulation,
+func StartSimulation(simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData, sim api.Simulation,
 	wg *sync.WaitGroup, resultsChan chan SimResult) {
 
 	var startTime time.Time
 	var elapsedTime time.Duration
-	var tdata pb.TelemetryData
+	var tdata api.TelemetryData
 	var sampleRateInMillis int32
 	var simRateMultiplier int32
-	var resp *pb.TransmitTelemetryResponse
-	var req pb.TransmitTelemetryRequest
+	var resp *api.TransmitTelemetryResponse
+	var req api.TransmitTelemetryRequest
 	var sb strings.Builder
 
 	defer wg.Done()
 
 	switch sim.SampleRate {
-	case pb.SampleRate_SR_1_MS:
+	case api.SampleRate_SR_1_MS:
 		sampleRateInMillis = 1
-	case pb.SampleRate_SR_10_MS:
+	case api.SampleRate_SR_10_MS:
 		sampleRateInMillis = 10
-	case pb.SampleRate_SR_100_MS:
+	case api.SampleRate_SR_100_MS:
 		sampleRateInMillis = 100
-	case pb.SampleRate_SR_1000_MS:
+	case api.SampleRate_SR_1000_MS:
 		sampleRateInMillis = 1000
 	default:
-		resultsChan <- SimResult{UUID: sim.Uuid, Status: pb.ServerStatus{Code: pb.StatusCode_ERROR, Message: "invalid sample rate in millis"}}
+		resultsChan <- SimResult{UUID: sim.Uuid, Status: api.ServerStatus{Code: api.StatusCode_ERROR, Message: "invalid sample rate in millis"}}
 		return
 	}
 
 	switch sim.SimulationRateMultiplier {
-	case pb.SimulationRateMultiplier_X1:
+	case api.SimulationRateMultiplier_X1:
 		simRateMultiplier = 1
-	case pb.SimulationRateMultiplier_X2:
+	case api.SimulationRateMultiplier_X2:
 		simRateMultiplier = 2
-	case pb.SimulationRateMultiplier_X4:
+	case api.SimulationRateMultiplier_X4:
 		simRateMultiplier = 4
-	case pb.SimulationRateMultiplier_X8:
+	case api.SimulationRateMultiplier_X8:
 		simRateMultiplier = 8
-	case pb.SimulationRateMultiplier_X10:
+	case api.SimulationRateMultiplier_X10:
 		simRateMultiplier = 10
-	case pb.SimulationRateMultiplier_X20:
+	case api.SimulationRateMultiplier_X20:
 		simRateMultiplier = 20
 	default:
-		resultsChan <- SimResult{UUID: sim.Uuid, Status: pb.ServerStatus{Code: pb.StatusCode_ERROR, Message: "invalid simulation rate multiplier"}}
+		resultsChan <- SimResult{UUID: sim.Uuid, Status: api.ServerStatus{Code: api.StatusCode_ERROR, Message: "invalid simulation rate multiplier"}}
 		return
 	}
 
 	sampleRateInMillis = sampleRateInMillis / simRateMultiplier
 
-	datumCount := len(simData[pb.TelemetryDatumDescription_BRAKE_TEMP_FL].Data)
+	datumCount := len(simData[api.TelemetryDatumDescription_BRAKE_TEMP_FL].Data)
 
 	startTime = time.Now()
 
@@ -111,7 +110,7 @@ func StartSimulation(simData map[pb.TelemetryDatumDescription]tel.SimulatedTelem
 	conn, err := grpc.Dial(telemetrySvcEndpoint, grpc.WithInsecure())
 	if err != nil {
 		msg := fmt.Sprintf("simulation service error: %v", err)
-		resultsChan <- SimResult{UUID: sim.Uuid, Status: pb.ServerStatus{Code: pb.StatusCode_ERROR, Message: msg}}
+		resultsChan <- SimResult{UUID: sim.Uuid, Status: api.ServerStatus{Code: api.StatusCode_ERROR, Message: msg}}
 		return
 	}
 	defer conn.Close()
@@ -123,13 +122,13 @@ func StartSimulation(simData map[pb.TelemetryDatumDescription]tel.SimulatedTelem
 
 	defer cancel()
 
-	var client pb.TelemetryServiceClient
+	var client api.TelemetryServiceClient
 
-	client = pb.NewTelemetryServiceClient(conn)
+	client = api.NewTelemetryServiceClient(conn)
 
 	for idx := 0; idx < datumCount; idx++ {
 
-		datumMap := make(map[string]*pb.TelemetryDatum, len(simData))
+		datumMap := make(map[string]*api.TelemetryDatum, len(simData))
 
 		for _, v := range simData {
 
@@ -145,14 +144,14 @@ func StartSimulation(simData map[pb.TelemetryDatumDescription]tel.SimulatedTelem
 		resp, err = client.TransmitTelemetry(ctx, &req)
 		if err != nil {
 			msg := fmt.Sprintf("simulation service error: %v", err)
-			resultsChan <- SimResult{UUID: sim.Uuid, Status: pb.ServerStatus{Code: pb.StatusCode_ERROR, Message: msg}}
+			resultsChan <- SimResult{UUID: sim.Uuid, Status: api.ServerStatus{Code: api.StatusCode_ERROR, Message: msg}}
 			return
 		}
 
 		for i, v := range resp.ServerStatus {
-			if v.Code != pb.StatusCode_OK {
+			if v.Code != api.StatusCode_OK {
 				msg := fmt.Sprintf("transmit of telemetry datum UUID %v failed with telemetry service error: %v", i, v.Message)
-				resultsChan <- SimResult{UUID: sim.Uuid, Status: pb.ServerStatus{Code: pb.StatusCode_ERROR, Message: msg}}
+				resultsChan <- SimResult{UUID: sim.Uuid, Status: api.ServerStatus{Code: api.StatusCode_ERROR, Message: msg}}
 				return
 			}
 		}

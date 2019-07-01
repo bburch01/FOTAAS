@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package proto;
+package api;
 
 import "google/protobuf/timestamp.proto";
 
@@ -194,7 +194,7 @@ message RunSimulationRequest {
 }
 
 message RunSimulationResponse {
-    map<string, ServerStatus> server_status = 1;
+    ServerStatus server_status = 1;  
 }
 
 message GetSimulationStatusRequest {

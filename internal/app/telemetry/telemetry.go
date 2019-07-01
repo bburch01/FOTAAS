@@ -1,7 +1,7 @@
 package telemetry
 
 import (
-	pb "github.com/bburch01/FOTAAS/api"
+	"github.com/bburch01/FOTAAS/api"
 )
 
 type AlarmMode int
@@ -16,7 +16,7 @@ func (am AlarmMode) String() string {
 }
 
 type TelemetryDatumParameters struct {
-	Unit           pb.TelemetryDatumUnit
+	Unit           api.TelemetryDatumUnit
 	RangeLowValue  float64
 	RangeHighValue float64
 	HighAlarmValue float64
@@ -24,14 +24,14 @@ type TelemetryDatumParameters struct {
 }
 
 type SimulatedTelemetryData struct {
-	DatumDesc   pb.TelemetryDatumDescription
-	Data        []pb.TelemetryDatum
+	DatumDesc   api.TelemetryDatumDescription
+	Data        []api.TelemetryDatum
 	AlarmExists bool
 	AlarmMode   AlarmMode
 	AlarmIndex  int
 }
 
 type AlarmParams struct {
-	Desc pb.TelemetryDatumDescription
+	Desc api.TelemetryDatumDescription
 	Mode AlarmMode
 }

@@ -6,12 +6,12 @@ import (
 	"os"
 	"time"
 
-	pb "github.com/bburch01/FOTAAS/api"
-	ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	"github.com/bburch01/FOTAAS/api"
+	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
+	pbts "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/joho/godotenv"
 
-	uid "github.com/google/uuid"
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
 )
 
@@ -38,51 +38,53 @@ func main() {
 		}
 	*/
 
-	if resp, err := runSimulation(); err != nil {
-		log.Fatalf("an error occurred while trying to run the simulation: %v", err)
-	} else {
-		for i, v := range resp.ServerStatus {
-			log.Printf("uuid: %v status code: %v status msg: %v", i, v.Code, v.Message)
+	/*
+		if resp, err := runSimulation(); err != nil {
+			log.Fatalf("an error occurred while trying to run the simulation: %v", err)
+		} else {
+			for i, v := range resp.ServerStatus {
+				log.Printf("uuid: %v status code: %v status msg: %v", i, v.Code, v.Message)
+			}
 		}
-	}
+	*/
 
 }
 
-func transmit() (*pb.TransmitTelemetryResponse, error) {
+func transmit() (*api.TransmitTelemetryResponse, error) {
 
 	var svcaddr string
 
-	var resp *pb.TransmitTelemetryResponse
-	var req pb.TransmitTelemetryRequest
-	var td pb.TelemetryData
-	var tdm map[string]*pb.TelemetryDatum
+	var resp *api.TransmitTelemetryResponse
+	var req api.TransmitTelemetryRequest
+	var td api.TelemetryData
+	var tdm map[string]*api.TelemetryDatum
 
-	td.GrandPrix = pb.GrandPrix_ABU_DHABI
-	td.Track = pb.Track_YAS_MARINA
-	td.Constructor = pb.Constructor_MERCEDES
+	td.GrandPrix = api.GrandPrix_ABU_DHABI
+	td.Track = api.Track_YAS_MARINA
+	td.Constructor = api.Constructor_MERCEDES
 	td.CarNumber = 44
 
-	tdm = make(map[string]*pb.TelemetryDatum)
+	tdm = make(map[string]*api.TelemetryDatum)
 
-	uuid := uid.New().String()
-	tdm[uuid] = newTelemetryDatum(uuid, pb.TelemetryDatumDescription_ENGINE_COOLANT_TEMP, pb.TelemetryDatumUnit_DEGREE_CELCIUS,
-		ts.TimestampNow(), 24.468994, 54.601784, 7.0, 75.65, false, false)
+	simID := uuid.New().String()
+	tdm[simID] = newTelemetryDatum(simID, api.TelemetryDatumDescription_ENGINE_COOLANT_TEMP, api.TelemetryDatumUnit_DEGREE_CELCIUS,
+		ipbts.TimestampNow(), 24.468994, 54.601784, 7.0, 75.65, false, false)
 
-	uuid = uid.New().String()
-	tdm[uuid] = newTelemetryDatum(uuid, pb.TelemetryDatumDescription_ENGINE_OIL_PRESSURE, pb.TelemetryDatumUnit_BAR,
-		ts.TimestampNow(), 24.468994, 54.601784, 7.0, 143.78, false, false)
+	simID = uuid.New().String()
+	tdm[simID] = newTelemetryDatum(simID, api.TelemetryDatumDescription_ENGINE_OIL_PRESSURE, api.TelemetryDatumUnit_BAR,
+		ipbts.TimestampNow(), 24.468994, 54.601784, 7.0, 143.78, false, false)
 
-	uuid = uid.New().String()
-	tdm[uuid] = newTelemetryDatum(uuid, pb.TelemetryDatumDescription_ENGINE_RPM, pb.TelemetryDatumUnit_RPM,
-		ts.TimestampNow(), 24.468994, 54.601784, 7.0, 11558.74, false, false)
+	simID = uuid.New().String()
+	tdm[simID] = newTelemetryDatum(simID, api.TelemetryDatumDescription_ENGINE_RPM, api.TelemetryDatumUnit_RPM,
+		ipbts.TimestampNow(), 24.468994, 54.601784, 7.0, 11558.74, false, false)
 
-	uuid = uid.New().String()
-	tdm[uuid] = newTelemetryDatum(uuid, pb.TelemetryDatumDescription_G_FORCE, pb.TelemetryDatumUnit_G,
-		ts.TimestampNow(), 24.468994, 54.601784, 7.0, 2.45, false, false)
+	simID = uuid.New().String()
+	tdm[simID] = newTelemetryDatum(simID, api.TelemetryDatumDescription_G_FORCE, api.TelemetryDatumUnit_G,
+		ipbts.TimestampNow(), 24.468994, 54.601784, 7.0, 2.45, false, false)
 
-	uuid = uid.New().String()
-	tdm[uuid] = newTelemetryDatum(uuid, pb.TelemetryDatumDescription_G_FORCE_DIRECTION, pb.TelemetryDatumUnit_RADIAN,
-		ts.TimestampNow(), 24.468994, 54.601784, 7.0, 3.85, false, false)
+	simID = uuid.New().String()
+	tdm[simID] = newTelemetryDatum(simID, api.TelemetryDatumDescription_G_FORCE_DIRECTION, api.TelemetryDatumUnit_RADIAN,
+		ipbts.TimestampNow(), 24.468994, 54.601784, 7.0, 3.85, false, false)
 
 	td.TelemetryDatumMap = tdm
 
@@ -109,9 +111,9 @@ func transmit() (*pb.TransmitTelemetryResponse, error) {
 
 	defer cancel()
 
-	var client pb.TelemetryServiceClient
+	var client api.TelemetryServiceClient
 
-	client = pb.NewTelemetryServiceClient(conn)
+	client = api.NewTelemetryServiceClient(conn)
 
 	resp, err = client.TransmitTelemetry(ctx, &req)
 	if err != nil {
@@ -122,31 +124,34 @@ func transmit() (*pb.TransmitTelemetryResponse, error) {
 
 }
 
-func runSimulation() (*pb.RunSimulationResponse, error) {
+func runSimulation() (*api.RunSimulationResponse, error) {
 
 	var svcaddr string
 
-	var resp *pb.RunSimulationResponse
-	var req pb.RunSimulationRequest
+	var resp *api.RunSimulationResponse
+	var req api.RunSimulationRequest
 	var simID string
 
-	simmap := make(map[string]*pb.Simulation)
+	//TODO: the model now is 1 sim to many simMember
+	//simmap := make(map[string]*api.Simulation)
 
-	simID = uid.New().String()
-	sim := pb.Simulation{Uuid: simID, DurationInMinutes: int32(1), SampleRate: pb.SampleRate_SR_1000_MS,
-		SimulationRateMultiplier: pb.SimulationRateMultiplier_X2, GrandPrix: pb.GrandPrix_UNITED_STATES,
-		Track: pb.Track_AUSTIN, Constructor: pb.Constructor_HAAS, CarNumber: 8, ForceAlarm: false, NoAlarms: true,
+	simID = uuid.New().String()
+	sim := api.Simulation{Uuid: simID, DurationInMinutes: int32(1), SampleRate: api.SampleRate_SR_1000_MS,
+		SimulationRateMultiplier: api.SimulationRateMultiplier_X2, GrandPrix: api.GrandPrix_UNITED_STATES,
+		Track: api.Track_AUSTIN,
 	}
-	simmap[simID] = &sim
+	//simmap[simID] = &sim
 
-	simID = uid.New().String()
-	sim = pb.Simulation{Uuid: simID, DurationInMinutes: int32(1), SampleRate: pb.SampleRate_SR_1000_MS,
-		SimulationRateMultiplier: pb.SimulationRateMultiplier_X2, GrandPrix: pb.GrandPrix_UNITED_STATES,
-		Track: pb.Track_AUSTIN, Constructor: pb.Constructor_MERCEDES, CarNumber: 44, ForceAlarm: false, NoAlarms: true,
-	}
-	simmap[simID] = &sim
+	/*
+		simID = uuid.New().String()
+		sim = api.Simulation{Uuid: simID, DurationInMinutes: int32(1), SampleRate: api.SampleRate_SR_1000_MS,
+			SimulationRateMultiplier: api.SimulationRateMultiplier_X2, GrandPrix: api.GrandPrix_UNITED_STATES,
+			Track: api.Track_AUSTIN,
+		}
+		simmap[simID] = &sim
+	*/
 
-	req.SimulationMap = simmap
+	req.Simulation = &sim
 
 	svcaddr = os.Getenv("SIMULATION_SERVICE_HOST") + os.Getenv("SIMULATION_SERVICE_PORT")
 
@@ -166,9 +171,9 @@ func runSimulation() (*pb.RunSimulationResponse, error) {
 
 	defer cancel()
 
-	var client pb.SimulationServiceClient
+	var client api.SimulationServiceClient
 
-	client = pb.NewSimulationServiceClient(conn)
+	client = api.NewSimulationServiceClient(conn)
 
 	resp, err = client.RunSimulation(ctx, &req)
 	if err != nil {
@@ -179,11 +184,11 @@ func runSimulation() (*pb.RunSimulationResponse, error) {
 
 }
 
-func newTelemetryDatum(uuid string, desc pb.TelemetryDatumDescription, unit pb.TelemetryDatumUnit,
-	tstamp *timestamp.Timestamp, lat float64, lon float64, elev float64, val float64,
-	ha bool, la bool) *pb.TelemetryDatum {
+func newTelemetryDatum(uuid string, desc api.TelemetryDatumDescription, unit api.TelemetryDatumUnit,
+	tstamp *pbts.Timestamp, lat float64, lon float64, elev float64, val float64,
+	ha bool, la bool) *api.TelemetryDatum {
 
-	return &pb.TelemetryDatum{Uuid: uuid, Description: desc, Unit: unit, Timestamp: tstamp,
+	return &api.TelemetryDatum{Uuid: uuid, Description: desc, Unit: unit, Timestamp: tstamp,
 		Latitude: lat, Longitude: lon, Elevation: elev, Value: val, HighAlarm: ha, LowAlarm: la}
 
 }

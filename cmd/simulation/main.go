@@ -9,16 +9,18 @@ import (
 	"strings"
 	"sync"
 
-	pb "github.com/bburch01/FOTAAS/api"
-	gen "github.com/bburch01/FOTAAS/internal/app/simulation/data"
-	mdl "github.com/bburch01/FOTAAS/internal/app/simulation/models"
-	tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
-	logging "github.com/bburch01/FOTAAS/internal/pkg/logging"
-	uid "github.com/google/uuid"
+	zgrpc "github.com/openzipkin/zipkin-go/middleware/grpc"
+	zhttp "github.com/openzipkin/zipkin-go/reporter/http"
+
+	"github.com/bburch01/FOTAAS/api"
+	"github.com/bburch01/FOTAAS/internal/app/simulation"
+	"github.com/bburch01/FOTAAS/internal/app/simulation/data"
+	"github.com/bburch01/FOTAAS/internal/app/simulation/models"
+	"github.com/bburch01/FOTAAS/internal/app/telemetry"
+	"github.com/bburch01/FOTAAS/internal/pkg/logging"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/openzipkin/zipkin-go"
-	zipkingrpc "github.com/openzipkin/zipkin-go/middleware/grpc"
-	reporterhttp "github.com/openzipkin/zipkin-go/reporter/http"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -40,17 +42,17 @@ func init() {
 	if logger, err = logging.NewLogger(lm, os.Getenv("LOG_DIR"), os.Getenv("LOG_FILE_NAME")); err != nil {
 		log.Panicf("failed to initialize logging subsystem with error: %v", err)
 	}
-	if err = mdl.InitDB(); err != nil {
+	if err = models.InitDB(); err != nil {
 		logger.Fatal(fmt.Sprintf("failed to initialize database driver with error: %v", err))
 	}
 }
 
-func (s *server) HealthCheck(ctx context.Context, in *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
-	var hcr = pb.HealthCheckResponse{ServerStatus: &pb.ServerStatus{
-		Code: pb.StatusCode_OK, Message: "simulation service healthy"}}
+func (s *server) HealthCheck(ctx context.Context, in *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
+	var hcr = api.HealthCheckResponse{ServerStatus: &api.ServerStatus{
+		Code: api.StatusCode_OK, Message: "simulation service healthy"}}
 
-	if err := mdl.PingDB(); err != nil {
-		hcr.ServerStatus.Code = pb.StatusCode_ERROR
+	if err := models.PingDB(); err != nil {
+		hcr.ServerStatus.Code = api.StatusCode_ERROR
 		hcr.ServerStatus.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
 		return &hcr, nil
 	}
@@ -58,44 +60,50 @@ func (s *server) HealthCheck(ctx context.Context, in *pb.HealthCheckRequest) (*p
 	return &hcr, nil
 }
 
-// Need to update this function such that it no longer returns a pb.RunSimulationResponse or an error
+// Need to update this function such that it no longer returns a api.RunSimulationResponse or an error
 // All status/results information needs to be persisted to the simulation service db, then clients
 // will use this service to get simulation status/results during & after the simulation run
-func (s *server) RunSimulation(ctx context.Context, in *pb.RunSimulationRequest) {
-	var resp pb.RunSimulationResponse
-	var sim = in.Simulation
-	var simMemberMap = in.Simulation.SimulationMemberMap
-	var status pb.ServerStatus
-	var simMemberData map[pb.TelemetryDatumDescription]tel.SimulatedTelemetryData
+func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationRequest) (*api.RunSimulationResponse, error) {
+
+	var resp api.RunSimulationResponse
+	//var sim = req.Simulation
+	var simMemberMap = req.Simulation.SimulationMemberMap
+	var status api.ServerStatus
+	var simMemberData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
 	var wg sync.WaitGroup
 
-	resultsChan := make(chan sim.SimResult, len(simMemberMap))
+	//REFACTOR OPPORTUNITY
+	// This is really ugly but until there is a clever refactor, convert the proto objects
+	// contained in req into FOTAAS domain model objects in order to gain db CRUD behaviors
+	// This is necessary because the protobuf code cannot be modified. The refactor might
+	// be based on wrapping the protobuf objects by FOTAAS domain model objects.
+
+	var sim *models.Simulation = models.NewFromRunSimulationRequest(req)
+
+	resultsChan := make(chan simulation.SimResult, len(simMemberMap))
 	wg.Add(len(simMemberMap))
 
-	
-
 	// For each entry in the simMemberMap (i.e. for each car running in the simulation), validate the simMember
-	// and generate telemetry data for the simMember. If validation or data generation fails for any simMember,
-	// do not run the simulation.
+	// and generate telemetry data for it.
 	for _, v := range simMemberMap {
 		err := validate(v)
 		if err != nil {
-			status.Code = pb.StatusCode_ERROR
+			status.Code = api.StatusCode_ERROR
 			status.Message = fmt.Sprintf("simulation member validation failed with error: %v", err)
 			break
 		}
-		if simMemberData, err = gen.GenerateSimulatedTelemetryData(*v); err != nil {
-			status.Code = pb.StatusCode_ERROR
+		if simMemberData, err = data.GenerateSimulatedTelemetryData(*v); err != nil {
+			status.Code = api.StatusCode_ERROR
 			status.Message = fmt.Sprintf("failed to generate simulation data with error: %v", err)
 			statusMap[v.Uuid] = &status
 			logger.Error(fmt.Sprintf("failed to generate simulation data with error: %v", err))
 			break
 		}
-		go sim.StartSimulation(simData, *v, &wg, resultsChan)
+		//go simulation.StartSimulation(simData, *v, &wg, resultsChan)
 	}
 
 	for _, v := range simMemberMap {
-		go sim.StartSimulation(simData, *v, &wg, resultsChan)
+		go simulation.StartSimulation(simData, *v, &wg, resultsChan)
 	}
 
 	wg.Wait()
@@ -111,15 +119,15 @@ func (s *server) RunSimulation(ctx context.Context, in *pb.RunSimulationRequest)
 	return
 }
 
-func (s *server) GetSimulationStatus(ctx context.Context, in *pb.GetSimulationStatusRequest) (*pb.GetSimulationStatusResponse, error) {
-	var gssr = pb.GetSimulationStatusResponse{}
+func (s *server) GetSimulationStatus(ctx context.Context, in *api.GetSimulationStatusRequest) (*api.GetSimulationStatusResponse, error) {
+	var gssr = api.GetSimulationStatusResponse{}
 	return &gssr, nil
 }
 
 func main() {
 	var sb strings.Builder
 
-	reporter := reporterhttp.NewReporter(os.Getenv("ZIPKIN_ENDPOINT_URL"))
+	reporter := zhttp.NewReporter(os.Getenv("ZIPKIN_ENDPOINT_URL"))
 	defer reporter.Close()
 
 	sb.WriteString(os.Getenv("SIMULATION_SERVICE_HOST"))
@@ -147,17 +155,17 @@ func main() {
 		logger.Fatal(fmt.Sprintf("tcp failed to listen on simulation service port %v with error: %v", simulationSvcPort, err))
 	}
 
-	svr := grpc.NewServer(grpc.StatsHandler(zipkingrpc.NewServerHandler(tracer)))
+	svr := grpc.NewServer(grpc.StatsHandler(zgrpc.NewServerHandler(tracer)))
 
-	pb.RegisterSimulationServiceServer(svr, &server{})
+	api.RegisterSimulationServiceServer(svr, &server{})
 
 	if err := svr.Serve(listener); err != nil {
 		logger.Fatal(fmt.Sprintf("failed to serve on simulation service port %v with error: %v", simulationSvcPort, err))
 	}
 }
 
-func validate(simMember *pb.SimulationMember) error {
-	if _, err := uid.Parse(simMember.Uuid); err != nil {
+func validate(simMember *api.SimulationMember) error {
+	if _, err := uuid.Parse(simMember.Uuid); err != nil {
 		return err
 	}
 	return nil

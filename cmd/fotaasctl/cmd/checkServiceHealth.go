@@ -22,11 +22,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bburch01/FOTAAS/api"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
-
-	pb "github.com/bburch01/FOTAAS/api"
 )
 
 func init() {
@@ -86,10 +85,10 @@ var checkServiceHealthCmd = &cobra.Command{
 	},
 }
 
-func checkByName(svcname string) (*pb.HealthCheckResponse, error) {
+func checkByName(svcname string) (*api.HealthCheckResponse, error) {
 
 	var svcEndpoint string
-	var resp *pb.HealthCheckResponse
+	var resp *api.HealthCheckResponse
 	var sb strings.Builder
 
 	switch svcname {
@@ -129,7 +128,7 @@ func checkByName(svcname string) (*pb.HealthCheckResponse, error) {
 
 	//ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	//ctx, cancel := context.WithTimeout(context.Background(), time.Duration(300)*time.Second)
-	
+
 	// TODO: determine what is the appropriate deadline for health check requests
 	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
@@ -138,20 +137,20 @@ func checkByName(svcname string) (*pb.HealthCheckResponse, error) {
 
 	switch svcname {
 	case "telemetry":
-		client := pb.NewTelemetryServiceClient(conn)
-		resp, err = client.HealthCheck(ctx, &pb.HealthCheckRequest{})
+		client := api.NewTelemetryServiceClient(conn)
+		resp, err = client.HealthCheck(ctx, &api.HealthCheckRequest{})
 		if err != nil {
 			return nil, err
 		}
 	case "analysis":
-		client := pb.NewAnalysisServiceClient(conn)
-		resp, err = client.HealthCheck(ctx, &pb.HealthCheckRequest{})
+		client := api.NewAnalysisServiceClient(conn)
+		resp, err = client.HealthCheck(ctx, &api.HealthCheckRequest{})
 		if err != nil {
 			return nil, err
 		}
 	case "simulation":
-		client := pb.NewSimulationServiceClient(conn)
-		resp, err = client.HealthCheck(ctx, &pb.HealthCheckRequest{})
+		client := api.NewSimulationServiceClient(conn)
+		resp, err = client.HealthCheck(ctx, &api.HealthCheckRequest{})
 		if err != nil {
 			return nil, err
 		}

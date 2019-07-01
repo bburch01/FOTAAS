@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	tspb "github.com/golang/protobuf/ptypes/timestamp"
+	pbts "github.com/golang/protobuf/ptypes/timestamp"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 )
 
 // TimestampNow returns a google.protobuf.Timestamp for the current time.
-func TimestampNow() *tspb.Timestamp {
+func TimestampNow() *pbts.Timestamp {
 	ts, err := TimestampProto(time.Now())
 	if err != nil {
 		panic("ptypes: time.Now() out of Timestamp range")
@@ -28,10 +28,10 @@ func TimestampNow() *tspb.Timestamp {
 
 // TimestampProto converts the time.Time to a google.protobuf.Timestamp proto.
 // It returns an error if the resulting Timestamp is invalid.
-func TimestampProto(t time.Time) (*tspb.Timestamp, error) {
+func TimestampProto(t time.Time) (*pbts.Timestamp, error) {
 	seconds := t.Unix()
 	nanos := int32(t.Sub(time.Unix(seconds, 0)))
-	ts := &tspb.Timestamp{
+	ts := &pbts.Timestamp{
 		Seconds: seconds,
 		Nanos:   nanos,
 	}
@@ -43,7 +43,7 @@ func TimestampProto(t time.Time) (*tspb.Timestamp, error) {
 
 // TimestampString returns the RFC 3339 string for valid Timestamps. For invalid
 // Timestamps, it returns an error message in parentheses.
-func TimestampString(ts *tspb.Timestamp) string {
+func TimestampString(ts *pbts.Timestamp) string {
 	t, err := Timestamp(ts)
 	if err != nil {
 		return fmt.Sprintf("(%v)", err)
@@ -62,9 +62,9 @@ func TimestampString(ts *tspb.Timestamp) string {
 //
 // A nil Timestamp returns an error. The first return value in that case is
 // undefined.
-func Timestamp(ts *tspb.Timestamp) (time.Time, error) {
+func Timestamp(ts *pbts.Timestamp) (time.Time, error) {
 	// Don't return the zero value on error, because corresponds to a valid
-	// timestamp. Instead return whatever time.Unix gives us.
+	// pbts. Instead return whatever time.Unix gives us.
 	var t time.Time
 	if ts == nil {
 		t = time.Unix(0, 0).UTC() // treat nil like the empty Timestamp
@@ -84,7 +84,7 @@ func Timestamp(ts *tspb.Timestamp) (time.Time, error) {
 // the problem.
 //
 // Every valid Timestamp can be represented by a time.Time, but the converse is not true.
-func validateTimestamp(ts *tspb.Timestamp) error {
+func validateTimestamp(ts *pbts.Timestamp) error {
 	if ts == nil {
 		return errors.New("timestamp: nil Timestamp")
 	}

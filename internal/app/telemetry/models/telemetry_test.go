@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
+	pbts "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/joho/godotenv"
 	//mdl "github.com/bburch01/FOTAAS/internal/app/simulation/models"
 	// 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
@@ -38,7 +38,7 @@ func TestStartSimulation(t *testing.T) {
 	for _, v1 := range simData {
 		//logger.Debug(fmt.Sprintf("simData datumDesc: %v alarmExists: %v", v1.DatumDesc, v1.AlarmExists))
 		for _, v2 := range v1.Data {
-			if tstamp, err = ts.Timestamp(v2.Timestamp); err != nil {
+			if tstamp, err = ipbts.Timestamp(v2.Timestamp); err != nil {
 				t.Error("failed to convert google.protobuf.timestamp to time.Time with error: ", err)
 			}
 			logger.Debug(fmt.Sprintf("datum desc: %v unit: %v timestamp: %v value: %v", v2.Description.String(),
@@ -68,10 +68,10 @@ func init() {
 func TestTelemetryModels(t *testing.T) {
 
 	var td TelemetryDatum
-	var startTime *timestamp.Timestamp
+	var startTime *pbts.Timestamp
 	var err error
 
-	startTime, err = ts.TimestampProto(time.Now())
+	startTime, err = ipbts.TimestampProto(time.Now())
 	if err != nil {
 		t.Error("failed to create timestamp with error: ", err)
 	}
@@ -146,7 +146,7 @@ func TestTelemetryModels(t *testing.T) {
 		Track                            string
 		Constructor                      string
 		CarNumber                        int32
-		Timestamp                        *timestamp.Timestamp
+		Timestamp                        *pbts.Timestamp
 		Latitude                         float64
 		Longitude                        float64
 		Elevation                        float64
