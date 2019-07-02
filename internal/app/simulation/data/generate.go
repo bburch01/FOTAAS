@@ -248,6 +248,7 @@ func GenerateSimulatedTelemetryData(sim *models.Simulation, simMember models.Sim
 	var genAlarm bool
 	var simulatedTelemetryDataMap = make(map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData)
 
+	// Refactor, this is now being validated in main.go RunSimulation()
 	simDurationInMillis = sim.DurationInMinutes * 60000
 	switch sim.SampleRate {
 	case api.SampleRate_SR_1_MS.String():
@@ -286,6 +287,8 @@ func GenerateSimulatedTelemetryData(sim *models.Simulation, simMember models.Sim
 		genAlarm = true
 	} else if !simMember.ForceAlarm && simMember.NoAlarms {
 		genAlarm = false
+
+		// Refactor, remove, this is now being validate in main.go RunSimulation()
 	} else {
 		return nil, errors.New("simulation ForceAlarm & NoAlarm must not both be set to true")
 	}

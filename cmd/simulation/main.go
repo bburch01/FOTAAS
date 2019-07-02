@@ -69,16 +69,43 @@ func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationReques
 	//var sim = req.Simulation
 	//var simMemberMap = req.Simulation.SimulationMemberMap
 	//var status api.ServerStatus
-	var simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
-	var simMemberData map[string]map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
-	var wg sync.WaitGroup
+	//var simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
+	//var simMemberData map[string]map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
+	//var wg sync.WaitGroup
 	var err error
 
+	// Validate the simulation request
+	if err = validateSimulationRequest(req); err != nil {
+		resp.ServerStatus.Code = api.StatusCode_ERROR
+		resp.ServerStatus.Message = fmt.Sprintf("RunSimulationRequest failed validation: %v", err)
+		return &resp, nil		
+	}
+
+	//REFACTOR OPPORTUNITY
+	// This is really ugly but until a clever refactor, convert the proto objects
+	// contained in req into FOTAAS domain model objects in order to gain db CRUD behaviors.
+	// This is necessary because the protobuf code cannot be modified. One of the big
+	// problems with this is that all the useful enums in the protobuf objects get lost
+	// in translation. A possible refactor would be to have the FOTAAS domain model
+	// object wrap the protobuf object and redeclare all of the enums.
+	var sim *models.Simulation = models.NewFromRunSimulationRequest(*req)
+
+	// Start the simulation asynchronously (i.e. don't wait on a response from the goroutine).
+	// Simulation progress/status is persisted to the FOTAAS simulation db.
+	go simulation.StartSimulation(sim)
+
+	resp.ServerStatus.Code = api.StatusCode_OK
+	resp.ServerStatus.Message = fmt.Sprintf("simulation %v successfully started", req.Simulation.Uuid)
+
+	return &resp, nil
+
+	
 	//REFACTOR OPPORTUNITY
 	// This is really ugly but until there is a clever refactor, convert the proto objects
 	// contained in req into FOTAAS domain model objects in order to gain db CRUD behaviors
 	// This is necessary because the protobuf code cannot be modified. The refactor might
 	// be based on wrapping the protobuf objects by FOTAAS domain model objects.
+	/*
 	var sim *models.Simulation = models.NewFromRunSimulationRequest(*req)
 
 	resultsChan := make(chan simulation.SimResult, len(sim.SimulationMembers))
@@ -101,11 +128,9 @@ func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationReques
 		simMemberData[v.ID] = simData
 	}
 
-	/*
-		for _, v := range sim.SimulationMembers {
-			go simulation.StartSimulation(simMemberData[v.ID], *v, &wg, resultsChan)
-		}
-	*/
+	for _, v := range sim.SimulationMembers {
+		go simulation.StartSimulation(simMemberData[v.ID], *v, &wg, resultsChan)
+	}
 
 	wg.Wait()
 	close(resultsChan)
@@ -119,7 +144,8 @@ func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationReques
 
 	//resp.ServerStatus = statusMap
 	//return &resp, nil
-	return &resp, nil
+
+
 }
 
 func (s *server) GetSimulationStatus(ctx context.Context, in *api.GetSimulationStatusRequest) (*api.GetSimulationStatusResponse, error) {
@@ -171,5 +197,147 @@ func validate(simMember models.SimulationMember) error {
 	if _, err := uuid.Parse(simMember.ID); err != nil {
 		return err
 	}
+	return nil
+}
+
+func validateSimulationRequest(req api.RunSimulationRequest) error {
+
+	var sb strings.Builder
+	var invalidRequest = false
+
+	sb.WriteString("invalid RunSimulationRequest: ")
+
+	if _, err := uuid.Parse(req.Simulation.Uuid); err != nil {
+		sb.WriteString("error: invalid uuid")
+		invalidRequest = true
+	}
+
+	if req.Simulation.DurationInMinutes <= 0 {
+		sb.WriteString(" error: DurationInMinutes must be > 0")
+		invalidRequest = true
+	}
+
+	switch req.Simulation.SampleRate {
+	case api.SampleRate_SR_1_MS.String():
+		break
+	case api.SampleRate_SR_10_MS.String():
+		break
+	case api.SampleRate_SR_100_MS.String():
+		break
+	case api.SampleRate_SR_1000_MS.String():
+		break
+	default:
+		sb.WriteString(" error: invalid SampleRate")
+		invalidRequest = true
+	}
+
+	switch req.Simulation.SimulationRateMultiplier {
+	case api.SimulationRateMultiplier_X1.String():
+		break
+	case api.SimulationRateMultiplier_X2.String():
+		break
+	case api.SimulationRateMultiplier_X4.String():
+		break
+	case api.SimulationRateMultiplier_X8.String():
+		break
+	case api.SimulationRateMultiplier_X10.String():
+		break
+	case api.SimulationRateMultiplier_X20.String():
+		break
+	default:
+		sb.WriteString(" error: invalid SimulationRateMultiplier")
+		invalidRequest = true
+	}
+
+	switch req.Simulation.GrandPrix {
+	case api.GrandPrix_ABU_DHABI, api.GrandPrix_AUSTRALIAN, api.GrandPrix_AUSTRIAN, api.GrandPrix_AZERBAIJAN,
+		api.GrandPrix_BAHRAIN, api.GrandPrix_BELGIAN, api.GrandPrix_BRAZILIAN, api.GrandPrix_BRITISH,
+		api.GrandPrix_CANADIAN, api.GrandPrix_CHINESE, api.GrandPrix_FRENCH, api.GrandPrix_GERMAN,
+		api.GrandPrix_HUNGARIAN, api.GrandPrix_ITALIAN, api.GrandPrix_JAPANESE, api.GrandPrix_MEXICAN,
+		api.GrandPrix_MONACO, api.GrandPrix_RUSSIAN, api.GrandPrix_SINGAPORE, api.GrandPrix_SPANISH,
+		api.GrandPrix_UNITED_STATES:
+		break
+	default:
+		sb.WriteString(" error: invalid GrandPrix")
+		invalidRequest = true		
+	}
+
+	switch req.Simulation.Track {
+	case api.Track_AUSTIN, api.Track_BAKU, api.Track_CATALUNYA_BARCELONA, api.Track_HOCKENHEIM,
+		api.Track_HUNGARORING, api.Track_INTERLAGOS_SAU_PAULO, api.Track_MARINA_BAY, 
+		api.Track_MELBOURNE, api.Track_MEXICO_CITY, api.Track_MONTE_CARLO, api.Track_MONTREAL,
+		api.Track_MONZA, api.Track_PAUL_RICARD_LE_CASTELLET, api.Track_SAKHIR, 
+		api.Track_SHANGHAI, api.Track_SILVERSTONE, api.Track_SOCHI, api.Track_SPA_FRANCORCHAMPS,
+		api.Track_SPIELBERG_RED_BULL_RING, api.Track_SUZUKA, api.Track_YAS_MARINA:
+		break
+	default
+		sb.WriteString(" error: invalid GrandPrix")
+		invalidRequest = true					 
+	}
+
+	if req.Simulation.SimulationMemberMap == nil {
+		sb.WriteString(" error: SimulationMemberMap must not be nil")
+		invalidRequest = true
+	}
+
+	if len(req.Simulation.SimulationMemberMap) == 0 {
+		sb.WriteString(" error: SimulationMemberMap must contain at least 1 member")
+		invalidRequest = true
+	} else {
+		// Short-circuit on the first bad member but at least report all the errors
+		// found with that member.
+		for _, v := range req.Simulation.SimulationMemberMap {
+
+			if _, err := uuid.Parse(v.Uuid); err != nil {
+				sb.WriteString(" simulation member ")
+				sb.WriteString(v.Uuid)
+				sb.WriteString(" error: invalid uuid")
+				invalidRequest = true
+			}
+
+			if _, err := uuid.Parse(v.SimulationUuid); err != nil {
+				sb.WriteString(" simulation member ")
+				sb.WriteString(v.Uuid)
+				sb.WriteString(" error: invalid simulation uuid")
+				invalidRequest = true
+			}
+			
+			switch v.Constructor {
+			case api.Constructor_ALPHA_ROMEO, api.Constructor_FERRARI, api.Constructor_HAAS, api.Constructor_MCLAREN,
+			    api.Constructor_MERCEDES, api.Constructor_RACING_POINT, api.Constructor_RED_BULL_RACING,
+			    api.Constructor_SCUDERIA_TORO_ROSO, api.Constructor_WILLIAMS:
+			    break
+			default
+			    sb.WriteString(" simulation member ")
+			    sb.WriteString(v.Uuid)
+			    sb.WriteString(" error: invalid constructor")
+			    invalidRequest = true			
+			}
+
+			if v.CarNumber < 0 {
+			    sb.WriteString(" simulation member ")
+			    sb.WriteString(v.Uuid)
+			    sb.WriteString(" error: CarNumber must be > 0")
+			    invalidRequest = true			
+			}
+			
+			if v.ForceAlarm && v.NoAlarms {
+			    sb.WriteString(" simulation member ")
+			    sb.WriteString(v.Uuid)
+			    sb.WriteString(" error: ForceAlarms & NoAlarms must not both be true")
+			    invalidRequest = true						
+			}
+
+			if invalidRequest {
+				break
+			}
+
+		}
+	}
+    
+	if invalidRequest {
+		return fmt.Errorf("%v" sb.String())
+	}
+
 	return nil
 }
