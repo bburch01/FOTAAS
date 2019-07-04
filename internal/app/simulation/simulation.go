@@ -3,6 +3,7 @@ package simulation
 import (
 	//"context"
 	//"fmt"
+	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -58,6 +59,13 @@ func StartSimulation(sim *models.Simulation) {
 		var simMemberData map[string]map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
 	*/
 
+	if err := sim.Create(); err != nil {
+		// Since no simulation status can be persisted, the only this to do is log
+		// an error an bail-out.
+		logger.Error(fmt.Sprintf("simulation %v failed to start with error: %v", sim.ID, err))
+		return
+	}
+
 	// Generate simulated telemetry data for all simulation members in advance.
 	//var simData = []data.SimMemberData
 	var wg sync.WaitGroup
@@ -69,16 +77,30 @@ func StartSimulation(sim *models.Simulation) {
 	}
 	wg.Wait()
 	close(resultsChan)
-
-	/*
-		if err := <-errChan; err != nil {
-
-
-		}
-	*/
+	close(errChan)
 
 	// Check the errChan, on the first error, set sim.FinalStatusCode & sim.FinalStatusMessage
-	// to the error info, persist it and bomb-out
+	// to the error info, attempt to persist it and bail-out.
+
+	if err := <-errChan; err != nil {
+
+		logger.Error(fmt.Sprintf("simulation %v failed to start with error: ", sim.ID, err))
+
+		sim.State = "FAILED_TO_START"
+		if err := sim.UpdateState; err != nil {
+			logger.Error(fmt.Sprintf("failed to update state for simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusCode = "ERROR"
+		if err := sim.UpdateFinalStatusCode; err != nil {
+			logger.Error(fmt.Sprintf("failed to update final status code for simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusMessage = fmt.Sprintf("simulation failed to start with error: %v", err)
+		if err := sim.UpdateFinalStatusMessage; err != nil {
+			logger.Error(fmt.Sprintf("failed to update final status message simulation %v with error: %v", sim.ID, err))
+		}
+
+		return
+	}
 
 	// Main simulation loop. Running the simulation members concurrently here. All of the
 	// simulation members are part of the same simulation (i.e. multiple simulations are

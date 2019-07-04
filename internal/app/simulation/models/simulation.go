@@ -27,7 +27,36 @@ type Simulation struct {
 
 func (sim *Simulation) Create() error {
 
-	var t time.Time
+	sqlStatement := `
+			INSERT INTO simulation (id, duration_in_minutes, sample_rate, grand_prix, track,
+				 state, start_timestamp, end_timestamp, percent_complete, final_status_code,
+				  final_status_message)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+
+	pstmt, err := db.Prepare(sqlStatement)
+	if err != nil {
+		return err
+	}
+	defer pstmt.Close()
+
+	_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate, sim.GrandPrix, sim.Track,
+		sim.State, nil, nil, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range sim.SimulationMembers {
+		err := v.Create()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+/*
+func (sim *Simulation) Update() error {
 
 	sqlStatement := `
 			INSERT INTO simulation (id, duration_in_minutes, sample_rate, grand_prix, track,
@@ -41,33 +70,10 @@ func (sim *Simulation) Create() error {
 	}
 	defer pstmt.Close()
 
-	// Re-format the timestamp to mysql format
-	t, err = ipbts.Timestamp(sim.StartTimestamp)
+	_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate, sim.GrandPrix, sim.Track,
+		sim.State, nil, nil, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
 	if err != nil {
 		return err
-	}
-	startTs := t.Format("2006-01-02 15:04:05")
-
-	// There must be a better way to insert a null timestamp into the mysql db
-	if sim.EndTimestamp != nil {
-		// Re-format the timestamp to mysql format
-		t, err = ipbts.Timestamp(sim.EndTimestamp)
-		if err != nil {
-			return err
-		}
-		endTs := t.Format("2006-01-02 15:04:05")
-
-		_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate, sim.GrandPrix, sim.Track,
-			sim.State, startTs, endTs, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
-		if err != nil {
-			return err
-		}
-	} else {
-		_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate, sim.GrandPrix, sim.Track,
-			sim.State, startTs, nil, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
-		if err != nil {
-			return err
-		}
 	}
 
 	for _, v := range sim.SimulationMembers {
@@ -78,8 +84,8 @@ func (sim *Simulation) Create() error {
 	}
 
 	return nil
-
 }
+*/
 
 func (sim Simulation) UpdateState() error {
 
@@ -97,7 +103,33 @@ func (sim Simulation) UpdateState() error {
 	}
 
 	return nil
+}
 
+func (sim Simulation) UpdateStartTimestamp() error {
+
+	var t time.Time
+
+	sqlStatement := `UPDATE simulation SET start_timestamp = ? WHERE id = ?`
+
+	pstmt, err := db.Prepare(sqlStatement)
+	if err != nil {
+		return err
+	}
+	defer pstmt.Close()
+
+	// Re-format the timestamp to mysql format
+	t, err = ipbts.Timestamp(sim.StartTimestamp)
+	if err != nil {
+		return err
+	}
+	startTs := t.Format("2006-01-02 15:04:05")
+
+	_, err = pstmt.Exec(startTs, sim.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (sim Simulation) UpdateEndTimestamp() error {
@@ -125,7 +157,6 @@ func (sim Simulation) UpdateEndTimestamp() error {
 	}
 
 	return nil
-
 }
 
 func (sim Simulation) UpdatePercentComplete() error {
@@ -144,7 +175,6 @@ func (sim Simulation) UpdatePercentComplete() error {
 	}
 
 	return nil
-
 }
 
 func (sim Simulation) UpdateFinalStatusCode() error {
@@ -163,7 +193,6 @@ func (sim Simulation) UpdateFinalStatusCode() error {
 	}
 
 	return nil
-
 }
 
 func (sim Simulation) UpdateFinalStatusMessage() error {
@@ -182,7 +211,6 @@ func (sim Simulation) UpdateFinalStatusMessage() error {
 	}
 
 	return nil
-
 }
 
 func (sim Simulation) FindAllMembers() ([]SimulationMember, error) {
@@ -212,7 +240,6 @@ func (sim Simulation) FindAllMembers() ([]SimulationMember, error) {
 	}
 
 	return simMembers, nil
-
 }
 
 func NewFromRunSimulationRequest(req api.RunSimulationRequest) *Simulation {
