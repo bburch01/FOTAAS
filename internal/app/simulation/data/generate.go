@@ -1,13 +1,13 @@
 package data
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"math"
 	"math/rand"
 	"os"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -15,8 +15,12 @@ import (
 	pbts "github.com/golang/protobuf/ptypes/timestamp"
 
 	"github.com/bburch01/FOTAAS/api"
+
 	"github.com/bburch01/FOTAAS/internal/app/simulation/models"
 	"github.com/bburch01/FOTAAS/internal/app/telemetry"
+
+	//"github.com/bburch01/FOTAAS/internal/app/simulation"
+	//"github.com/bburch01/FOTAAS/internal/app/simulation"
 	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/google/uuid"
 	"github.com/jmcvetta/randutil"
@@ -59,6 +63,11 @@ func init() {
 
 	rand.Seed(time.Now().UnixNano())
 
+}
+
+type SimMemberData struct {
+	SimMemberID string
+	SimData     map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
 }
 
 var alarmEventChoices = []randutil.Choice{
@@ -235,7 +244,8 @@ var telemetryDatumParametersMap = map[api.TelemetryDatumDescription]telemetry.Te
 	},
 }
 
-func GenerateSimulatedTelemetryData(sim *models.Simulation, simMember models.SimulationMember) (map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData, error) {
+func GenerateSimulatedTelemetryData(sim *models.Simulation, simMember *models.SimulationMember, wg *sync.WaitGroup,
+	resultsChan chan SimMemberData, errChan chan error) {
 
 	var datumCount int32
 	var sampleRateInMillis int32
@@ -244,12 +254,13 @@ func GenerateSimulatedTelemetryData(sim *models.Simulation, simMember models.Sim
 	var alarmTypeChoice randutil.Choice
 	var err error
 	var simStartTime = time.Now()
+	var sb strings.Builder
 
 	var genAlarm bool
 	var simulatedTelemetryDataMap = make(map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData)
 
-	// Refactor, this is now being validated in main.go RunSimulation()
 	simDurationInMillis = sim.DurationInMinutes * 60000
+
 	switch sim.SampleRate {
 	case api.SampleRate_SR_1_MS.String():
 		sampleRateInMillis = 1
@@ -260,7 +271,11 @@ func GenerateSimulatedTelemetryData(sim *models.Simulation, simMember models.Sim
 	case api.SampleRate_SR_1000_MS.String():
 		sampleRateInMillis = 1000
 	default:
-		return simulatedTelemetryDataMap, errors.New("invalid sample rate in millis")
+		// This should never happen. Validation occurs in both the protobuf api
+		// and in main.go RunSimulation()
+		sb.WriteString(fmt.Sprintf("invalid sample rate for simulation member: %v", simMember.ID))
+		logger.Error(sb.String())
+		errChan <- fmt.Errorf(sb.String())
 	}
 
 	datumCount = simDurationInMillis / sampleRateInMillis
@@ -270,7 +285,7 @@ func GenerateSimulatedTelemetryData(sim *models.Simulation, simMember models.Sim
 	// ForceAlarm false, NoAlarms true: do not generate an alarm
 	if !simMember.ForceAlarm {
 		if genAlarmChoice, err = randutil.WeightedChoice(alarmEventChoices); err != nil {
-			return nil, err
+			errChan <- err
 		}
 		genAlarm = genAlarmChoice.Item.(bool)
 	} else {
@@ -279,7 +294,7 @@ func GenerateSimulatedTelemetryData(sim *models.Simulation, simMember models.Sim
 
 	if !simMember.ForceAlarm && !simMember.NoAlarms {
 		if genAlarmChoice, err = randutil.WeightedChoice(alarmEventChoices); err != nil {
-			return nil, err
+			errChan <- err
 		}
 		genAlarm = genAlarmChoice.Item.(bool)
 
@@ -288,43 +303,46 @@ func GenerateSimulatedTelemetryData(sim *models.Simulation, simMember models.Sim
 	} else if !simMember.ForceAlarm && simMember.NoAlarms {
 		genAlarm = false
 
-		// Refactor, remove, this is now being validate in main.go RunSimulation()
 	} else {
-		return nil, errors.New("simulation ForceAlarm & NoAlarm must not both be set to true")
+		// This should never happen. Validation occurs in main.go RunSimulation()
+		sb.WriteString(fmt.Sprintf("invalid ForceAlarm & NoAlarms combination for simulation member: %v", simMember.ID))
+		logger.Error(sb.String())
+		errChan <- fmt.Errorf(sb.String())
 	}
 
 	// Alarm or not, get an alarmTypeChoice to keep the compiler happy.
 	if alarmTypeChoice, err = randutil.WeightedChoice(alarmTypeChoices); err != nil {
-		return nil, err
+		errChan <- err
 	}
 
-	errChan := make(chan error, len(telemetryDatumParametersMap))
-	resultsChan := make(chan telemetry.SimulatedTelemetryData, len(telemetryDatumParametersMap))
+	workerErrChan := make(chan error, len(telemetryDatumParametersMap))
+	workerResultsChan := make(chan telemetry.SimulatedTelemetryData, len(telemetryDatumParametersMap))
 	sem := make(chan int, runtime.NumCPU())
-
-	var wg sync.WaitGroup
-	wg.Add(len(telemetryDatumParametersMap))
+	var workerWg sync.WaitGroup
+	workerWg.Add(len(telemetryDatumParametersMap))
 
 	for datumDesc, datumParams := range telemetryDatumParametersMap {
 		go telemetryDataGenerationWorker(sim.ID, datumDesc, datumParams, sampleRateInMillis,
 			alarmTypeChoice.Item.(telemetry.AlarmParams), datumCount,
-			simStartTime, genAlarm, sem, &wg, resultsChan, errChan)
+			simStartTime, genAlarm, sem, &workerWg, workerResultsChan, workerErrChan)
 	}
 
-	wg.Wait()
-	close(errChan)
-	close(resultsChan)
+	workerWg.Wait()
+	close(workerErrChan)
+	close(workerResultsChan)
 
-	if err := <-errChan; err != nil {
-		return nil, err
+	if err := <-workerErrChan; err != nil {
+		errChan <- err
 	}
 
-	for std := range resultsChan {
-		//logger.Debug(fmt.Sprintf("adding sim data for datum desc: %v to the sim data map", std.datumDesc))
+	for std := range workerResultsChan {
 		simulatedTelemetryDataMap[std.DatumDesc] = std
 	}
 
-	return simulatedTelemetryDataMap, nil
+	smd := SimMemberData{SimMemberID: simMember.ID, SimData: simulatedTelemetryDataMap}
+	resultsChan <- smd
+
+	return
 }
 
 func telemetryDataGenerationWorker(simUUID string, tdd api.TelemetryDatumDescription, tdp telemetry.TelemetryDatumParameters, sampleRateInMillis int32, ap telemetry.AlarmParams, datumCount int32,

@@ -1,10 +1,16 @@
 package models
 
+import (
+	"github.com/bburch01/FOTAAS/api"
+	"github.com/bburch01/FOTAAS/internal/app/telemetry"
+)
+
 type SimulationMember struct {
 	ID                    string
 	SimulationID          string
 	Constructor           string
 	CarNumber             int32
+	TelemetryData         map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
 	ForceAlarm            bool
 	NoAlarms              bool
 	AlarmOccurred         bool

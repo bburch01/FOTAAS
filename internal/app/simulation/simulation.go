@@ -5,10 +5,12 @@ import (
 	//"fmt"
 	"log"
 	"os"
+	"sync"
 
 	//ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 
 	"github.com/bburch01/FOTAAS/api"
+	"github.com/bburch01/FOTAAS/internal/app/simulation/data"
 	"github.com/bburch01/FOTAAS/internal/app/simulation/models"
 	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/joho/godotenv"
@@ -57,6 +59,26 @@ func StartSimulation(sim *models.Simulation) {
 	*/
 
 	// Generate simulated telemetry data for all simulation members in advance.
+	//var simData = []data.SimMemberData
+	var wg sync.WaitGroup
+	errChan := make(chan error, len(sim.SimulationMembers))
+	resultsChan := make(chan data.SimMemberData, len(sim.SimulationMembers))
+	wg.Add(len(sim.SimulationMembers))
+	for _, v := range sim.SimulationMembers {
+		go data.GenerateSimulatedTelemetryData(sim, &v, &wg, resultsChan, errChan)
+	}
+	wg.Wait()
+	close(resultsChan)
+
+	/*
+		if err := <-errChan; err != nil {
+
+
+		}
+	*/
+
+	// Check the errChan, on the first error, set sim.FinalStatusCode & sim.FinalStatusMessage
+	// to the error info, persist it and bomb-out
 
 	// Main simulation loop. Running the simulation members concurrently here. All of the
 	// simulation members are part of the same simulation (i.e. multiple simulations are
