@@ -8,7 +8,7 @@ import (
 type SimulationMember struct {
 	ID                    string
 	SimulationID          string
-	Constructor           string
+	Constructor           api.Constructor
 	CarNumber             int32
 	TelemetryData         map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
 	ForceAlarm            bool
@@ -31,7 +31,7 @@ func (simMember SimulationMember) Create() error {
 	}
 	defer pstmt.Close()
 
-	_, err = pstmt.Exec(simMember.ID, simMember.SimulationID, simMember.Constructor,
+	_, err = pstmt.Exec(simMember.ID, simMember.SimulationID, simMember.Constructor.String(),
 		simMember.CarNumber, simMember.ForceAlarm, simMember.NoAlarms)
 	if err != nil {
 		return err

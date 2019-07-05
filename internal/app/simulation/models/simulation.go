@@ -12,10 +12,10 @@ import (
 type Simulation struct {
 	ID                       string
 	DurationInMinutes        int32
-	SampleRate               string
-	SimulationRateMultiplier string
-	GrandPrix                string
-	Track                    string
+	SampleRate               api.SampleRate
+	SimulationRateMultiplier api.SimulationRateMultiplier
+	GrandPrix                api.GrandPrix
+	Track                    api.Track
 	State                    string
 	StartTimestamp           *pbts.Timestamp
 	EndTimestamp             *pbts.Timestamp
@@ -39,7 +39,7 @@ func (sim *Simulation) Create() error {
 	}
 	defer pstmt.Close()
 
-	_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate, sim.GrandPrix, sim.Track,
+	_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate.String(), sim.GrandPrix.String(), sim.Track.String(),
 		sim.State, nil, nil, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
 	if err != nil {
 		return err
@@ -55,7 +55,6 @@ func (sim *Simulation) Create() error {
 	return nil
 }
 
-/*
 func (sim *Simulation) Update() error {
 
 	sqlStatement := `
@@ -70,10 +69,30 @@ func (sim *Simulation) Update() error {
 	}
 	defer pstmt.Close()
 
-	_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate, sim.GrandPrix, sim.Track,
-		sim.State, nil, nil, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
-	if err != nil {
-		return err
+	if sim.StartTimestamp == nil && sim.EndTimestamp == nil {
+		_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate.String(), sim.GrandPrix.String(), sim.Track.String(),
+			sim.State, nil, nil, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
+		if err != nil {
+			return err
+		}
+	} else if sim.StartTimestamp == nil && sim.EndTimestamp != nil {
+		_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate.String(), sim.GrandPrix.String(), sim.Track.String(),
+			sim.State, nil, sim.EndTimestamp, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
+		if err != nil {
+			return err
+		}
+	} else if sim.StartTimestamp != nil && sim.EndTimestamp == nil {
+		_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate.String(), sim.GrandPrix.String(), sim.Track.String(),
+			sim.State, sim.StartTimestamp, nil, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate.String(), sim.GrandPrix.String(), sim.Track.String(),
+			sim.State, sim.StartTimestamp, sim.EndTimestamp, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, v := range sim.SimulationMembers {
@@ -85,7 +104,6 @@ func (sim *Simulation) Update() error {
 
 	return nil
 }
-*/
 
 func (sim Simulation) UpdateState() error {
 
@@ -217,6 +235,7 @@ func (sim Simulation) FindAllMembers() ([]SimulationMember, error) {
 
 	var simMembers []SimulationMember
 	var member SimulationMember
+	var constructor string
 
 	rows, err := db.Query("select * from simulation_member where simulation_id = ?", sim.ID)
 
@@ -226,12 +245,32 @@ func (sim Simulation) FindAllMembers() ([]SimulationMember, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.Scan(&member.ID, &member.SimulationID, &member.Constructor,
+
+		/*
+			err := rows.Scan(&member.ID, &member.SimulationID, &member.Constructor,
+				&member.CarNumber, &member.ForceAlarm, &member.NoAlarms, &member.AlarmOccurred, &member.AlarmDatumDescription,
+				&member.AlarmDatumUnit, &member.AlarmDatumValue)
+		*/
+
+		err := rows.Scan(&member.ID, &member.SimulationID, &constructor,
 			&member.CarNumber, &member.ForceAlarm, &member.NoAlarms, &member.AlarmOccurred, &member.AlarmDatumDescription,
 			&member.AlarmDatumUnit, &member.AlarmDatumValue)
+
 		if err != nil {
 			return nil, err
 		}
+
+		switch constructor {
+		case "HAAS":
+			member.Constructor = api.Constructor_HAAS
+		case "MERCEDES":
+			member.Constructor = api.Constructor_MERCEDES
+		case "WILLIAMS":
+			member.Constructor = api.Constructor_WILLIAMS
+		default:
+			member.Constructor = api.Constructor_FERRARI
+		}
+
 		simMembers = append(simMembers, member)
 	}
 	err = rows.Err()
@@ -247,16 +286,16 @@ func NewFromRunSimulationRequest(req api.RunSimulationRequest) *Simulation {
 	sim := new(Simulation)
 	sim.ID = req.Simulation.Uuid
 	sim.DurationInMinutes = req.Simulation.DurationInMinutes
-	sim.SampleRate = req.Simulation.SampleRate.String()
-	sim.SimulationRateMultiplier = req.Simulation.SimulationRateMultiplier.String()
-	sim.GrandPrix = req.Simulation.GrandPrix.String()
-	sim.Track = req.Simulation.Track.String()
+	sim.SampleRate = req.Simulation.SampleRate
+	sim.SimulationRateMultiplier = req.Simulation.SimulationRateMultiplier
+	sim.GrandPrix = req.Simulation.GrandPrix
+	sim.Track = req.Simulation.Track
 
 	var simMember SimulationMember
 	for _, v := range req.Simulation.SimulationMemberMap {
 		simMember.ID = v.Uuid
 		simMember.SimulationID = v.SimulationUuid
-		simMember.Constructor = v.Constructor.String()
+		simMember.Constructor = v.Constructor
 		simMember.CarNumber = v.CarNumber
 		simMember.ForceAlarm = v.ForceAlarm
 		simMember.NoAlarms = v.NoAlarms

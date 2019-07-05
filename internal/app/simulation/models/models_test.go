@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	//pb "github.com/bburch01/FOTAAS/api"
 	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 	pbts "github.com/golang/protobuf/ptypes/timestamp"
 
@@ -68,18 +67,18 @@ func TestSimulationModels(t *testing.T) {
 	simMemberMap := make(map[string]SimulationMember)
 
 	simMemberID := uuid.New().String()
-	simMember := SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: "HAAS", CarNumber: 10, ForceAlarm: false, NoAlarms: false}
+	simMember := SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: api.Constructor_HAAS, CarNumber: 10, ForceAlarm: false, NoAlarms: false}
 	simMemberMap[simMemberID] = simMember
 
 	simMemberID = uuid.New().String()
-	simMember = SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: "MERCEDES", CarNumber: 44, ForceAlarm: false, NoAlarms: false}
+	simMember = SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: api.Constructor_MERCEDES, CarNumber: 44, ForceAlarm: false, NoAlarms: false}
 	simMemberMap[simMemberID] = simMember
 
 	simMemberID = uuid.New().String()
-	simMember = SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: "WILLIAMS", CarNumber: 3, ForceAlarm: false, NoAlarms: false}
+	simMember = SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: api.Constructor_WILLIAMS, CarNumber: 3, ForceAlarm: false, NoAlarms: false}
 	simMemberMap[simMemberID] = simMember
 
-	sim = Simulation{ID: simID, DurationInMinutes: 60, SampleRate: "SR_1000_MS", GrandPrix: "ITALIAN", Track: "MONZA",
+	sim = Simulation{ID: simID, DurationInMinutes: 60, SampleRate: api.SampleRate_SR_1000_MS, GrandPrix: api.GrandPrix_ITALIAN, Track: api.Track_MONZA,
 		State: "IN_PROGRESS", StartTimestamp: startTime, PercentComplete: 0, SimulationMembers: simMemberMap}
 
 	err = sim.Create()

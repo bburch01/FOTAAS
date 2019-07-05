@@ -1,20 +1,10 @@
 package data
 
-import (
-	"fmt"
-	"testing"
-	"time"
+//ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
+//timestamp "github.com/golang/protobuf/ptypes/timestamp"
+//spinner "github.com/briandowns/spinner"
 
-	"github.com/bburch01/FOTAAS/api"
-	"github.com/bburch01/FOTAAS/internal/app/simulation/models"
-	"github.com/bburch01/FOTAAS/internal/app/telemetry"
-	"github.com/briandowns/spinner"
-	"github.com/google/uuid"
-	//ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-	//timestamp "github.com/golang/protobuf/ptypes/timestamp"
-	//spinner "github.com/briandowns/spinner"
-)
-
+/*
 func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 
 	var sim models.Simulation
@@ -81,17 +71,7 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 		}
 	}
 
-	//TODO: remove, for debug only
-	/*
-		for _, v1 := range simData {
-			if v1.AlarmExists {
-				for idx, v2 := range v1.Data {
-					logger.Debug(fmt.Sprintf("idx: %v desc: %v high alarm: %v low alarm %v value: %v, alarm index: %v", idx, v2.Description.String(),
-						v2.HighAlarm, v2.LowAlarm, v2.Value, v1.AlarmIndex))
-				}
-			}
-		}
-	*/
+
 
 	// Confirm that only 1 datum is the alarm datum and that it has either high alarm or
 	// low alarm set but not both.
@@ -167,23 +147,11 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 		}
 	}
 
-	/*
-		for _, v1 := range simData {
-			if v1.AlarmExists {
-				logger.Debug(fmt.Sprintf("simData datumDesc: %v alarmExists: %v", v1.DatumDesc, v1.AlarmExists))
-				for _, v2 := range v1.Data {
-					if tstamp, err = ts.Timestamp(v2.Timestamp); err != nil {
-						t.Error("failed to convert google.protobuf.timestamp to time.Time with error: ", err)
-					}
-					logger.Debug(fmt.Sprintf("datum uuid: %v desc: %v unit: %v timestamp: %v value: %v", v2.Uuid, v2.Description.String(),
-						v2.Unit.String(), tstamp, v2.Value))
-				}
-			}
-		}
-	*/
 
 }
+*/
 
+/*
 func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 
 	var sim models.Simulation
@@ -205,54 +173,6 @@ func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 		GrandPrix: api.GrandPrix_UNITED_STATES.String(), Track: api.Track_AUSTIN.String(),
 	}
 
-	/*
-		var sim api.Simulation
-		//var tstamp time.Time
-		var simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
-		var err error
-		var simDurationInMinutes int32
-		var sampleRateInMilliseconds int32
-		var expectedSimDataLength int32
-		var actualSimDataLength int32
-		var startTime time.Time
-		var elapsedTime time.Duration
-
-		simDurationInMinutes = 1
-		sampleRateInMilliseconds = 1
-
-		sim = api.Simulation{Uuid: uuid.New().String(), DurationInMinutes: simDurationInMinutes,
-			SampleRateInMilliseconds: sampleRateInMilliseconds, TransmitRateInMilliseconds: 5, GrandPrix: api.GrandPrix_UNITED_STATES,
-			Track: api.Track_AUSTIN, Constructor: api.Constructor_HAAS, CarNumber: 8, ForceAlarm: false, NoAlarms: true,
-		}
-	*/
-
-	//cores := runtime.NumCPU()
-	//logger.Debug(fmt.Sprintf("this machine has %v CPU cores available to this process", cores))
-
-	// There is a chance (about 5%) that generateSimulatedTelemetryData() will create an alarm for one of the
-	// datum descriptions when ForceAlarm is set to false (i.e. and un-forced alarm will occur in the data).
-	// This test case is specifically for NO alarms in the simulated data so call generateSimulatedTelemetryData()
-	// until alarm exists is false.
-	/*
-		var alarmFound = true
-		for alarmFound {
-			startTime = time.Now()
-			if simData, err = generateSimulatedTelemetryData(sim); err != nil {
-				t.Error("failed to generate simulation data with error: ", err)
-			}
-			elapsedTime = time.Since(startTime)
-			logger.Debug(fmt.Sprintf("generateSimulatedTelemetryData() execution time: %v", elapsedTime))
-			//t.Logf("generateSimulatedTelemetryData() execution time: %v", elapsedTime)
-			alarmFound = false
-			for _, v := range simData {
-				if v.AlarmExists {
-					logger.Debug("alarm found in data, regenerating data set")
-					alarmFound = true
-					break
-				}
-			}
-		}
-	*/
 
 	startTime = time.Now()
 	if simData, err = GenerateSimulatedTelemetryData(sim); err != nil {
@@ -305,7 +225,9 @@ func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 		}
 	}
 }
+*/
 
+/*
 func BenchmarkGenerateSimulatedTelemetryDataNoAlarm(b *testing.B) {
 
 	var sim models.Simulation
@@ -331,6 +253,7 @@ func BenchmarkGenerateSimulatedTelemetryDataNoAlarm(b *testing.B) {
 	s.Stop()
 
 }
+*/
 
 /*
 func BenchmarkGenerateSimulatedTelemetryDataNoAlarmSequential(b *testing.B) {
