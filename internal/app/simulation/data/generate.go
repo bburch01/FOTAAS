@@ -262,13 +262,13 @@ func GenerateSimulatedTelemetryData(sim *models.Simulation, simMember *models.Si
 	simDurationInMillis = sim.DurationInMinutes * 60000
 
 	switch sim.SampleRate {
-	case api.SampleRate_SR_1_MS.String():
+	case api.SampleRate_SR_1_MS:
 		sampleRateInMillis = 1
-	case api.SampleRate_SR_10_MS.String():
+	case api.SampleRate_SR_10_MS:
 		sampleRateInMillis = 10
-	case api.SampleRate_SR_100_MS.String():
+	case api.SampleRate_SR_100_MS:
 		sampleRateInMillis = 100
-	case api.SampleRate_SR_1000_MS.String():
+	case api.SampleRate_SR_1000_MS:
 		sampleRateInMillis = 1000
 	default:
 		// This should never happen. Validation occurs in both the protobuf api

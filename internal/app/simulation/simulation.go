@@ -111,13 +111,13 @@ func StartSimulation(sim *models.Simulation) {
 	// multiple simulations are not being run) so concurrency does not make sense here.
 
 	switch sim.SampleRate {
-	case api.SampleRate_SR_1_MS.String():
+	case api.SampleRate_SR_1_MS:
 		sampleRateInMillis = 1
-	case api.SampleRate_SR_10_MS.String():
+	case api.SampleRate_SR_10_MS:
 		sampleRateInMillis = 10
-	case api.SampleRate_SR_100_MS.String():
+	case api.SampleRate_SR_100_MS:
 		sampleRateInMillis = 100
-	case api.SampleRate_SR_1000_MS.String():
+	case api.SampleRate_SR_1000_MS:
 		sampleRateInMillis = 1000
 	default:
 		// This should never happen. Validation occurs in both the protobuf api
@@ -127,17 +127,17 @@ func StartSimulation(sim *models.Simulation) {
 	}
 
 	switch sim.SimulationRateMultiplier {
-	case api.SimulationRateMultiplier_X1.String():
+	case api.SimulationRateMultiplier_X1:
 		simRateMultiplier = 1
-	case api.SimulationRateMultiplier_X2.String():
+	case api.SimulationRateMultiplier_X2:
 		simRateMultiplier = 2
-	case api.SimulationRateMultiplier_X4.String():
+	case api.SimulationRateMultiplier_X4:
 		simRateMultiplier = 4
-	case api.SimulationRateMultiplier_X8.String():
+	case api.SimulationRateMultiplier_X8:
 		simRateMultiplier = 8
-	case api.SimulationRateMultiplier_X10.String():
+	case api.SimulationRateMultiplier_X10:
 		simRateMultiplier = 10
-	case api.SimulationRateMultiplier_X20.String():
+	case api.SimulationRateMultiplier_X20:
 		simRateMultiplier = 20
 	default:
 		// This should never happen. Validation occurs in both the protobuf api

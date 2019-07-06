@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
@@ -246,12 +247,6 @@ func (sim Simulation) FindAllMembers() ([]SimulationMember, error) {
 
 	for rows.Next() {
 
-		/*
-			err := rows.Scan(&member.ID, &member.SimulationID, &member.Constructor,
-				&member.CarNumber, &member.ForceAlarm, &member.NoAlarms, &member.AlarmOccurred, &member.AlarmDatumDescription,
-				&member.AlarmDatumUnit, &member.AlarmDatumValue)
-		*/
-
 		err := rows.Scan(&member.ID, &member.SimulationID, &constructor,
 			&member.CarNumber, &member.ForceAlarm, &member.NoAlarms, &member.AlarmOccurred, &member.AlarmDatumDescription,
 			&member.AlarmDatumUnit, &member.AlarmDatumValue)
@@ -260,17 +255,11 @@ func (sim Simulation) FindAllMembers() ([]SimulationMember, error) {
 			return nil, err
 		}
 
-		switch constructor {
-		case "HAAS":
-			member.Constructor = api.Constructor_HAAS
-		case "MERCEDES":
-			member.Constructor = api.Constructor_MERCEDES
-		case "WILLIAMS":
-			member.Constructor = api.Constructor_WILLIAMS
-		default:
-			member.Constructor = api.Constructor_FERRARI
+		ordinal, ok := api.Constructor_value[constructor]
+		if !ok {
+			return nil, fmt.Errorf("invalid constructor enum: %v", constructor)
 		}
-
+		member.Constructor = api.Constructor(ordinal)
 		simMembers = append(simMembers, member)
 	}
 	err = rows.Err()

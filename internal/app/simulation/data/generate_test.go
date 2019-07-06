@@ -49,13 +49,13 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 	simDurationInMilliseconds := sim.DurationInMinutes * 60000
 
 	switch sampleRate {
-	case api.SampleRate_SR_1_MS.String():
+	case api.SampleRate_SR_1_MS:
 		sampleRateInMilliseconds = 1
-	case api.SampleRate_SR_10_MS.String():
+	case api.SampleRate_SR_10_MS:
 		sampleRateInMilliseconds = 10
-	case api.SampleRate_SR_100_MS.String():
+	case api.SampleRate_SR_100_MS:
 		sampleRateInMilliseconds = 100
-	case api.SampleRate_SR_1000_MS.String():
+	case api.SampleRate_SR_1000_MS:
 		sampleRateInMilliseconds = 1000
 	default:
 		t.Error("invalid sample rate")
@@ -192,13 +192,13 @@ func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 	simDurationInMilliseconds := sim.DurationInMinutes * 60000
 
 	switch sampleRate {
-	case api.SampleRate_SR_1_MS.String():
+	case api.SampleRate_SR_1_MS:
 		sampleRateInMilliseconds = 1
-	case api.SampleRate_SR_10_MS.String():
+	case api.SampleRate_SR_10_MS:
 		sampleRateInMilliseconds = 10
-	case api.SampleRate_SR_100_MS.String():
+	case api.SampleRate_SR_100_MS:
 		sampleRateInMilliseconds = 100
-	case api.SampleRate_SR_1000_MS.String():
+	case api.SampleRate_SR_1000_MS:
 		sampleRateInMilliseconds = 1000
 	default:
 		t.Error("invalid sample rate")
