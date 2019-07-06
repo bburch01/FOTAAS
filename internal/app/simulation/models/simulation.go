@@ -20,7 +20,7 @@ type Simulation struct {
 	State                    string
 	StartTimestamp           *pbts.Timestamp
 	EndTimestamp             *pbts.Timestamp
-	PercentComplete          int32
+	PercentComplete          float32
 	FinalStatusCode          string
 	FinalStatusMessage       string
 	SimulationMembers        map[string]SimulationMember

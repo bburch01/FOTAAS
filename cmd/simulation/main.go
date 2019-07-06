@@ -96,51 +96,6 @@ func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationReques
 
 	return &resp, nil
 
-	//REFACTOR OPPORTUNITY
-	// This is really ugly but until there is a clever refactor, convert the proto objects
-	// contained in req into FOTAAS domain model objects in order to gain db CRUD behaviors
-	// This is necessary because the protobuf code cannot be modified. The refactor might
-	// be based on wrapping the protobuf objects by FOTAAS domain model objects.
-	/*
-		var sim *models.Simulation = models.NewFromRunSimulationRequest(*req)
-
-		resultsChan := make(chan simulation.SimResult, len(sim.SimulationMembers))
-		wg.Add(len(sim.SimulationMembers))
-
-		// For each entry in the simMemberMap (i.e. for each car running in the simulation), validate the simMember
-		// and generate telemetry data for it. If validation or data generation fails for any member, don't run
-		// the simulation.
-		for _, v := range sim.SimulationMembers {
-			if err = validate(v); err != nil {
-				resp.ServerStatus.Code = api.StatusCode_ERROR
-				resp.ServerStatus.Message = fmt.Sprintf("simulation member validation failed with error: %v", err)
-				return &resp, nil
-			}
-			if simData, err = data.GenerateSimulatedTelemetryData(sim, v); err != nil {
-				resp.ServerStatus.Code = api.StatusCode_ERROR
-				resp.ServerStatus.Message = fmt.Sprintf("simulation member data generation failed with error: %v", err)
-				return &resp, nil
-			}
-			simMemberData[v.ID] = simData
-		}
-
-		for _, v := range sim.SimulationMembers {
-			go simulation.StartSimulation(simMemberData[v.ID], *v, &wg, resultsChan)
-		}
-
-		wg.Wait()
-		close(resultsChan)
-
-		// Need to convert to persisting simulation results to the simulation service db
-		/*
-			for res := range resultsChan {
-				statusMap[res.UUID] = &res.Status
-			}
-	*/
-
-	//resp.ServerStatus = statusMap
-	//return &resp, nil
-
 }
 
 func (s *server) GetSimulationStatus(ctx context.Context, in *api.GetSimulationStatusRequest) (*api.GetSimulationStatusResponse, error) {

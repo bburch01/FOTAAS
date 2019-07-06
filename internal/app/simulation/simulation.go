@@ -1,16 +1,17 @@
 package simulation
 
 import (
-	//"context"
+	"context"
 	//"fmt"
 
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
-	//ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
+	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 
 	"github.com/bburch01/FOTAAS/api"
 	"github.com/bburch01/FOTAAS/internal/app/simulation/data"
@@ -19,6 +20,7 @@ import (
 	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 )
 
 type SimResult struct {
@@ -49,15 +51,15 @@ func init() {
 
 func StartSimulation(sim *models.Simulation) {
 
-	var startTime time.Time
+	//var startTime time.Time
 	//var elapsedTime time.Duration
-	//var tdata api.TelemetryData
+	var tdata api.TelemetryData
 	var sampleRateInMillis int32
-	//should be not needed now: var simDurationInMillis int32
 	var simRateMultiplier int32
-	//var resp *api.TransmitTelemetryResponse
-	//var req api.TransmitTelemetryRequest
-	//var sb strings.Builder
+	var resp *api.TransmitTelemetryResponse
+	var req api.TransmitTelemetryRequest
+	var sb strings.Builder
+	var transmissionCount int
 
 	var simMemberDataMap map[string]map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
 	//var simData []data.SimMemberData
@@ -94,15 +96,7 @@ func StartSimulation(sim *models.Simulation) {
 		return
 	}
 
-	/*
-		type SimMemberData struct {
-			SimMemberID string
-			SimData     map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
-		}
-	*/
-
 	// Retrieve and aggregate the simulation data (for all of the sim members) from the results channel
-
 	for v := range resultsChan {
 		simMemberDataMap[v.SimMemberID] = v.SimData
 	}
@@ -123,6 +117,12 @@ func StartSimulation(sim *models.Simulation) {
 		// This should never happen. Validation occurs in both the protobuf api
 		// and in main.go RunSimulation()
 		logger.Error(fmt.Sprintf("invalid sample rate for simulation: %v", sim.ID))
+		sim.State = "FAILED_TO_START"
+		sim.FinalStatusCode = "ERROR"
+		sim.FinalStatusMessage = "simulation failed to start, invalid sample rate"
+		if err := sim.Update(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
 		return
 	}
 
@@ -143,58 +143,94 @@ func StartSimulation(sim *models.Simulation) {
 		// This should never happen. Validation occurs in both the protobuf api
 		// and in main.go RunSimulation()
 		logger.Error(fmt.Sprintf("invalid simulation rate multiplier for simulation: %v", sim.ID))
+		sim.State = "FAILED_TO_START"
+		sim.FinalStatusCode = "ERROR"
+		sim.FinalStatusMessage = "simulation failed to start, invalid simulation rate multiplier"
+		if err := sim.Update(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
 		return
 	}
 
 	sleepDuration := time.Duration(sampleRateInMillis/simRateMultiplier) * time.Millisecond
-
 	datumCount := (sim.DurationInMinutes * 60000) / sampleRateInMillis
+	percentComplete := float32(0.0)
+	percentCompleteIncrement := float32(100.0 / datumCount)
+	//startTime = time.Now()
 
-	startTime = time.Now()
+	tdata.GrandPrix = sim.GrandPrix
+	tdata.Track = sim.Track
 
-	logger.Debug(fmt.Sprintf("sleepDuration: %v datumCount: %v startTime: %v", sleepDuration, datumCount, startTime))
+	sb.WriteString(os.Getenv("TELEMETRY_SERVICE_HOST"))
+	sb.WriteString(":")
+	sb.WriteString(os.Getenv("TELEMETRY_SERVICE_PORT"))
+	telemetrySvcEndpoint := sb.String()
+
+	conn, err := grpc.Dial(telemetrySvcEndpoint, grpc.WithInsecure())
+	defer conn.Close()
+	if err != nil {
+		logger.Error(fmt.Sprintf("simulation %v failed to start with error: ", sim.ID, err))
+		sim.State = "FAILED_TO_START"
+		sim.FinalStatusCode = "ERROR"
+		sim.FinalStatusMessage = fmt.Sprintf("simulation failed to start with error: %v", err)
+		if err := sim.Update(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		return
+	}
+
+	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
+	// based on the datum count.
+	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
+	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
+	defer cancel()
+
+	client := api.NewTelemetryServiceClient(conn)
 
 	/*
-		tdata.GrandPrix = api.
-
-		//tdata.GrandPrix = sim.GrandPrix
-		tdata.Track = sim.Track
-
-		var transmissionCount int
-
-		sb.WriteString(os.Getenv("TELEMETRY_SERVICE_HOST"))
-		sb.WriteString(":")
-		sb.WriteString(os.Getenv("TELEMETRY_SERVICE_PORT"))
-		telemetrySvcEndpoint := sb.String()
-
-		conn, err := grpc.Dial(telemetrySvcEndpoint, grpc.WithInsecure())
+		startTime, err = ipbts.TimestampProto(time.Now())
 		if err != nil {
-			msg := fmt.Sprintf("simulation service error: %v", err)
-			resultsChan <- SimResult{UUID: sim.Uuid, Status: api.ServerStatus{Code: api.StatusCode_ERROR, Message: msg}}
-			return
+			t.Error("failed to create timestamp with error: ", err)
 		}
-		defer conn.Close()
+	*/
 
-		// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
-		// based on the datum count.
-		clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
-		ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
+	sim.StartTimestamp, err = ipbts.TimestampProto(time.Now())
+	if err != nil {
+		logger.Error(fmt.Sprintf("simulation %v failed to start with error: ", sim.ID, err))
+		sim.State = "FAILED_TO_START"
+		sim.FinalStatusCode = "ERROR"
+		sim.FinalStatusMessage = fmt.Sprintf("simulation failed to start with error: %v", err)
+		if err := sim.Update(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		return
+	}
+	sim.State = "IN_PROGRESS"
+	sim.PercentComplete = percentComplete
+	if err := sim.Update(); err != nil {
+		logger.Error(fmt.Sprintf("simulation %v failed to start with error: ", sim.ID, err))
+		sim.State = "FAILED_TO_START"
+		sim.FinalStatusCode = "ERROR"
+		sim.FinalStatusMessage = fmt.Sprintf("simulation failed to start with error: %v", err)
+		return
+	}
 
-		defer cancel()
+	for idx := int32(0); idx < datumCount; idx++ {
 
-		var client api.TelemetryServiceClient
+		for _, v := range sim.SimulationMembers {
 
-		client = api.NewTelemetryServiceClient(conn)
+			tdata.GrandPrix = sim.GrandPrix
+			tdata.Track = sim.Track
+			tdata.Constructor = v.Constructor
+			tdata.CarNumber = v.CarNumber
 
-		for idx := 0; idx < datumCount; idx++ {
+			simMemberData := simMemberDataMap[v.ID]
 
-			datumMap := make(map[string]*api.TelemetryDatum, len(simData))
+			datumMap := make(map[string]*api.TelemetryDatum, len(simMemberData))
 
-			for _, v := range simData {
-
-				v.Data[idx].SimulationTransmitSequenceNumber = int32(idx)
-				datumMap[v.Data[idx].Uuid] = &v.Data[idx]
-
+			for _, v2 := range simMemberData {
+				v2.Data[idx].SimulationTransmitSequenceNumber = idx
+				datumMap[v2.Data[idx].Uuid] = &v2.Data[idx]
 			}
 
 			tdata.TelemetryDatumMap = datumMap
@@ -203,30 +239,75 @@ func StartSimulation(sim *models.Simulation) {
 
 			resp, err = client.TransmitTelemetry(ctx, &req)
 			if err != nil {
-				msg := fmt.Sprintf("simulation service error: %v", err)
-				resultsChan <- SimResult{UUID: sim.Uuid, Status: api.ServerStatus{Code: api.StatusCode_ERROR, Message: msg}}
+
+				logger.Error(fmt.Sprintf("simulation %v failed with error: ", sim.ID, err))
+				sim.State = "FAILED"
+				sim.FinalStatusCode = "ERROR"
+				sim.FinalStatusMessage = fmt.Sprintf("simulation failed with server side error: %v", err)
+				if err := sim.Update(); err != nil {
+					logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+				}
 				return
+
 			}
 
-			for i, v := range resp.ServerStatus {
+			for _, v := range resp.ServerStatus {
 				if v.Code != api.StatusCode_OK {
-					msg := fmt.Sprintf("transmit of telemetry datum UUID %v failed with telemetry service error: %v", i, v.Message)
-					resultsChan <- SimResult{UUID: sim.Uuid, Status: api.ServerStatus{Code: api.StatusCode_ERROR, Message: msg}}
+
+					logger.Error(fmt.Sprintf("simulation %v failed with telemetry service code: ", sim.ID, v.Code))
+					logger.Error(fmt.Sprintf("simulation %v failed with telemetry service message: ", sim.ID, v.Message))
+
+					sim.State = "FAILED"
+					sim.FinalStatusCode = "ERROR"
+					sim.FinalStatusMessage = fmt.Sprintf("simulation failed with telemetry service status message: %v", v.Message)
+					if err := sim.Update(); err != nil {
+						logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+					}
 					return
+
 				}
 			}
 
-			transmissionCount++
-
-			time.Sleep(time.Duration(sampleRateInMillis) * time.Millisecond)
-
 		}
 
-		logger.Debug(fmt.Sprintf("transmissionCount: %v", transmissionCount))
+		transmissionCount++
 
-		elapsedTime = time.Since(startTime)
-		logger.Debug(fmt.Sprintf("simulation execution time: %v", elapsedTime))
-	*/
+		time.Sleep(sleepDuration)
+
+		percentComplete += percentCompleteIncrement
+
+		sim.PercentComplete = percentComplete
+		if err := sim.Update(); err != nil {
+			logger.Error(fmt.Sprintf("simulation %v failed with error: ", sim.ID, err))
+			sim.State = "FAILED_TO_START"
+			sim.FinalStatusCode = "ERROR"
+			sim.FinalStatusMessage = fmt.Sprintf("simulation failed with server side error: %v", err)
+			return
+		}
+
+	}
+
+	sim.EndTimestamp, err = ipbts.TimestampProto(time.Now())
+	if err != nil {
+		logger.Error(fmt.Sprintf("simulation %v failed to start with error: ", sim.ID, err))
+		sim.State = "FAILED_TO_START"
+		sim.FinalStatusCode = "ERROR"
+		sim.FinalStatusMessage = fmt.Sprintf("simulation failed to start with error: %v", err)
+		if err := sim.Update(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		return
+	}
+
+	sim.State = "COMPLETED"
+	sim.PercentComplete = 100.0
+	sim.FinalStatusCode = "OK"
+	sim.FinalStatusMessage = "simulation completed normally"
+
+	logger.Debug(fmt.Sprintf("transmissionCount: %v", transmissionCount))
+
+	//elapsedTime = time.Since(startTime)
+	//logger.Debug(fmt.Sprintf("simulation execution time: %v", elapsedTime))
 
 	return
 }
