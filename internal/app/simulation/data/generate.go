@@ -259,6 +259,8 @@ func GenerateSimulatedTelemetryData(sim *models.Simulation, simMember *models.Si
 	var genAlarm bool
 	var simulatedTelemetryDataMap = make(map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData)
 
+	defer wg.Done()
+
 	simDurationInMillis = sim.DurationInMinutes * 60000
 
 	switch sim.SampleRate {
@@ -321,6 +323,8 @@ func GenerateSimulatedTelemetryData(sim *models.Simulation, simMember *models.Si
 	var workerWg sync.WaitGroup
 	workerWg.Add(len(telemetryDatumParametersMap))
 
+	logger.Debug(fmt.Sprintf("starting data generation workers for simulation member: %v", simMember.ID))
+
 	for datumDesc, datumParams := range telemetryDatumParametersMap {
 		go telemetryDataGenerationWorker(sim.ID, datumDesc, datumParams, sampleRateInMillis,
 			alarmTypeChoice.Item.(telemetry.AlarmParams), datumCount,
@@ -356,7 +360,6 @@ func telemetryDataGenerationWorker(simUUID string, tdd api.TelemetryDatumDescrip
 	defer wg.Done()
 	sem <- 1
 
-	//logger.Debug(fmt.Sprintf("generating telemetry data for datum desc: %v", tdd.String()))
 	values := randFloatsInRange(tdp.RangeLowValue, tdp.RangeHighValue, datumCount)
 	data := make([]api.TelemetryDatum, datumCount)
 	for i, v := range values {
@@ -418,9 +421,10 @@ func telemetryDataGenerationWorker(simUUID string, tdd api.TelemetryDatumDescrip
 		// the rampToAlarm() function.
 	}
 
-	//logger.Debug(fmt.Sprintf("appending sim data for datum desc: %v to results channel", simData.datumDesc))
 	resultsChan <- simData
 	<-sem
+
+	return
 
 }
 

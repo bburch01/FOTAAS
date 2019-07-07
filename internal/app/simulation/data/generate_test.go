@@ -1,8 +1,25 @@
 package data
 
-//ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-//timestamp "github.com/golang/protobuf/ptypes/timestamp"
-//spinner "github.com/briandowns/spinner"
+import (
+
+	//ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
+	//pbts "github.com/golang/protobuf/ptypes/timestamp"
+
+	"sync"
+	"testing"
+
+	//"github.com/bburch01/FOTAAS/internal/app/simulation/data"
+	"github.com/bburch01/FOTAAS/internal/app/simulation/models"
+	"github.com/bburch01/FOTAAS/internal/app/telemetry"
+
+	"github.com/bburch01/FOTAAS/api"
+	"github.com/google/uuid"
+	//"github.com/bburch01/FOTAAS/internal/app/telemetry"
+	//"github.com/bburch01/FOTAAS/internal/app/simulation"
+	//ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
+	//timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	//spinner "github.com/briandowns/spinner"
+)
 
 /*
 func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
@@ -151,81 +168,141 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 }
 */
 
-/*
 func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 
+	var sampleRateInMillis int32
+	var simID string
+	var simMember models.SimulationMember
 	var sim models.Simulation
-	//var tstamp time.Time
-	var simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
-	var err error
-	var simDurationInMinutes int32
-	var sampleRate string
-	var sampleRateInMilliseconds int32
-	var expectedSimDataLength int32
-	var actualSimDataLength int32
-	var startTime time.Time
-	var elapsedTime time.Duration
 
-	simDurationInMinutes = 1
-	sampleRate = api.SampleRate_SR_1000_MS.String()
+	simMemberDataMap := make(map[string]map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData)
 
-	sim = models.Simulation{ID: uuid.New().String(), DurationInMinutes: simDurationInMinutes, SampleRate: sampleRate,
-		GrandPrix: api.GrandPrix_UNITED_STATES.String(), Track: api.Track_AUSTIN.String(),
+	simMemberMap := make(map[string]models.SimulationMember)
+	simID = uuid.New().String()
+
+	simMemberID := uuid.New().String()
+	simMember = models.SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: api.Constructor_HAAS,
+		CarNumber: 8, ForceAlarm: false, NoAlarms: true,
+	}
+	simMemberMap[simMemberID] = simMember
+
+	simMemberID = uuid.New().String()
+	simMember = models.SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: api.Constructor_MERCEDES,
+		CarNumber: 44, ForceAlarm: false, NoAlarms: true,
+	}
+	simMemberMap[simMemberID] = simMember
+
+	sim = models.Simulation{ID: simID, DurationInMinutes: int32(1), SampleRate: api.SampleRate_SR_1000_MS,
+		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GrandPrix: api.GrandPrix_UNITED_STATES,
+		Track: api.Track_AUSTIN, SimulationMembers: simMemberMap}
+
+	var wg sync.WaitGroup
+	errChan := make(chan error, len(sim.SimulationMembers))
+	resultsChan := make(chan SimMemberData, len(sim.SimulationMembers))
+	wg.Add(len(sim.SimulationMembers))
+	for _, v := range sim.SimulationMembers {
+		go GenerateSimulatedTelemetryData(&sim, &v, &wg, resultsChan, errChan)
+	}
+	wg.Wait()
+	close(resultsChan)
+	close(errChan)
+
+	if err := <-errChan; err != nil {
+		t.Error("failed with error from GenerateSimulatedTelemetryData: ", err)
 	}
 
-
-	startTime = time.Now()
-	if simData, err = GenerateSimulatedTelemetryData(sim); err != nil {
-		t.Error("failed to generate simulation data with error: ", err)
-	}
-	elapsedTime = time.Since(startTime)
-	logger.Debug(fmt.Sprintf("generateSimulatedTelemetryData() execution time: %v", elapsedTime))
-
-	// The number of simulatedTelemetryData in the simData map must equal the length
-	// of the telemetryDataParametersmap (one for each datum description).
-	expectedSimDataLength = int32(len(telemetryDatumParametersMap))
-	actualSimDataLength = int32(len(simData))
-	if actualSimDataLength != expectedSimDataLength {
-		t.Error("failed with incorrect simData length, expected: ", expectedSimDataLength, "got: ", actualSimDataLength)
+	// Retrieve and aggregate the simulation data (for all of the sim members) from the results channel
+	for v := range resultsChan {
+		simMemberDataMap[v.SimMemberID] = v.SimData
 	}
 
-	simDurationInMilliseconds := sim.DurationInMinutes * 60000
-
-	switch sampleRate {
+	switch sim.SampleRate {
 	case api.SampleRate_SR_1_MS:
-		sampleRateInMilliseconds = 1
+		sampleRateInMillis = 1
 	case api.SampleRate_SR_10_MS:
-		sampleRateInMilliseconds = 10
+		sampleRateInMillis = 10
 	case api.SampleRate_SR_100_MS:
-		sampleRateInMilliseconds = 100
+		sampleRateInMillis = 100
 	case api.SampleRate_SR_1000_MS:
-		sampleRateInMilliseconds = 1000
+		sampleRateInMillis = 1000
 	default:
-		t.Error("invalid sample rate")
+		t.Error("invalid sample rate: ", sim.SampleRate)
 	}
 
-	// The datum count in each of the simulatedTelemetryData in the simData map must equal
-	// what the sample rate will produce during the duration of the simulation.
-	var expectedDatumCount = simDurationInMilliseconds / sampleRateInMilliseconds
-	for _, v1 := range simData {
-		datumCount := int32(len(v1.Data))
-		if datumCount != expectedDatumCount {
-			t.Error("incorrect datum count, expected: ", expectedDatumCount, " got: ", datumCount)
+	simDurationInMillis := sim.DurationInMinutes * 60000
+	expectedDatumCount := simDurationInMillis / sampleRateInMillis
+
+	for _, v := range simMemberDataMap {
+
+		if len(v) != len(api.TelemetryDatumDescription_name) {
+			t.Error("invalid datum description count, expected: ", len(api.TelemetryDatumDescription_name), "got: ", len(v))
+			t.FailNow()
 		}
-	}
 
-	// Confirm that all of the generated datum values are within the valid range.
-	for _, v1 := range simData {
-		dp := telemetryDatumParametersMap[v1.DatumDesc]
-		for i, v2 := range v1.Data {
-			if !((dp.RangeLowValue <= v2.Value) && (v2.Value <= dp.RangeHighValue)) {
-				t.Error("datum index: ", i, " invalid datum value ", v2.Value,
-					" expected to be between ", dp.RangeLowValue, " and ", dp.RangeHighValue)
+		for _, v2 := range v {
+			if int32(len(v2.Data)) != expectedDatumCount {
+				t.Error("invalid datum count, expected: ", expectedDatumCount, "got: ", len(v2.Data))
+				t.FailNow()
+			}
+			if v2.AlarmExists {
+				t.Error("invalid alarm exists flag, expected false got: ", v2.AlarmExists)
+				t.FailNow()
+			}
+
+			for _, v3 := range v2.Data {
+
+				if _, err := uuid.Parse(v3.Uuid); err != nil {
+					t.Error("invalid datum uuid: ", v3.Uuid)
+					t.FailNow()
+				}
+
+				if _, ok := api.TelemetryDatumDescription_value[v3.Description.String()]; !ok {
+					t.Error("invalid telemetry datum description: ", v3.Description)
+					t.FailNow()
+				}
+
+				if _, ok := api.TelemetryDatumUnit_value[v3.Unit.String()]; !ok {
+					t.Error("invalid telemetry datum unit: ", v3.Unit)
+					t.FailNow()
+				}
+
+				dp := telemetryDatumParametersMap[v3.Description]
+
+				if !((dp.RangeLowValue <= v3.Value) && (v3.Value <= dp.RangeHighValue)) {
+					t.Error("invalid datum value, expected ", dp.RangeLowValue, " <= value <=", dp.RangeHighValue,
+						" for ", v3.Description, " got value: ", v3.Value)
+					t.FailNow()
+				}
+
+				if v3.HighAlarm {
+					t.Error("invalid datum high alarm flag, expected false got: ", v3.HighAlarm)
+					t.FailNow()
+				}
+
+				if v3.LowAlarm {
+					t.Error("invalid datum low alarm flag, expected false got: ", v3.LowAlarm)
+					t.FailNow()
+				}
+
+				if !v3.Simulated {
+					t.Error("invalid simulated datum flag, expected true got: ", v3.Simulated)
+					t.FailNow()
+				}
+
+				if _, err := uuid.Parse(v3.SimulationUuid); err != nil {
+					t.Error("invalid datum uuid: ", v3.SimulationUuid)
+					t.FailNow()
+				}
+
+				if v3.SimulationTransmitSequenceNumber < 0 || v3.SimulationTransmitSequenceNumber >= expectedDatumCount {
+					t.Error("invalid datum simulation transmit sequence number, expected 0 <= value <=", expectedDatumCount-1,
+						" got value: ", v3.SimulationTransmitSequenceNumber)
+					t.FailNow()
+				}
 			}
 		}
 	}
 }
-*/
 
 /*
 func BenchmarkGenerateSimulatedTelemetryDataNoAlarm(b *testing.B) {
