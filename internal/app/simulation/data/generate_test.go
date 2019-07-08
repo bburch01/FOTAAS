@@ -21,153 +21,6 @@ import (
 	//spinner "github.com/briandowns/spinner"
 )
 
-/*
-func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
-
-	var sim models.Simulation
-	//var tstamp time.Time
-	var simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
-	var err error
-	var simDurationInMinutes int32
-	var sampleRate string
-	var sampleRateInMilliseconds int32
-	var expectedSimDataLength int32
-	var actualSimDataLength int32
-	// comment
-
-	simDurationInMinutes = 1
-	sampleRate = api.SampleRate_SR_1000_MS.String()
-
-	sim = models.Simulation{ID: uuid.New().String(), DurationInMinutes: simDurationInMinutes, SampleRate: sampleRate,
-		GrandPrix: api.GrandPrix_UNITED_STATES.String(), Track: api.Track_AUSTIN.String(),
-	}
-
-	if simData, err = GenerateSimulatedTelemetryData(sim); err != nil {
-		t.Error("failed to generate simulation data with error: ", err)
-	}
-
-	expectedSimDataLength = int32(len(telemetryDatumParametersMap))
-	actualSimDataLength = int32(len(simData))
-	if actualSimDataLength != expectedSimDataLength {
-		t.Error("failed with incorrect simData length, expected: ", expectedSimDataLength, "got: ", actualSimDataLength)
-	}
-
-	// Only 1 of the simData should have alarmExists set to true.
-	var simDataAlarmCount int
-	for _, v := range simData {
-		if v.AlarmExists {
-			simDataAlarmCount++
-		}
-	}
-	if simDataAlarmCount != 1 {
-		t.Error("incorrect simData alarm exists count, expected 1 got: ", simDataAlarmCount)
-	}
-
-	simDurationInMilliseconds := sim.DurationInMinutes * 60000
-
-	switch sampleRate {
-	case api.SampleRate_SR_1_MS:
-		sampleRateInMilliseconds = 1
-	case api.SampleRate_SR_10_MS:
-		sampleRateInMilliseconds = 10
-	case api.SampleRate_SR_100_MS:
-		sampleRateInMilliseconds = 100
-	case api.SampleRate_SR_1000_MS:
-		sampleRateInMilliseconds = 1000
-	default:
-		t.Error("invalid sample rate")
-	}
-
-	var expectedDatumCount = simDurationInMilliseconds / sampleRateInMilliseconds
-	for _, v1 := range simData {
-		if v1.AlarmExists {
-			datumCount := int32(len(v1.Data))
-			if datumCount != expectedDatumCount {
-				t.Error("incorrect datum count, expected: ", expectedDatumCount, " got: ", datumCount)
-			}
-		}
-	}
-
-
-
-	// Confirm that only 1 datum is the alarm datum and that it has either high alarm or
-	// low alarm set but not both.
-	var datumWithAlarmCount int
-	for _, v1 := range simData {
-		if v1.AlarmExists {
-			for _, v2 := range v1.Data {
-				if v2.HighAlarm && v2.LowAlarm {
-					t.Error("datum high alarm and low alarm both set to true")
-				}
-				if v2.HighAlarm || v2.LowAlarm {
-					datumWithAlarmCount++
-				}
-			}
-		}
-	}
-	if datumWithAlarmCount != 1 {
-		t.Error("incorrect datum with alarm count, expected 1 got ", datumWithAlarmCount)
-	}
-
-	// Confirm that the alarm datum value is within the valid range.
-	for _, v := range simData {
-		if v.AlarmExists {
-			if !((0 <= v.AlarmIndex) && (v.AlarmIndex <= len(v.Data))) {
-				t.Error("simulatedTelemetryData alarm index is invalid")
-			}
-			alarmDatum := v.Data[v.AlarmIndex]
-			dp := telemetryDatumParametersMap[v.DatumDesc]
-			switch v.AlarmMode {
-			case telemetry.Low:
-				if !(alarmDatum.Value <= dp.LowAlarmValue) {
-					t.Error("invalid datum value, expected ", alarmDatum.Value, " to be <= ", dp.LowAlarmValue)
-				}
-			case telemetry.High:
-				if !(alarmDatum.Value >= dp.HighAlarmValue) {
-					t.Error("invalid datum value, expected ", alarmDatum.Value, " to be >= ", dp.HighAlarmValue)
-				}
-			default:
-				t.Error("simulatedTelemetryData alarm mode invalid")
-			}
-			break
-		}
-	}
-
-	// Confirm that all datum values preceeding the alarm value are within the valid range and that all
-	// datum values following the alarm datum have been set to 0.0 .
-	for _, v1 := range simData {
-		if v1.AlarmExists {
-			dp := telemetryDatumParametersMap[v1.DatumDesc]
-			for i, v2 := range v1.Data {
-				if i < v1.AlarmIndex {
-					switch v1.AlarmMode {
-					case telemetry.Low:
-						if !((dp.LowAlarmValue <= v2.Value) && (v2.Value <= dp.RangeHighValue)) {
-							t.Error("datum index: ", i, " invalid pre-alarm datum value ", v2.Value,
-								" expected to be between ", dp.LowAlarmValue, " and ", dp.RangeHighValue)
-						}
-					case telemetry.High:
-						if !((dp.RangeLowValue <= v2.Value) && (v2.Value <= dp.HighAlarmValue)) {
-							t.Error("datum index: ", i, " invalid pre-alarm datum value ", v2.Value,
-								" expected to be between ", dp.RangeLowValue, " and ", dp.HighAlarmValue)
-						}
-					default:
-						t.Error("simulatedTelemetryData alarm mode invalid")
-					}
-				} else if i > v1.AlarmIndex {
-					if v2.Value != 0.0 {
-						t.Error("invalid post-alarm datum value, expected 0.0 got ", v2.Value)
-					}
-				}
-			}
-			break
-		}
-	}
-
-
-}
-*/
-
 func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 
 	var sampleRateInMillis int32
@@ -388,7 +241,7 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 			}
 
 			datumWithAlarmCount := 0
-			for _, v3 := range v2.Data {
+			for i, v3 := range v2.Data {
 
 				if _, err := uuid.Parse(v3.Uuid); err != nil {
 					t.Error("invalid datum uuid: ", v3.Uuid)
@@ -404,16 +257,6 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 					t.Error("invalid telemetry datum unit: ", v3.Unit)
 					t.FailNow()
 				}
-
-				/*
-					dp := telemetryDatumParametersMap[v3.Description]
-
-					if !((dp.RangeLowValue <= v3.Value) && (v3.Value <= dp.RangeHighValue)) {
-						t.Error("invalid datum value, expected ", dp.RangeLowValue, " <= value <=", dp.RangeHighValue,
-							" for ", v3.Description, " got value: ", v3.Value)
-						t.FailNow()
-					}
-				*/
 
 				if v3.HighAlarm && v3.LowAlarm {
 					t.Error("telemetry datum high alarm and low alarm both set to true")
@@ -439,17 +282,46 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 						" got value: ", v3.SimulationTransmitSequenceNumber)
 					t.FailNow()
 				}
+
+				// Confirm that all datum values preceeding the alarm value are within the valid range and that all
+				// datum values following the alarm datum have been set to 0.0 (as per design). Else f there is no alarm
+				// for the datum description, confirm that all datum are in valid range.
+				dp := telemetryDatumParametersMap[v3.Description]
+				if v2.AlarmExists {
+					if i < v2.AlarmIndex {
+						switch v2.AlarmMode {
+						case telemetry.Low:
+							if !((dp.LowAlarmValue <= v3.Value) && (v3.Value <= dp.RangeHighValue)) {
+								t.Error("datum index: ", i, " invalid pre-alarm datum value ", v3.Value,
+									" expected to be between ", dp.LowAlarmValue, " and ", dp.RangeHighValue)
+							}
+						case telemetry.High:
+							if !((dp.RangeLowValue <= v3.Value) && (v3.Value <= dp.HighAlarmValue)) {
+								t.Error("datum index: ", i, " invalid pre-alarm datum value ", v3.Value,
+									" expected to be between ", dp.RangeLowValue, " and ", dp.HighAlarmValue)
+							}
+						default:
+							t.Error("simulatedTelemetryData alarm mode invalid")
+						}
+					} else if i > v2.AlarmIndex {
+						if v3.Value != 0.0 {
+							t.Error("invalid post-alarm datum value, expected 0.0 got ", v3.Value)
+						}
+					}
+				} else {
+
+					if !((dp.RangeLowValue <= v3.Value) && (v3.Value <= dp.RangeHighValue)) {
+						t.Error("invalid datum value, expected ", dp.RangeLowValue, " <= value <=", dp.RangeHighValue,
+							" for ", v3.Description, " got value: ", v3.Value)
+						t.FailNow()
+					}
+
+				}
+
 			}
 			if v2.AlarmExists && datumWithAlarmCount != 1 {
 				t.Error("incorrect datum with alarm count, expected 1 got ", datumWithAlarmCount)
 			}
-
-			/*
-				if v2.AlarmExists {
-
-
-				}
-			*/
 
 		}
 		if alarmCount == 0 {
