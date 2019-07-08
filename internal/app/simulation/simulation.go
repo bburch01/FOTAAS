@@ -61,9 +61,10 @@ func StartSimulation(sim *models.Simulation) {
 	var sb strings.Builder
 	var transmissionCount int
 
-	var simMemberDataMap map[string]map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
+	var simMemberDataMap = make(map[string]map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData)
 	//var simData []data.SimMemberData
 
+	sim.State = "INITIALIZING"
 	if err := sim.Create(); err != nil {
 		// Since no simulation status can be persisted, the only this to do is log
 		// an error an bail-out.
@@ -86,11 +87,17 @@ func StartSimulation(sim *models.Simulation) {
 	// Check the errChan, on the first error, set sim.FinalStatusCode & sim.FinalStatusMessage
 	// to the error info, attempt to persist it and bail-out.
 	if err := <-errChan; err != nil {
-		logger.Error(fmt.Sprintf("simulation %v failed to start with error: ", sim.ID, err))
+		logger.Error(fmt.Sprintf("simulation %v failed to start with error: %v", sim.ID, err))
 		sim.State = "FAILED_TO_START"
+		if err := sim.UpdateState(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
 		sim.FinalStatusCode = "ERROR"
-		sim.FinalStatusMessage = fmt.Sprintf("simulation failed to start with error: %v", err)
-		if err := sim.Update(); err != nil {
+		if err := sim.UpdateFinalStatusCode(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusMessage = "simulation failed to start with a server-side error"
+		if err := sim.UpdateFinalStatusMessage(); err != nil {
 			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
 		}
 		return
@@ -118,9 +125,15 @@ func StartSimulation(sim *models.Simulation) {
 		// and in main.go RunSimulation()
 		logger.Error(fmt.Sprintf("invalid sample rate for simulation: %v", sim.ID))
 		sim.State = "FAILED_TO_START"
+		if err := sim.UpdateState(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
 		sim.FinalStatusCode = "ERROR"
-		sim.FinalStatusMessage = "simulation failed to start, invalid sample rate"
-		if err := sim.Update(); err != nil {
+		if err := sim.UpdateFinalStatusCode(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusMessage = fmt.Sprintf("invalid sample rate")
+		if err := sim.UpdateFinalStatusMessage(); err != nil {
 			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
 		}
 		return
@@ -144,9 +157,15 @@ func StartSimulation(sim *models.Simulation) {
 		// and in main.go RunSimulation()
 		logger.Error(fmt.Sprintf("invalid simulation rate multiplier for simulation: %v", sim.ID))
 		sim.State = "FAILED_TO_START"
+		if err := sim.UpdateState(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
 		sim.FinalStatusCode = "ERROR"
-		sim.FinalStatusMessage = "simulation failed to start, invalid simulation rate multiplier"
-		if err := sim.Update(); err != nil {
+		if err := sim.UpdateFinalStatusCode(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusMessage = fmt.Sprintf("invalid simulation rate multiplier")
+		if err := sim.UpdateFinalStatusMessage(); err != nil {
 			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
 		}
 		return
@@ -169,11 +188,17 @@ func StartSimulation(sim *models.Simulation) {
 	conn, err := grpc.Dial(telemetrySvcEndpoint, grpc.WithInsecure())
 	defer conn.Close()
 	if err != nil {
-		logger.Error(fmt.Sprintf("simulation %v failed to start with error: ", sim.ID, err))
+		logger.Error(fmt.Sprintf("simulation %v failed to start with error: %v", sim.ID, err))
 		sim.State = "FAILED_TO_START"
+		if err := sim.UpdateState(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
 		sim.FinalStatusCode = "ERROR"
-		sim.FinalStatusMessage = fmt.Sprintf("simulation failed to start with error: %v", err)
-		if err := sim.Update(); err != nil {
+		if err := sim.UpdateFinalStatusCode(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusMessage = "simulation failed to start with a server-side error"
+		if err := sim.UpdateFinalStatusMessage(); err != nil {
 			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
 		}
 		return
@@ -196,25 +221,72 @@ func StartSimulation(sim *models.Simulation) {
 
 	sim.StartTimestamp, err = ipbts.TimestampProto(time.Now())
 	if err != nil {
-		logger.Error(fmt.Sprintf("simulation %v failed to start with error: ", sim.ID, err))
+		logger.Error(fmt.Sprintf("simulation %v failed to start with error: %v", sim.ID, err))
 		sim.State = "FAILED_TO_START"
+		if err := sim.UpdateState(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
 		sim.FinalStatusCode = "ERROR"
-		sim.FinalStatusMessage = fmt.Sprintf("simulation failed to start with error: %v", err)
-		if err := sim.Update(); err != nil {
+		if err := sim.UpdateFinalStatusCode(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusMessage = "simulation failed to start with a server-side error"
+		if err := sim.UpdateFinalStatusMessage(); err != nil {
 			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
 		}
 		return
 	}
-	sim.State = "IN_PROGRESS"
-	sim.PercentComplete = percentComplete
-	if err := sim.Update(); err != nil {
-		logger.Error(fmt.Sprintf("simulation %v failed to start with error: ", sim.ID, err))
+
+	if err := sim.UpdateStartTimestamp(); err != nil {
+		logger.Error(fmt.Sprintf("simulation %v failed to start with error: %v", sim.ID, err))
 		sim.State = "FAILED_TO_START"
+		if err := sim.UpdateState(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
 		sim.FinalStatusCode = "ERROR"
-		sim.FinalStatusMessage = fmt.Sprintf("simulation failed to start with error: %v", err)
+		if err := sim.UpdateFinalStatusCode(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusMessage = "simulation failed to start with a server-side error"
+		if err := sim.UpdateFinalStatusMessage(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
 		return
 	}
 
+	sim.State = "IN_PROGRESS"
+	if err := sim.UpdateState(); err != nil {
+		logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		sim.FinalStatusCode = "ERROR"
+		if err := sim.UpdateFinalStatusCode(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusMessage = fmt.Sprintf("simulation failed to start with server-side error: %v", err)
+		if err := sim.UpdateFinalStatusMessage(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		return
+	}
+
+	sim.PercentComplete = percentComplete
+	if err := sim.UpdatePercentComplete(); err != nil {
+		logger.Error(fmt.Sprintf("simulation %v failed to start with error: %v", sim.ID, err))
+		sim.State = "FAILED_TO_START"
+		if err := sim.UpdateState(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusCode = "ERROR"
+		if err := sim.UpdateFinalStatusCode(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusMessage = "simulation failed to start with a server-side error"
+		if err := sim.UpdateFinalStatusMessage(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		return
+	}
+
+	// Main simulation loop
 	for idx := int32(0); idx < datumCount; idx++ {
 
 		for _, v := range sim.SimulationMembers {
@@ -239,32 +311,39 @@ func StartSimulation(sim *models.Simulation) {
 
 			resp, err = client.TransmitTelemetry(ctx, &req)
 			if err != nil {
-
-				logger.Error(fmt.Sprintf("simulation %v failed with error: ", sim.ID, err))
+				logger.Error(fmt.Sprintf("simulation %v failed with error: %v", sim.ID, err))
 				sim.State = "FAILED"
+				if err := sim.UpdateState(); err != nil {
+					logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+				}
 				sim.FinalStatusCode = "ERROR"
-				sim.FinalStatusMessage = fmt.Sprintf("simulation failed with server side error: %v", err)
-				if err := sim.Update(); err != nil {
+				if err := sim.UpdateFinalStatusCode(); err != nil {
+					logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+				}
+				sim.FinalStatusMessage = "simulation failed to start with a server-side error"
+				if err := sim.UpdateFinalStatusMessage(); err != nil {
 					logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
 				}
 				return
-
 			}
 
 			for _, v := range resp.ServerStatus {
 				if v.Code != api.StatusCode_OK {
-
-					logger.Error(fmt.Sprintf("simulation %v failed with telemetry service code: ", sim.ID, v.Code))
-					logger.Error(fmt.Sprintf("simulation %v failed with telemetry service message: ", sim.ID, v.Message))
-
+					logger.Error(fmt.Sprintf("simulation %v failed with telemetry service code: %v", sim.ID, v.Code))
+					logger.Error(fmt.Sprintf("simulation %v failed with telemetry service message: %v", sim.ID, v.Message))
 					sim.State = "FAILED"
+					if err := sim.UpdateState(); err != nil {
+						logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+					}
 					sim.FinalStatusCode = "ERROR"
-					sim.FinalStatusMessage = fmt.Sprintf("simulation failed with telemetry service status message: %v", v.Message)
-					if err := sim.Update(); err != nil {
+					if err := sim.UpdateFinalStatusCode(); err != nil {
+						logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+					}
+					sim.FinalStatusMessage = "simulation failed to start with a server-side error"
+					if err := sim.UpdateFinalStatusMessage(); err != nil {
 						logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
 					}
 					return
-
 				}
 			}
 
@@ -277,11 +356,20 @@ func StartSimulation(sim *models.Simulation) {
 		percentComplete += percentCompleteIncrement
 
 		sim.PercentComplete = percentComplete
-		if err := sim.Update(); err != nil {
-			logger.Error(fmt.Sprintf("simulation %v failed with error: ", sim.ID, err))
-			sim.State = "FAILED_TO_START"
+		if err := sim.UpdatePercentComplete(); err != nil {
+			logger.Error(fmt.Sprintf("simulation %v failed with error: %v", sim.ID, err))
+			sim.State = "FAILED"
+			if err := sim.UpdateState(); err != nil {
+				logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+			}
 			sim.FinalStatusCode = "ERROR"
-			sim.FinalStatusMessage = fmt.Sprintf("simulation failed with server side error: %v", err)
+			if err := sim.UpdateFinalStatusCode(); err != nil {
+				logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+			}
+			sim.FinalStatusMessage = "simulation failed to start with a server-side error"
+			if err := sim.UpdateFinalStatusMessage(); err != nil {
+				logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+			}
 			return
 		}
 
@@ -289,21 +377,74 @@ func StartSimulation(sim *models.Simulation) {
 
 	sim.EndTimestamp, err = ipbts.TimestampProto(time.Now())
 	if err != nil {
-		logger.Error(fmt.Sprintf("simulation %v failed to start with error: ", sim.ID, err))
-		sim.State = "FAILED_TO_START"
+		logger.Error(fmt.Sprintf("simulation %v failed with error: %v", sim.ID, err))
+		sim.State = "FAILED"
+		if err := sim.UpdateState(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
 		sim.FinalStatusCode = "ERROR"
-		sim.FinalStatusMessage = fmt.Sprintf("simulation failed to start with error: %v", err)
-		if err := sim.Update(); err != nil {
+		if err := sim.UpdateFinalStatusCode(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusMessage = "simulation failed to start with a server-side error"
+		if err := sim.UpdateFinalStatusMessage(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		return
+	}
+
+	if err := sim.UpdateEndTimestamp(); err != nil {
+		logger.Error(fmt.Sprintf("simulation %v failed with error: %v", sim.ID, err))
+		sim.State = "FAILED"
+		if err := sim.UpdateState(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusCode = "ERROR"
+		if err := sim.UpdateFinalStatusCode(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusMessage = "simulation failed to start with a server-side error"
+		if err := sim.UpdateFinalStatusMessage(); err != nil {
 			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
 		}
 		return
 	}
 
 	sim.State = "COMPLETED"
-	sim.PercentComplete = 100.0
-	sim.FinalStatusCode = "OK"
-	sim.FinalStatusMessage = "simulation completed normally"
+	if err := sim.UpdateState(); err != nil {
+		logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		return
+	}
 
+	sim.PercentComplete = 100.0
+	if err := sim.UpdatePercentComplete(); err != nil {
+		logger.Error(fmt.Sprintf("simulation %v failed with error: %v", sim.ID, err))
+		sim.State = "FAILED"
+		if err := sim.UpdateState(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusCode = "ERROR"
+		if err := sim.UpdateFinalStatusCode(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		sim.FinalStatusMessage = "simulation failed to start with a server-side error"
+		if err := sim.UpdateFinalStatusMessage(); err != nil {
+			logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		}
+		return
+	}
+
+	sim.FinalStatusCode = "OK"
+	if err := sim.UpdateFinalStatusCode(); err != nil {
+		logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		return
+	}
+
+	sim.FinalStatusMessage = "simulation completed normally"
+	if err := sim.UpdateFinalStatusMessage(); err != nil {
+		logger.Error(fmt.Sprintf("failed to update simulation %v with error: %v", sim.ID, err))
+		return
+	}
 	logger.Debug(fmt.Sprintf("transmissionCount: %v", transmissionCount))
 
 	//elapsedTime = time.Since(startTime)

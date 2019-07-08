@@ -62,7 +62,11 @@ func (s *server) HealthCheck(ctx context.Context, in *api.HealthCheckRequest) (*
 // will use this service to get simulation status/results during & after the simulation run
 func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationRequest) (*api.RunSimulationResponse, error) {
 
-	var resp api.RunSimulationResponse
+	//var resp api.RunSimulationResponse
+
+	var rsr = api.RunSimulationResponse{ServerStatus: &api.ServerStatus{
+		Code: api.StatusCode_OK, Message: fmt.Sprintf("simulation %v successfully started", req.Simulation.Uuid)}}
+
 	//var sim = req.Simulation
 	//var simMemberMap = req.Simulation.SimulationMemberMap
 	//var status api.ServerStatus
@@ -73,9 +77,13 @@ func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationReques
 
 	// Validate the simulation request
 	if err = validateSimulationRequest(req); err != nil {
-		resp.ServerStatus.Code = api.StatusCode_ERROR
-		resp.ServerStatus.Message = fmt.Sprintf("RunSimulationRequest failed validation: %v", err)
-		return &resp, nil
+		rsr.ServerStatus.Code = api.StatusCode_ERROR
+		rsr.ServerStatus.Message = fmt.Sprintf("RunSimulationRequest failed validation: %v", err)
+		return &rsr, nil
+	}
+
+	for _, v := range req.Simulation.SimulationMemberMap {
+		logger.Debug(fmt.Sprintf("req simulation member: %v", *v))
 	}
 
 	//REFACTOR OPPORTUNITY
@@ -91,10 +99,7 @@ func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationReques
 	// Simulation progress/status is persisted to the FOTAAS simulation db.
 	go simulation.StartSimulation(sim)
 
-	resp.ServerStatus.Code = api.StatusCode_OK
-	resp.ServerStatus.Message = fmt.Sprintf("simulation %v successfully started", req.Simulation.Uuid)
-
-	return &resp, nil
+	return &rsr, nil
 
 }
 

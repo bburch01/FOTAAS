@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -56,56 +57,6 @@ func (sim *Simulation) Create() error {
 	return nil
 }
 
-func (sim *Simulation) Update() error {
-
-	sqlStatement := `
-			INSERT INTO simulation (id, duration_in_minutes, sample_rate, grand_prix, track,
-				 state, start_timestamp, end_timestamp, percent_complete, final_status_code,
-				  final_status_message)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-
-	pstmt, err := db.Prepare(sqlStatement)
-	if err != nil {
-		return err
-	}
-	defer pstmt.Close()
-
-	if sim.StartTimestamp == nil && sim.EndTimestamp == nil {
-		_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate.String(), sim.GrandPrix.String(), sim.Track.String(),
-			sim.State, nil, nil, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
-		if err != nil {
-			return err
-		}
-	} else if sim.StartTimestamp == nil && sim.EndTimestamp != nil {
-		_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate.String(), sim.GrandPrix.String(), sim.Track.String(),
-			sim.State, nil, sim.EndTimestamp, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
-		if err != nil {
-			return err
-		}
-	} else if sim.StartTimestamp != nil && sim.EndTimestamp == nil {
-		_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate.String(), sim.GrandPrix.String(), sim.Track.String(),
-			sim.State, sim.StartTimestamp, nil, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
-		if err != nil {
-			return err
-		}
-	} else {
-		_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate.String(), sim.GrandPrix.String(), sim.Track.String(),
-			sim.State, sim.StartTimestamp, sim.EndTimestamp, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, v := range sim.SimulationMembers {
-		err := v.Create()
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func (sim Simulation) UpdateState() error {
 
 	sqlStatement := `UPDATE simulation SET state = ? WHERE id = ?`
@@ -125,6 +76,10 @@ func (sim Simulation) UpdateState() error {
 }
 
 func (sim Simulation) UpdateStartTimestamp() error {
+
+	if sim.StartTimestamp == nil {
+		return errors.New("simulation StartTimestamp must not be nil")
+	}
 
 	var t time.Time
 
@@ -152,6 +107,10 @@ func (sim Simulation) UpdateStartTimestamp() error {
 }
 
 func (sim Simulation) UpdateEndTimestamp() error {
+
+	if sim.EndTimestamp == nil {
+		return errors.New("simulation EndTimestamp must not be nil")
+	}
 
 	var t time.Time
 
@@ -273,6 +232,7 @@ func (sim Simulation) FindAllMembers() ([]SimulationMember, error) {
 func NewFromRunSimulationRequest(req api.RunSimulationRequest) *Simulation {
 
 	sim := new(Simulation)
+	sim.SimulationMembers = make(map[string]SimulationMember)
 	sim.ID = req.Simulation.Uuid
 	sim.DurationInMinutes = req.Simulation.DurationInMinutes
 	sim.SampleRate = req.Simulation.SampleRate
@@ -288,7 +248,7 @@ func NewFromRunSimulationRequest(req api.RunSimulationRequest) *Simulation {
 		simMember.CarNumber = v.CarNumber
 		simMember.ForceAlarm = v.ForceAlarm
 		simMember.NoAlarms = v.NoAlarms
-		sim.SimulationMembers[simMember.ID] = simMember
+		sim.SimulationMembers[v.Uuid] = simMember
 	}
 
 	return sim

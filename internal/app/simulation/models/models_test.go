@@ -1,15 +1,12 @@
 package models
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
-	"os"
 	"testing"
 	"time"
 
 	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-	pbts "github.com/golang/protobuf/ptypes/timestamp"
 
 	"github.com/bburch01/FOTAAS/api"
 	"github.com/google/uuid"
@@ -34,33 +31,41 @@ func init() {
 		log.Panicf("failed to load environment variables with error: %v", err)
 	}
 
+	if err = InitDB(); err != nil {
+		logger.Fatal(fmt.Sprintf("failed to initialize database driver with error: %v", err))
+	}
+
 }
 
 func TestSimulationModels(t *testing.T) {
 
 	var sim Simulation
-	var startTime *pbts.Timestamp
+	//var startTime *pbts.Timestamp
 	var err error
 
-	startTime, err = ipbts.TimestampProto(time.Now())
-	if err != nil {
-		t.Error("failed to create timestamp with error: ", err)
-	}
+	/*
+		startTime, err = ipbts.TimestampProto(time.Now())
+		if err != nil {
+			t.Error("failed to create timestamp with error: ", err)
+		}
+	*/
 
-	dbDriver := os.Getenv("DB_DRIVER")
-	dbHost := os.Getenv("DB_HOST")
-	dbUser := os.Getenv("DB_USER")
-	dbPass := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("SIMULATION_SERVICE_DB_NAME")
+	/*
+		dbDriver := os.Getenv("DB_DRIVER")
+		dbHost := os.Getenv("DB_HOST")
+		dbUser := os.Getenv("DB_USER")
+		dbPass := os.Getenv("DB_PASSWORD")
+		dbName := os.Getenv("SIMULATION_SERVICE_DB_NAME")
 
-	dbConURL := dbUser + ":" + dbPass + "@tcp(" + dbHost + ")" + "/" + dbName
-	db, err = sql.Open(dbDriver, dbConURL)
-	if err != nil {
-		t.Error("failed to connect to db with error: ", err)
-	}
-	if err = PingDB(); err != nil {
-		t.Error("failed to ping db with error: ", err)
-	}
+		dbConURL := dbUser + ":" + dbPass + "@tcp(" + dbHost + ")" + "/" + dbName
+		db, err = sql.Open(dbDriver, dbConURL)
+		if err != nil {
+			t.Error("failed to connect to db with error: ", err)
+		}
+		if err = PingDB(); err != nil {
+			t.Error("failed to ping db with error: ", err)
+		}
+	*/
 
 	simID := uuid.New().String()
 
@@ -78,12 +83,32 @@ func TestSimulationModels(t *testing.T) {
 	simMember = SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: api.Constructor_WILLIAMS, CarNumber: 3, ForceAlarm: false, NoAlarms: false}
 	simMemberMap[simMemberID] = simMember
 
-	sim = Simulation{ID: simID, DurationInMinutes: 60, SampleRate: api.SampleRate_SR_1000_MS, GrandPrix: api.GrandPrix_ITALIAN, Track: api.Track_MONZA,
-		State: "IN_PROGRESS", StartTimestamp: startTime, PercentComplete: 0, SimulationMembers: simMemberMap}
+	/*
+		sim = Simulation{ID: simID, DurationInMinutes: 60, SampleRate: api.SampleRate_SR_1000_MS, GrandPrix: api.GrandPrix_ITALIAN, Track: api.Track_MONZA,
+			State: "IN_PROGRESS", StartTimestamp: startTime, PercentComplete: 0, SimulationMembers: simMemberMap}
+	*/
 
+	sim = Simulation{ID: simID, DurationInMinutes: 60, SampleRate: api.SampleRate_SR_1000_MS,
+		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GrandPrix: api.GrandPrix_ITALIAN, Track: api.Track_MONZA,
+		SimulationMembers: simMemberMap}
+
+	sim.State = "INITIALIZING"
 	err = sim.Create()
 	if err != nil {
 		t.Error("failed to persist simulation with error: ", err)
+	}
+
+	sim.StartTimestamp, err = ipbts.TimestampProto(time.Now())
+	if err != nil {
+		t.Error("failed to create start timestamp with error: ", err)
+	}
+	if err := sim.UpdateStartTimestamp(); err != nil {
+		t.Error("failed to update simulation start timestamp with error: ", err)
+	}
+
+	sim.State = "IN_PROGRESS"
+	if err := sim.UpdateState(); err != nil {
+		t.Error("failed to update simulation state with error: ", err)
 	}
 
 	for _, m := range sim.SimulationMembers {

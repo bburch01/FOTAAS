@@ -109,7 +109,7 @@ func (s *server) TransmitTelemetry(ctx context.Context, in *api.TransmitTelemetr
 			} else {
 				status.Code = api.StatusCode_OK
 				status.Message = fmt.Sprintf("telemetry datum successfully processed.")
-				logger.Info(fmt.Sprintf("successfully processed telemetry datum uuid: %v", td.ID))
+				//logger.Debug(fmt.Sprintf("successfully processed telemetry datum uuid: %v", td.ID))
 			}
 		}
 		ttsm[i] = &status
