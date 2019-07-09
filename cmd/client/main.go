@@ -59,7 +59,7 @@ func transmit() (*api.TransmitTelemetryResponse, error) {
 	var td api.TelemetryData
 	var tdm map[string]*api.TelemetryDatum
 
-	td.GrandPrix = api.GrandPrix_ABU_DHABI
+	td.GranPrix = api.GranPrix_ABU_DHABI
 	td.Track = api.Track_YAS_MARINA
 	td.Constructor = api.Constructor_MERCEDES
 	td.CarNumber = 44
@@ -137,7 +137,7 @@ func runSimulation() (*api.RunSimulationResponse, error) {
 
 	simID = uuid.New().String()
 	sim := api.Simulation{Uuid: simID, DurationInMinutes: int32(1), SampleRate: api.SampleRate_SR_1000_MS,
-		SimulationRateMultiplier: api.SimulationRateMultiplier_X2, GrandPrix: api.GrandPrix_UNITED_STATES,
+		SimulationRateMultiplier: api.SimulationRateMultiplier_X2, GranPrix: api.GranPrix_UNITED_STATES,
 		Track: api.Track_AUSTIN,
 	}
 	//simmap[simID] = &sim
@@ -145,7 +145,7 @@ func runSimulation() (*api.RunSimulationResponse, error) {
 	/*
 		simID = uuid.New().String()
 		sim = api.Simulation{Uuid: simID, DurationInMinutes: int32(1), SampleRate: api.SampleRate_SR_1000_MS,
-			SimulationRateMultiplier: api.SimulationRateMultiplier_X2, GrandPrix: api.GrandPrix_UNITED_STATES,
+			SimulationRateMultiplier: api.SimulationRateMultiplier_X2, GranPrix: api.GranPrix_UNITED_STATES,
 			Track: api.Track_AUSTIN,
 		}
 		simmap[simID] = &sim

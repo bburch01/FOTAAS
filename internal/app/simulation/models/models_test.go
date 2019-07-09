@@ -68,12 +68,12 @@ func TestSimulationModels(t *testing.T) {
 
 
 	/*
-		sim = Simulation{ID: simID, DurationInMinutes: 60, SampleRate: api.SampleRate_SR_1000_MS, GrandPrix: api.GrandPrix_ITALIAN, Track: api.Track_MONZA,
+		sim = Simulation{ID: simID, DurationInMinutes: 60, SampleRate: api.SampleRate_SR_1000_MS, GranPrix: api.GranPrix_ITALIAN, Track: api.Track_MONZA,
 			State: "IN_PROGRESS", StartTimestamp: startTime, PercentComplete: 0, SimulationMembers: simMemberMap}
 	*/
 
 	sim = Simulation{ID: simID, DurationInMinutes: 60, SampleRate: api.SampleRate_SR_1000_MS,
-		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GrandPrix: api.GrandPrix_ITALIAN, Track: api.Track_MONZA,
+		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GranPrix: api.GranPrix_ITALIAN, Track: api.Track_MONZA,
 		SimulationMembers: simMemberMap}
 
 	sim.State = "INITIALIZING"

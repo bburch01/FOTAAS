@@ -2,12 +2,9 @@ package simulation
 
 import (
 	"context"
-	"math"
-
-	//"fmt"
-
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strings"
 	"sync"
@@ -55,16 +52,6 @@ func StartSimulation(sim *models.Simulation) {
 
 	//var startTime time.Time
 	//var elapsedTime time.Duration
-	//var tdata api.TelemetryData
-	var sampleRateInMillis int32
-	var simRateMultiplier int32
-	var resp *api.TransmitTelemetryResponse
-	var req api.TransmitTelemetryRequest
-	var sb strings.Builder
-	var transmissionCount int
-
-	var simMemberDataMap = make(map[string]map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData)
-	//var simData []data.SimMemberData
 
 	sim.State = "INITIALIZING"
 	if err := sim.Create(); err != nil {
@@ -87,7 +74,7 @@ func StartSimulation(sim *models.Simulation) {
 	close(errChan)
 
 	// Check the errChan, on the first error, set sim.FinalStatusCode & sim.FinalStatusMessage
-	// to the error info, attempt to persist it and bail-out.
+	// to the error info, attempt to persist the simulation and bail-out.
 	if err := <-errChan; err != nil {
 		logger.Error(fmt.Sprintf("simulation %v failed to start with error: %v", sim.ID, err))
 		sim.State = "FAILED_TO_START"
@@ -105,14 +92,15 @@ func StartSimulation(sim *models.Simulation) {
 		return
 	}
 
+	var simMemberDataMap = make(map[string]map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData)
+
 	// Retrieve and aggregate the simulation data (for all of the sim members) from the results channel
 	for v := range resultsChan {
 		simMemberDataMap[v.SimMemberID] = v.SimData
 		logger.Debug(fmt.Sprintf("gen data result sim member: %v datum count: %v", v.SimMemberID, len(v.SimData)))
 	}
 
-	// Main simulation loop. All of the simulation members are part of the same simulation (i.e.
-	// multiple simulations are not being run) so concurrency does not make sense here.
+	var sampleRateInMillis int32
 
 	switch sim.SampleRate {
 	case api.SampleRate_SR_1_MS:
@@ -141,6 +129,8 @@ func StartSimulation(sim *models.Simulation) {
 		}
 		return
 	}
+
+	var simRateMultiplier int32
 
 	switch sim.SimulationRateMultiplier {
 	case api.SimulationRateMultiplier_X1:
@@ -178,15 +168,10 @@ func StartSimulation(sim *models.Simulation) {
 	datumCount := (sim.DurationInMinutes * 60000) / sampleRateInMillis
 	percentComplete := float32(0.0)
 
-	//percentCompleteIncrement := float32(100.0 / datumCount)
 	percentCompleteIncrement := float32(float32(100.0) / float32(datumCount))
 	percentCompleteIncrement = float32(math.Floor(float64(percentCompleteIncrement*100)) / 100)
 
-	//fmt.Println(math.Floor(x*100)/100)
-	//startTime = time.Now()
-
-	//tdata.GrandPrix = sim.GrandPrix
-	//tdata.Track = sim.Track
+	var sb strings.Builder
 
 	sb.WriteString(os.Getenv("TELEMETRY_SERVICE_HOST"))
 	sb.WriteString(":")
@@ -219,13 +204,6 @@ func StartSimulation(sim *models.Simulation) {
 	defer cancel()
 
 	client := api.NewTelemetryServiceClient(conn)
-
-	/*
-		startTime, err = ipbts.TimestampProto(time.Now())
-		if err != nil {
-			t.Error("failed to create timestamp with error: ", err)
-		}
-	*/
 
 	sim.StartTimestamp, err = ipbts.TimestampProto(time.Now())
 	if err != nil {
@@ -294,21 +272,21 @@ func StartSimulation(sim *models.Simulation) {
 		return
 	}
 
+	var resp *api.TransmitTelemetryResponse
+	var req api.TransmitTelemetryRequest
+	var transmissionCount int
+
 	// Main simulation loop
 	for idx := int32(0); idx < datumCount; idx++ {
-
 		for _, v := range sim.SimulationMembers {
 
-			//logger.Debug(fmt.Sprintf("building telemetry data for member: %v", v.Constructor))
-
 			tdata := api.TelemetryData{}
-			tdata.GrandPrix = sim.GrandPrix
+			tdata.GranPrix = sim.GranPrix
 			tdata.Track = sim.Track
 			tdata.Constructor = v.Constructor
 			tdata.CarNumber = v.CarNumber
 
 			simMemberData := simMemberDataMap[v.ID]
-
 			datumMap := make(map[string]*api.TelemetryDatum, len(simMemberData))
 
 			for _, v2 := range simMemberData {
@@ -317,7 +295,6 @@ func StartSimulation(sim *models.Simulation) {
 			}
 
 			tdata.TelemetryDatumMap = datumMap
-
 			req.TelemetryData = &tdata
 
 			resp, err = client.TransmitTelemetry(ctx, &req)
@@ -357,13 +334,10 @@ func StartSimulation(sim *models.Simulation) {
 					return
 				}
 			}
-
 		}
 
 		transmissionCount++
-
 		time.Sleep(sleepDuration)
-
 		percentComplete += percentCompleteIncrement
 		percentComplete = float32(math.Floor(float64(percentComplete*100)) / 100)
 

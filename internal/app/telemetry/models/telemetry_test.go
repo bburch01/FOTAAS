@@ -27,7 +27,7 @@ func TestStartSimulation(t *testing.T) {
 	sampleRate := pb.SampleRate_SR_1000_MS
 
 	sim := pb.Simulation{Uuid: uid.New().String(), DurationInMinutes: simDurationInMinutes, SampleRate: sampleRate,
-		SimulationRateMultiplier: pb.SimulationRateMultiplier_X20, GrandPrix: pb.GrandPrix_UNITED_STATES,
+		SimulationRateMultiplier: pb.SimulationRateMultiplier_X20, GranPrix: pb.GranPrix_UNITED_STATES,
 		Track: pb.Track_AUSTIN, Constructor: pb.Constructor_HAAS, CarNumber: 8, ForceAlarm: false, NoAlarms: true,
 	}
 
@@ -77,7 +77,7 @@ func TestTelemetryModels(t *testing.T) {
 	}
 
 	/*
-		sim = mdl.Simulation{ID: "yyz100", DurationInMinutes: 60, SampleRate: "SR_1000_MS", GrandPrix: "ITALIAN", Track: "MONZA",
+		sim = mdl.Simulation{ID: "yyz100", DurationInMinutes: 60, SampleRate: "SR_1000_MS", GranPrix: "ITALIAN", Track: "MONZA",
 			StartTimestamp: startTime, PercentComplete: 50}
 	*/
 
@@ -85,7 +85,7 @@ func TestTelemetryModels(t *testing.T) {
 		sim.ID = "yyz100"
 		sim.DurationInMinutes = 60
 		sim.SampleRate = "SR_1000_MS"
-		sim.GrandPrix = "ITALIAN"
+		sim.GranPrix = "ITALIAN"
 		sim.Track = "MONZA"
 		sim.State = "IN_PROGRESS"
 		sim.StartTimestamp = startTime
@@ -142,7 +142,7 @@ func TestTelemetryModels(t *testing.T) {
 		Simulated                        bool
 		SimulationID                     string
 		SimulationTransmitSequenceNumber int32
-		GrandPrix                        string
+		GranPrix                        string
 		Track                            string
 		Constructor                      string
 		CarNumber                        int32
@@ -161,7 +161,7 @@ func TestTelemetryModels(t *testing.T) {
 	td.Simulated = false
 	td.SimulationID = ""
 	td.SimulationTransmitSequenceNumber = int32(0)
-	td.GrandPrix = "ITALIAN"
+	td.GranPrix = "ITALIAN"
 	td.Track = "MONZA"
 	td.Constructor = "HAAS"
 	td.CarNumber = int32(10)

@@ -65,7 +65,7 @@ func TestStartSimulation(t *testing.T) {
 	simMemberMap[simMemberID] = simMember
 
 	sim = models.Simulation{ID: simID, DurationInMinutes: int32(1), SampleRate: api.SampleRate_SR_1000_MS,
-		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GrandPrix: api.GrandPrix_UNITED_STATES,
+		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GranPrix: api.GranPrix_UNITED_STATES,
 		Track: api.Track_AUSTIN, SimulationMembers: simMemberMap}
 
 	// By design, StartSimulation is started asychronously. Clients will start simulation and then use

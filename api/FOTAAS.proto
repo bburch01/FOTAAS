@@ -28,7 +28,7 @@ enum Track {
     YAS_MARINA = 20;
 }
 
-enum GrandPrix {
+enum GranPrix {
     UNITED_STATES = 0;
     AZERBAIJAN = 1;
     SPANISH = 2;
@@ -155,19 +155,11 @@ message TelemetryDatum {
 }
 
 message TelemetryData {
-    GrandPrix grand_prix = 1;
+    GranPrix gran_prix = 1;
     Track track = 2;
     Constructor constructor = 3;
     int32 car_number = 4;
     map<string, TelemetryDatum> telemetry_datum_map = 5;   
-}
-
-message TransmitTelemetryRequest {
-    TelemetryData telemetry_data = 1;
-}
-
-message TransmitTelemetryResponse {
-    map<string, ServerStatus> server_status = 1;
 }
 
 message SimulationMember {
@@ -184,9 +176,17 @@ message Simulation {
     int32 duration_in_minutes = 2;
     SampleRate sample_rate = 3;
     SimulationRateMultiplier simulation_rate_multiplier = 4;
-    GrandPrix grand_prix = 5;
+    GranPrix gran_prix = 5;
     Track track = 6;
     map<string, SimulationMember> simulation_member_map = 7;
+}
+
+message TransmitTelemetryRequest {
+    TelemetryData telemetry_data = 1;
+}
+
+message TransmitTelemetryResponse {
+    map<string, ServerStatus> server_status = 1;
 }
 
 message RunSimulationRequest {
@@ -205,10 +205,41 @@ message GetSimulationStatusResponse {
     ServerStatus server_status = 1;
 }
 
+message GetTelemetryDataRequest {
+    google.protobuf.Timestamp date_range_begin = 1;
+    google.protobuf.Timestamp date_range_end = 2;
+    GranPrix gran_prix = 3;
+    Track track = 4;
+    Constructor constructor = 5;
+    int32 car_number = 6;
+    TelemetryDatumDescription datum_description = 7;
+}
+
+message GetTelemetryDataResponse {
+    ServerStatus server_status = 1;
+    TelemetryData telemetry_data = 2;    
+}
+
+
+message GetSimulatedTelemetryDataRequest {
+    string simulation_uuid = 1;
+    Constructor constructor = 2;
+    int32 car_number = 3;
+    TelemetryDatumDescription datum_description = 4;
+}
+
+message GetSimulatedTelemetryDataResponse {
+    ServerStatus server_status = 1;
+    TelemetryData telemetry_data = 2;    
+}
+
+
 
 service TelemetryService {
     rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {};
-    rpc TransmitTelemetry (TransmitTelemetryRequest) returns (TransmitTelemetryResponse) {};    
+    rpc TransmitTelemetry (TransmitTelemetryRequest) returns (TransmitTelemetryResponse) {};
+    rpc GetTelemetryData (GetTelemetryDataRequest) returns (GetTelemetryDataResponse) {};
+    rpc GetSimulatedTelemetryData (GetSimulatedTelemetryDataRequest) returns (GetSimulatedTelemetryDataResponse) {};
 }
 
 service AnalysisService {

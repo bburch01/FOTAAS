@@ -204,16 +204,16 @@ func validateSimulationRequest(req *api.RunSimulationRequest) error {
 		invalidRequest = true
 	}
 
-	switch req.Simulation.GrandPrix {
-	case api.GrandPrix_ABU_DHABI, api.GrandPrix_AUSTRALIAN, api.GrandPrix_AUSTRIAN, api.GrandPrix_AZERBAIJAN,
-		api.GrandPrix_BAHRAIN, api.GrandPrix_BELGIAN, api.GrandPrix_BRAZILIAN, api.GrandPrix_BRITISH,
-		api.GrandPrix_CANADIAN, api.GrandPrix_CHINESE, api.GrandPrix_FRENCH, api.GrandPrix_GERMAN,
-		api.GrandPrix_HUNGARIAN, api.GrandPrix_ITALIAN, api.GrandPrix_JAPANESE, api.GrandPrix_MEXICAN,
-		api.GrandPrix_MONACO, api.GrandPrix_RUSSIAN, api.GrandPrix_SINGAPORE, api.GrandPrix_SPANISH,
-		api.GrandPrix_UNITED_STATES:
+	switch req.Simulation.GranPrix {
+	case api.GranPrix_ABU_DHABI, api.GranPrix_AUSTRALIAN, api.GranPrix_AUSTRIAN, api.GranPrix_AZERBAIJAN,
+		api.GranPrix_BAHRAIN, api.GranPrix_BELGIAN, api.GranPrix_BRAZILIAN, api.GranPrix_BRITISH,
+		api.GranPrix_CANADIAN, api.GranPrix_CHINESE, api.GranPrix_FRENCH, api.GranPrix_GERMAN,
+		api.GranPrix_HUNGARIAN, api.GranPrix_ITALIAN, api.GranPrix_JAPANESE, api.GranPrix_MEXICAN,
+		api.GranPrix_MONACO, api.GranPrix_RUSSIAN, api.GranPrix_SINGAPORE, api.GranPrix_SPANISH,
+		api.GranPrix_UNITED_STATES:
 		break
 	default:
-		sb.WriteString(" error: invalid GrandPrix")
+		sb.WriteString(" error: invalid GranPrix")
 		invalidRequest = true
 	}
 
@@ -226,7 +226,7 @@ func validateSimulationRequest(req *api.RunSimulationRequest) error {
 		api.Track_SPIELBERG_RED_BULL_RING, api.Track_SUZUKA, api.Track_YAS_MARINA:
 		break
 	default:
-		sb.WriteString(" error: invalid GrandPrix")
+		sb.WriteString(" error: invalid GranPrix")
 		invalidRequest = true
 	}
 

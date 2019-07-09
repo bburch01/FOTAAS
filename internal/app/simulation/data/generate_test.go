@@ -46,7 +46,7 @@ func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 	simMemberMap[simMemberID] = simMember
 
 	sim = models.Simulation{ID: simID, DurationInMinutes: int32(1), SampleRate: api.SampleRate_SR_1000_MS,
-		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GrandPrix: api.GrandPrix_UNITED_STATES,
+		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GranPrix: api.GranPrix_UNITED_STATES,
 		Track: api.Track_AUSTIN, SimulationMembers: simMemberMap}
 
 	var wg sync.WaitGroup
@@ -182,7 +182,7 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 	simMemberMap[simMemberID] = simMember
 
 	sim = models.Simulation{ID: simID, DurationInMinutes: int32(1), SampleRate: api.SampleRate_SR_1000_MS,
-		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GrandPrix: api.GrandPrix_UNITED_STATES,
+		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GranPrix: api.GranPrix_UNITED_STATES,
 		Track: api.Track_AUSTIN, SimulationMembers: simMemberMap}
 
 	var wg sync.WaitGroup
@@ -347,7 +347,7 @@ func BenchmarkGenerateSimulatedTelemetryDataNoAlarm(b *testing.B) {
 	sampleRate = api.SampleRate_SR_1000_MS.String()
 
 	sim = models.Simulation{ID: uuid.New().String(), DurationInMinutes: simDurationInMinutes,
-		SampleRate: sampleRate, GrandPrix: api.GrandPrix_UNITED_STATES.String(), Track: api.Track_AUSTIN.String(),
+		SampleRate: sampleRate, GranPrix: api.GranPrix_UNITED_STATES.String(), Track: api.Track_AUSTIN.String(),
 	}
 
 	s := spinner.New(spinner.CharSets[7], 100*time.Millisecond)
@@ -375,7 +375,7 @@ func BenchmarkGenerateSimulatedTelemetryDataNoAlarmSequential(b *testing.B) {
 	sampleRate = api.SampleRate_SR_1000_MS
 
 	sim = api.Simulation{Uuid: uuid.New().String(), DurationInMinutes: simDurationInMinutes,
-		SampleRate: sampleRate, GrandPrix: api.GrandPrix_UNITED_STATES,
+		SampleRate: sampleRate, GranPrix: api.GranPrix_UNITED_STATES,
 		Track: api.Track_AUSTIN,
 	}
 

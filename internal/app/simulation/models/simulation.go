@@ -16,7 +16,7 @@ type Simulation struct {
 	DurationInMinutes        int32
 	SampleRate               api.SampleRate
 	SimulationRateMultiplier api.SimulationRateMultiplier
-	GrandPrix                api.GrandPrix
+	GranPrix                api.GranPrix
 	Track                    api.Track
 	State                    string
 	StartTimestamp           *pbts.Timestamp
@@ -30,7 +30,7 @@ type Simulation struct {
 func (sim *Simulation) Create() error {
 
 	sqlStatement := `
-			INSERT INTO simulation (id, duration_in_minutes, sample_rate, grand_prix, track,
+			INSERT INTO simulation (id, duration_in_minutes, sample_rate, gran_prix, track,
 				 state, start_timestamp, end_timestamp, percent_complete, final_status_code,
 				  final_status_message)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
@@ -41,7 +41,7 @@ func (sim *Simulation) Create() error {
 	}
 	defer pstmt.Close()
 
-	_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate.String(), sim.GrandPrix.String(), sim.Track.String(),
+	_, err = pstmt.Exec(sim.ID, sim.DurationInMinutes, sim.SampleRate.String(), sim.GranPrix.String(), sim.Track.String(),
 		sim.State, nil, nil, sim.PercentComplete, sim.FinalStatusCode, sim.FinalStatusMessage)
 	if err != nil {
 		return err
@@ -237,7 +237,7 @@ func NewFromRunSimulationRequest(req api.RunSimulationRequest) *Simulation {
 	sim.DurationInMinutes = req.Simulation.DurationInMinutes
 	sim.SampleRate = req.Simulation.SampleRate
 	sim.SimulationRateMultiplier = req.Simulation.SimulationRateMultiplier
-	sim.GrandPrix = req.Simulation.GrandPrix
+	sim.GranPrix = req.Simulation.GranPrix
 	sim.Track = req.Simulation.Track
 
 	var simMember SimulationMember
