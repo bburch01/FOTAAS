@@ -2,6 +2,8 @@ package simulation
 
 import (
 	"context"
+	"math"
+
 	//"fmt"
 
 	"fmt"
@@ -53,7 +55,7 @@ func StartSimulation(sim *models.Simulation) {
 
 	//var startTime time.Time
 	//var elapsedTime time.Duration
-	var tdata api.TelemetryData
+	//var tdata api.TelemetryData
 	var sampleRateInMillis int32
 	var simRateMultiplier int32
 	var resp *api.TransmitTelemetryResponse
@@ -78,7 +80,7 @@ func StartSimulation(sim *models.Simulation) {
 	resultsChan := make(chan data.SimMemberData, len(sim.SimulationMembers))
 	wg.Add(len(sim.SimulationMembers))
 	for _, v := range sim.SimulationMembers {
-		go data.GenerateSimulatedTelemetryData(sim, &v, &wg, resultsChan, errChan)
+		go data.GenerateSimulatedTelemetryData(*sim, v, &wg, resultsChan, errChan)
 	}
 	wg.Wait()
 	close(resultsChan)
@@ -106,6 +108,7 @@ func StartSimulation(sim *models.Simulation) {
 	// Retrieve and aggregate the simulation data (for all of the sim members) from the results channel
 	for v := range resultsChan {
 		simMemberDataMap[v.SimMemberID] = v.SimData
+		logger.Debug(fmt.Sprintf("gen data result sim member: %v datum count: %v", v.SimMemberID, len(v.SimData)))
 	}
 
 	// Main simulation loop. All of the simulation members are part of the same simulation (i.e.
@@ -174,11 +177,16 @@ func StartSimulation(sim *models.Simulation) {
 	sleepDuration := time.Duration(sampleRateInMillis/simRateMultiplier) * time.Millisecond
 	datumCount := (sim.DurationInMinutes * 60000) / sampleRateInMillis
 	percentComplete := float32(0.0)
-	percentCompleteIncrement := float32(100.0 / datumCount)
+
+	//percentCompleteIncrement := float32(100.0 / datumCount)
+	percentCompleteIncrement := float32(float32(100.0) / float32(datumCount))
+	percentCompleteIncrement = float32(math.Floor(float64(percentCompleteIncrement*100)) / 100)
+
+	//fmt.Println(math.Floor(x*100)/100)
 	//startTime = time.Now()
 
-	tdata.GrandPrix = sim.GrandPrix
-	tdata.Track = sim.Track
+	//tdata.GrandPrix = sim.GrandPrix
+	//tdata.Track = sim.Track
 
 	sb.WriteString(os.Getenv("TELEMETRY_SERVICE_HOST"))
 	sb.WriteString(":")
@@ -291,6 +299,9 @@ func StartSimulation(sim *models.Simulation) {
 
 		for _, v := range sim.SimulationMembers {
 
+			//logger.Debug(fmt.Sprintf("building telemetry data for member: %v", v.Constructor))
+
+			tdata := api.TelemetryData{}
 			tdata.GrandPrix = sim.GrandPrix
 			tdata.Track = sim.Track
 			tdata.Constructor = v.Constructor
@@ -354,6 +365,10 @@ func StartSimulation(sim *models.Simulation) {
 		time.Sleep(sleepDuration)
 
 		percentComplete += percentCompleteIncrement
+		percentComplete = float32(math.Floor(float64(percentComplete*100)) / 100)
+
+		logger.Debug(fmt.Sprintf("datum idx: %v percentCompleteIncrement: %v percentComplete: %v",
+			idx, percentCompleteIncrement, percentComplete))
 
 		sim.PercentComplete = percentComplete
 		if err := sim.UpdatePercentComplete(); err != nil {

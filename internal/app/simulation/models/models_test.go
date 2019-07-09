@@ -50,23 +50,6 @@ func TestSimulationModels(t *testing.T) {
 		}
 	*/
 
-	/*
-		dbDriver := os.Getenv("DB_DRIVER")
-		dbHost := os.Getenv("DB_HOST")
-		dbUser := os.Getenv("DB_USER")
-		dbPass := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("SIMULATION_SERVICE_DB_NAME")
-
-		dbConURL := dbUser + ":" + dbPass + "@tcp(" + dbHost + ")" + "/" + dbName
-		db, err = sql.Open(dbDriver, dbConURL)
-		if err != nil {
-			t.Error("failed to connect to db with error: ", err)
-		}
-		if err = PingDB(); err != nil {
-			t.Error("failed to ping db with error: ", err)
-		}
-	*/
-
 	simID := uuid.New().String()
 
 	simMemberMap := make(map[string]SimulationMember)
@@ -82,6 +65,7 @@ func TestSimulationModels(t *testing.T) {
 	simMemberID = uuid.New().String()
 	simMember = SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: api.Constructor_WILLIAMS, CarNumber: 3, ForceAlarm: false, NoAlarms: false}
 	simMemberMap[simMemberID] = simMember
+
 
 	/*
 		sim = Simulation{ID: simID, DurationInMinutes: 60, SampleRate: api.SampleRate_SR_1000_MS, GrandPrix: api.GrandPrix_ITALIAN, Track: api.Track_MONZA,

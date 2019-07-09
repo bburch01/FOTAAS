@@ -54,7 +54,7 @@ func TestGenerateSimulatedTelemetryDataNoAlarm(t *testing.T) {
 	resultsChan := make(chan SimMemberData, len(sim.SimulationMembers))
 	wg.Add(len(sim.SimulationMembers))
 	for _, v := range sim.SimulationMembers {
-		go GenerateSimulatedTelemetryData(&sim, &v, &wg, resultsChan, errChan)
+		go GenerateSimulatedTelemetryData(sim, v, &wg, resultsChan, errChan)
 	}
 	wg.Wait()
 	close(resultsChan)
@@ -190,7 +190,7 @@ func TestGenerateSimulatedTelemetryDataForceAlarm(t *testing.T) {
 	resultsChan := make(chan SimMemberData, len(sim.SimulationMembers))
 	wg.Add(len(sim.SimulationMembers))
 	for _, v := range sim.SimulationMembers {
-		go GenerateSimulatedTelemetryData(&sim, &v, &wg, resultsChan, errChan)
+		go GenerateSimulatedTelemetryData(sim, v, &wg, resultsChan, errChan)
 	}
 	wg.Wait()
 	close(resultsChan)

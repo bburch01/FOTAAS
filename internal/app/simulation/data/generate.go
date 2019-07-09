@@ -244,7 +244,7 @@ var telemetryDatumParametersMap = map[api.TelemetryDatumDescription]telemetry.Te
 	},
 }
 
-func GenerateSimulatedTelemetryData(sim *models.Simulation, simMember *models.SimulationMember, wg *sync.WaitGroup,
+func GenerateSimulatedTelemetryData(sim models.Simulation, simMember models.SimulationMember, wg *sync.WaitGroup,
 	resultsChan chan SimMemberData, errChan chan error) {
 
 	var datumCount int32
