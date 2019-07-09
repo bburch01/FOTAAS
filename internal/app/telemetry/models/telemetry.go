@@ -69,7 +69,7 @@ func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (a
 	datumMap := make(map[string]*api.TelemetryDatum)
 	datum := api.TelemetryDatum{}
 
-	var txSeqNum int32
+	var txSeqNum, carNumber int32
 	var granPrix, track, constructor, datumDescription, datumUnit string
 	var ts time.Time
 
@@ -83,8 +83,28 @@ func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (a
 
 	for rows.Next() {
 
+		/*
+			ID                               string
+			Simulated                        bool
+			SimulationID                     string
+			SimulationTransmitSequenceNumber int32
+			GranPrix                         string
+			Track                            string
+			Constructor                      string
+			CarNumber                        int32
+			Timestamp                        *pbts.Timestamp
+			Latitude                         float64
+			Longitude                        float64
+			Elevation                        float64
+			Description                      string
+			Unit                             string
+			Value                            float64
+			HiAlarm                          bool
+			LoAlarm                          bool
+		*/
+
 		err := rows.Scan(&datum.Uuid, &datum.Simulated, &datum.SimulationUuid, &txSeqNum, &granPrix,
-			&track, &constructor, &ts, &datum.Latitude, &datum.Longitude, &datum.Elevation, &datumDescription,
+			&track, &constructor, &carNumber, &ts, &datum.Latitude, &datum.Longitude, &datum.Elevation, &datumDescription,
 			&datumUnit, &datum.Value, &datum.HighAlarm, &datum.LowAlarm)
 
 		if err != nil {

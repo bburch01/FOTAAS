@@ -1,14 +1,8 @@
 package models
 
 import (
-	"database/sql"
 	"log"
-	"os"
-	"testing"
-	"time"
 
-	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-	pbts "github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/joho/godotenv"
 	//mdl "github.com/bburch01/FOTAAS/internal/app/simulation/models"
 	// 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
@@ -65,6 +59,7 @@ func init() {
 
 }
 
+/*
 func TestTelemetryModels(t *testing.T) {
 
 	var td TelemetryDatum
@@ -79,56 +74,57 @@ func TestTelemetryModels(t *testing.T) {
 	/*
 		sim = mdl.Simulation{ID: "yyz100", DurationInMinutes: 60, SampleRate: "SR_1000_MS", GranPrix: "ITALIAN", Track: "MONZA",
 			StartTimestamp: startTime, PercentComplete: 50}
-	*/
+*/
 
-	/*
-		sim.ID = "yyz100"
-		sim.DurationInMinutes = 60
-		sim.SampleRate = "SR_1000_MS"
-		sim.GranPrix = "ITALIAN"
-		sim.Track = "MONZA"
-		sim.State = "IN_PROGRESS"
-		sim.StartTimestamp = startTime
-		sim.EndTimestamp = startTime
-		sim.PercentComplete = 50
-		sim.FinalStatusCode = "OK"
-		sim.FinalStatusMessage = "RUNNING"
-	*/
+/*
+	sim.ID = "yyz100"
+	sim.DurationInMinutes = 60
+	sim.SampleRate = "SR_1000_MS"
+	sim.GranPrix = "ITALIAN"
+	sim.Track = "MONZA"
+	sim.State = "IN_PROGRESS"
+	sim.StartTimestamp = startTime
+	sim.EndTimestamp = startTime
+	sim.PercentComplete = 50
+	sim.FinalStatusCode = "OK"
+	sim.FinalStatusMessage = "RUNNING"
+*/
 
-	/*
-		td.ID = "yyz100"
-		td.Simulated = false
-		td.Description = "G_FORCE"
-		td.Unit = "G"
-		td.Timestamp = startTime
-		td.Latitude = float64(0.0)
-		td.Longitude = float64(0.0)
-		td.Elevation = float64(0.0)
-		td.Value = float64(0.0)
-		td.HiAlarm = false
-		td.LoAlarm = false
-	*/
-	/*
-		err = td.Create()
-		if err != nil {
-			t.Error("failed to persist telemetry datum with error: ", err)
-		}
-	*/
+/*
+	td.ID = "yyz100"
+	td.Simulated = false
+	td.Description = "G_FORCE"
+	td.Unit = "G"
+	td.Timestamp = startTime
+	td.Latitude = float64(0.0)
+	td.Longitude = float64(0.0)
+	td.Elevation = float64(0.0)
+	td.Value = float64(0.0)
+	td.HiAlarm = false
+	td.LoAlarm = false
+*/
+/*
+	err = td.Create()
+	if err != nil {
+		t.Error("failed to persist telemetry datum with error: ", err)
+	}
+*/
 
-	/*
-		err = PingDB()
-		if err != nil {
-			t.Error("failed to ping db with error: ", err)
-		}
-	*/
+/*
+	err = PingDB()
+	if err != nil {
+		t.Error("failed to ping db with error: ", err)
+	}
+*/
 
+/*
 	dbDriver := os.Getenv("DB_DRIVER")
 	dbHost := os.Getenv("DB_HOST")
 	dbUser := os.Getenv("DB_USER")
 	dbPass := os.Getenv("DB_PASSWORD")
 	dbName := os.Getenv("TELEMETRY_SERVICE_DB_NAME")
 
-	dbConURL := dbUser + ":" + dbPass + "@tcp(" + dbHost + ")" + "/" + dbName
+	dbConURL := dbUser + ":" + dbPass + "@tcp(" + dbHost + ")" + "/" + dbName + "?parseTime=true"
 	db, err = sql.Open(dbDriver, dbConURL)
 	if err != nil {
 		t.Error("failed to connect to db with error: ", err)
@@ -136,27 +132,29 @@ func TestTelemetryModels(t *testing.T) {
 	if err = PingDB(); err != nil {
 		t.Error("failed to ping db with error: ", err)
 	}
+*/
 
-	/*
-		ID                               string
-		Simulated                        bool
-		SimulationID                     string
-		SimulationTransmitSequenceNumber int32
-		GranPrix                        string
-		Track                            string
-		Constructor                      string
-		CarNumber                        int32
-		Timestamp                        *pbts.Timestamp
-		Latitude                         float64
-		Longitude                        float64
-		Elevation                        float64
-		Description                      string
-		Unit                             string
-		Value                            float64
-		HiAlarm                          bool
-		LoAlarm                          bool
-	*/
+/*
+	ID                               string
+	Simulated                        bool
+	SimulationID                     string
+	SimulationTransmitSequenceNumber int32
+	GranPrix                        string
+	Track                            string
+	Constructor                      string
+	CarNumber                        int32
+	Timestamp                        *pbts.Timestamp
+	Latitude                         float64
+	Longitude                        float64
+	Elevation                        float64
+	Description                      string
+	Unit                             string
+	Value                            float64
+	HiAlarm                          bool
+	LoAlarm                          bool
+*/
 
+/*
 	td.ID = "yyz100"
 	td.Simulated = false
 	td.SimulationID = ""
@@ -180,4 +178,6 @@ func TestTelemetryModels(t *testing.T) {
 		t.Error("failed to persist telemetry datum with error: ", err)
 	}
 
+
 }
+*/

@@ -47,7 +47,7 @@ func InitDB() error {
 	dbName := os.Getenv("TELEMETRY_SERVICE_DB_NAME")
 	var err error
 
-	dbConURL := dbUser + ":" + dbPass + "@tcp(" + dbHost + ")" + "/" + dbName
+	dbConURL := dbUser + ":" + dbPass + "@tcp(" + dbHost + ")" + "/" + dbName + "?parseTime=true"
 	db, err = sql.Open(dbDriver, dbConURL)
 	if err != nil {
 		return err
