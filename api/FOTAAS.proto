@@ -138,6 +138,14 @@ enum SampleRate {
     SR_1000_MS = 3;
 }
 
+enum SimulationState {
+    INITIALIZING = 0;
+    IN_PROGRESS = 1;
+    COMPLETED = 2;
+    FAILED_TO_START = 3;
+    FAILED = 4;                
+}
+
 message TelemetryDatum {
     string uuid = 1;
     TelemetryDatumDescription description = 2;
@@ -181,6 +189,20 @@ message Simulation {
     map<string, SimulationMember> simulation_member_map = 7;
 }
 
+message SimulationStatus {
+    string uuid = 1;
+    int32 duration_in_minutes = 2;
+    SampleRate sample_rate = 3;
+    GranPrix gran_prix = 4;
+    Track track = 5;
+    SimulationState state = 6;
+    google.protobuf.Timestamp start_timestamp = 7;
+    google.protobuf.Timestamp end_timestamp = 8;
+    double percent_complete = 9;
+    string final_status_code = 10;
+    string final_status_message = 11;
+}
+
 message TransmitTelemetryRequest {
     TelemetryData telemetry_data = 1;
 }
@@ -203,6 +225,7 @@ message GetSimulationStatusRequest {
 
 message GetSimulationStatusResponse {
     ServerStatus server_status = 1;
+    SimulationStatus simulation_status = 2;
 }
 
 message GetTelemetryDataRequest {
@@ -220,7 +243,6 @@ message GetTelemetryDataResponse {
     TelemetryData telemetry_data = 2;    
 }
 
-
 message GetSimulatedTelemetryDataRequest {
     string simulation_uuid = 1;
     Constructor constructor = 2;
@@ -232,8 +254,6 @@ message GetSimulatedTelemetryDataResponse {
     ServerStatus server_status = 1;
     TelemetryData telemetry_data = 2;    
 }
-
-
 
 service TelemetryService {
     rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {};

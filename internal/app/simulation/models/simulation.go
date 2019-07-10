@@ -16,7 +16,7 @@ type Simulation struct {
 	DurationInMinutes        int32
 	SampleRate               api.SampleRate
 	SimulationRateMultiplier api.SimulationRateMultiplier
-	GranPrix                api.GranPrix
+	GranPrix                 api.GranPrix
 	Track                    api.Track
 	State                    string
 	StartTimestamp           *pbts.Timestamp
@@ -56,6 +56,56 @@ func (sim *Simulation) Create() error {
 
 	return nil
 }
+
+/*
+func (sim *Simulation) Retrieve() error {
+
+	var sampleRate, granPrix, track, state string
+	var startTs, endTs time.Time
+
+	rows, err := db.Query("select * from simulation where id = ?", sim.ID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+
+		err := rows.Scan(&sim.ID, &sim.DurationInMinutes,
+			&sampleRate, &granPrix, &track, &state, &startTs, &endTs, &sim.PercentComplete,
+			&sim.FinalStatusCode, &sim.FinalStatusMessage)
+
+		if err != nil {
+			return nil, err
+		}
+
+		ordinal, ok := api.SampleRate_value[sampleRate]
+		if !ok {
+			return nil, fmt.Errorf("invalid simulation sample rate enum: %v", sampleRate)
+		}
+		sim.SampleRate = api.SampleRate(ordinal)
+
+		ordinal, ok = api.GranPrix_value[granPrix]
+		if !ok {
+			return data, fmt.Errorf("invalid simulation gran prix enum: %v", granPrix)
+		}
+		sim.GranPrix = api.GranPrix(ordinal)
+
+		ordinal, ok = api.Track_value[track]
+		if !ok {
+			return data, fmt.Errorf("invalid simulation track enum: %v", track)
+		}
+		sim.Track = api.Track(ordinal)
+
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+}
+*/
 
 func (sim Simulation) UpdateState() error {
 
@@ -227,6 +277,76 @@ func (sim Simulation) FindAllMembers() ([]SimulationMember, error) {
 	}
 
 	return simMembers, nil
+}
+
+func RetrieveSimulationStatus(req api.GetSimulationStatusRequest) (api.SimulationStatus, error) {
+
+	var sampleRate, granPrix, track, state string
+	var startTs, endTs time.Time
+
+	status := api.SimulationStatus{}
+
+	rows, err := db.Query("select * from simulation where id = ?", req.Uuid)
+
+	if err != nil {
+		return status, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+
+		err := rows.Scan(&status.Uuid, &status.DurationInMinutes,
+			&sampleRate, &granPrix, &track, &state, &startTs, &endTs, &status.PercentComplete,
+			&status.FinalStatusCode, &status.FinalStatusMessage)
+
+		if err != nil {
+			return status, err
+		}
+
+		ordinal, ok := api.SampleRate_value[sampleRate]
+		if !ok {
+			return status, fmt.Errorf("invalid simulation sample rate enum: %v", sampleRate)
+		}
+		status.SampleRate = api.SampleRate(ordinal)
+
+		ordinal, ok = api.GranPrix_value[granPrix]
+		if !ok {
+			return status, fmt.Errorf("invalid simulation gran prix enum: %v", granPrix)
+		}
+		status.GranPrix = api.GranPrix(ordinal)
+
+		ordinal, ok = api.Track_value[track]
+		if !ok {
+			return status, fmt.Errorf("invalid simulation track enum: %v", track)
+		}
+		status.Track = api.Track(ordinal)
+
+		ordinal, ok = api.SimulationState_value[state]
+		if !ok {
+			return status, fmt.Errorf("invalid simulation state enum: %v", track)
+		}
+		status.State = api.SimulationState(ordinal)
+
+		tsProto, err := ipbts.TimestampProto(startTs)
+		if err != nil {
+			return status, errors.New("failed to convert start timestamp to protobuf format")
+		}
+		status.StartTimestamp = tsProto
+
+		tsProto, err = ipbts.TimestampProto(endTs)
+		if err != nil {
+			return status, errors.New("failed to convert end timestamp to protobuf format")
+		}
+		status.EndTimestamp = tsProto
+
+	}
+	err = rows.Err()
+	if err != nil {
+		return status, err
+	}
+
+	return status, nil
+
 }
 
 func NewFromRunSimulationRequest(req api.RunSimulationRequest) *Simulation {

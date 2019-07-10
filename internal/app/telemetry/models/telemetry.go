@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -104,6 +105,15 @@ func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (a
 		}
 		datum.Unit = api.TelemetryDatumUnit(ordinal)
 
+		tsProto, err := ipbts.TimestampProto(ts)
+		if err != nil {
+			return data, errors.New("failed to convert timestamp to protobuf format")
+		}
+		datum.Timestamp = tsProto
+
+		//TODO: GranPrix & Track need to be retrieved with a GetSimulation grpc call to the
+		//simulation service. This is a hack to just use the values from the final retrieved
+		//datum (even if those values *should* always be correct).
 		ordinal, ok = api.GranPrix_value[granPrix]
 		if !ok {
 			return data, fmt.Errorf("invalid telemetry gran prix enum: %v", granPrix)

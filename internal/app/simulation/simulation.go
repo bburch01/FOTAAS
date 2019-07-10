@@ -341,9 +341,6 @@ func StartSimulation(sim *models.Simulation) {
 		percentComplete += percentCompleteIncrement
 		percentComplete = float32(math.Floor(float64(percentComplete*100)) / 100)
 
-		logger.Debug(fmt.Sprintf("datum idx: %v percentCompleteIncrement: %v percentComplete: %v",
-			idx, percentCompleteIncrement, percentComplete))
-
 		sim.PercentComplete = percentComplete
 		if err := sim.UpdatePercentComplete(); err != nil {
 			logger.Error(fmt.Sprintf("simulation %v failed with error: %v", sim.ID, err))

@@ -117,11 +117,10 @@ func transmit() (*api.TransmitTelemetryResponse, error) {
 
 	resp, err = client.TransmitTelemetry(ctx, &req)
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
 
 	return resp, nil
-
 }
 
 func runSimulation() (*api.RunSimulationResponse, error) {
@@ -177,11 +176,10 @@ func runSimulation() (*api.RunSimulationResponse, error) {
 
 	resp, err = client.RunSimulation(ctx, &req)
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
 
 	return resp, nil
-
 }
 
 func newTelemetryDatum(uuid string, desc api.TelemetryDatumDescription, unit api.TelemetryDatumUnit,

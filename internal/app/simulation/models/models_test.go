@@ -66,7 +66,6 @@ func TestSimulationModels(t *testing.T) {
 	simMember = SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: api.Constructor_WILLIAMS, CarNumber: 3, ForceAlarm: false, NoAlarms: false}
 	simMemberMap[simMemberID] = simMember
 
-
 	/*
 		sim = Simulation{ID: simID, DurationInMinutes: 60, SampleRate: api.SampleRate_SR_1000_MS, GranPrix: api.GranPrix_ITALIAN, Track: api.Track_MONZA,
 			State: "IN_PROGRESS", StartTimestamp: startTime, PercentComplete: 0, SimulationMembers: simMemberMap}
@@ -116,5 +115,34 @@ func TestSimulationModels(t *testing.T) {
 	for _, m := range simMembers {
 		fmt.Printf("\nsimulation member: %v", m)
 	}
+
+}
+
+func TestRetrieveSimulationStatus(t *testing.T) {
+
+	req := api.GetSimulationStatusRequest{}
+	status := api.SimulationStatus{}
+
+	var err error
+
+	req.Uuid = "87bfb12d-63a2-4633-8c5b-ba3d95335c45"
+
+	if status, err = RetrieveSimulationStatus(req); err != nil {
+		t.Error("failed to retrieve simulation status with error: ", err)
+		t.FailNow()
+	}
+
+	fmt.Printf("\nsimulation id       : %v ", status.Uuid)
+	fmt.Printf("\nduration in minutes : %v ", status.DurationInMinutes)
+	fmt.Printf("\nsample rate         : %v ", status.SampleRate)
+	fmt.Printf("\ngran prix           : %v ", status.GranPrix)
+	fmt.Printf("\ntrack               : %v ", status.Track)
+	fmt.Printf("\nstate               : %v ", status.State)
+	fmt.Printf("\nstart timestamp     : %v ", ipbts.TimestampString(status.StartTimestamp))
+	fmt.Printf("\nend timestamp       : %v ", ipbts.TimestampString(status.EndTimestamp))
+	fmt.Printf("\npercent complete    : %v ", status.PercentComplete)
+	fmt.Printf("\nfinal status code   : %v ", status.FinalStatusCode)
+	fmt.Printf("\nfinal status message: %v ", status.FinalStatusMessage)
+	fmt.Print("\n")
 
 }

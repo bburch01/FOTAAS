@@ -16,22 +16,17 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/bburch01/FOTAAS/api"
-	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
-
-var logger *zap.Logger
 
 func init() {
 
@@ -55,25 +50,9 @@ func init() {
 	// deployment issue that will be handled via docker/k8s in production but
 	// the .env file may need to be manually copied into the execution directory
 	// during testing.
-	//if err := godotenv.Load(); err != nil {
-	//log.Fatalf("godotenv error: %v", err)
-	//}
-
-	var lm logging.LogMode
-	var err error
-
-	if err = godotenv.Load(); err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Panicf("failed to load environment variables with error: %v", err)
 	}
-
-	if lm, err = logging.LogModeForString(os.Getenv("LOG_MODE")); err != nil {
-		log.Panicf("failed to initialize logging subsystem with error: %v", err)
-	}
-
-	if logger, err = logging.NewLogger(lm, os.Getenv("LOG_DIR"), os.Getenv("LOG_FILE_NAME")); err != nil {
-		log.Panicf("failed to initialize logging subsystem with error: %v", err)
-	}
-
 }
 
 var startSimulationCmd = &cobra.Command{
@@ -83,7 +62,7 @@ var startSimulationCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := startSimulation()
 		if err != nil {
-			log.Printf("start simulation failed with error: %v", err)
+			log.Printf("start simulation service call failed with error: %v", err)
 		} else {
 			log.Printf("start simulation status code   : %v", resp.ServerStatus.Code)
 			log.Printf("start simulation status message: %s", resp.ServerStatus.Message)
@@ -116,17 +95,9 @@ func startSimulation() (*api.RunSimulationResponse, error) {
 	}
 	simMemberMap[simMemberID] = &simMember2
 
-	for _, v := range simMemberMap {
-		logger.Debug(fmt.Sprintf("simMemberMap simulation member: %v", v))
-	}
-
 	sim := api.Simulation{Uuid: simID, DurationInMinutes: int32(1), SampleRate: api.SampleRate_SR_1000_MS,
 		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GranPrix: api.GranPrix_UNITED_STATES,
 		Track: api.Track_AUSTIN, SimulationMemberMap: simMemberMap}
-
-	for _, v := range sim.SimulationMemberMap {
-		logger.Debug(fmt.Sprintf("sim.SimulationMemberMap member: %v", v))
-	}
 
 	req.Simulation = &sim
 
@@ -137,7 +108,7 @@ func startSimulation() (*api.RunSimulationResponse, error) {
 
 	conn, err := grpc.Dial(simulationSvcEndpoint, grpc.WithInsecure())
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
 	defer conn.Close()
 
@@ -151,7 +122,9 @@ func startSimulation() (*api.RunSimulationResponse, error) {
 	var client = api.NewSimulationServiceClient(conn)
 
 	resp, err = client.RunSimulation(ctx, &req)
+	if err != nil {
+		return nil, err
+	}
 
-	return resp, err
-
+	return resp, nil
 }

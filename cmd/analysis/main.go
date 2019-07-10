@@ -52,20 +52,24 @@ func init() {
 
 }
 
-func (s *server) HealthCheck(ctx context.Context, in *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
+func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
 
 	// Assume good health until a health check test fails.
-	var hcr = api.HealthCheckResponse{ServerStatus: &api.ServerStatus{Code: api.StatusCode_OK, Message: "analysis service healthy"}}
+	resp := api.HealthCheckResponse{ServerStatus: &api.ServerStatus{Code: api.StatusCode_OK,
+		 Message: "analysis service healthy"}}
 
-	err := models.PingDB()
-	if err != nil {
-		hcr.ServerStatus.Code = api.StatusCode_ERROR
-		hcr.ServerStatus.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
-		return &hcr, nil
+	if err := models.PingDB(); err != nil {
+		resp.ServerStatus.Code = api.StatusCode_ERROR
+		resp.ServerStatus.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
+		logger.Error(fmt.Sprintf("failed to ping database with error: %v", err))
+		// protoc generated code requires error in the return params, return nil here so that clients
+		// of this service call process this FOTAAS error differently than other system errors (e.g.
+		// if this service is not available). Intercept this error and handle it via response code &
+		// message.		
+		return &resp, nil
 	}
 
-	return &hcr, nil
-
+	return &resp, nil
 }
 
 func main() {

@@ -51,7 +51,7 @@ func init() {
 	// the .env file may need to be manually copied into the execution directory
 	// during testing.
 	if err := godotenv.Load(); err != nil {
-		log.Fatalf("godotenv error: %v", err)
+		log.Panicf("failed to load environment variables with error: %v", err)
 	}
 }
 
@@ -72,8 +72,7 @@ var checkServiceHealthCmd = &cobra.Command{
 			} else {
 				resp, err := checkByName(svcname)
 				if err != nil {
-					//log.Printf("%v service health check failed with error: %v", svcname, err)
-					log.Printf("%v service health check failed with error: %v", svcname, err)
+					log.Printf("%v service health check call failed with error: %v", svcname, err)
 				} else {
 					log.Printf("%v service health status code   : %v", svcname, resp.ServerStatus.Code)
 					log.Printf("%v service health status message: %s", svcname, resp.ServerStatus.Message)
@@ -97,25 +96,16 @@ func checkByName(svcname string) (*api.HealthCheckResponse, error) {
 		sb.WriteString(":")
 		sb.WriteString(os.Getenv("TELEMETRY_SERVICE_PORT"))
 		svcEndpoint = sb.String()
-		//serviceaddress := []string{os.Getenv("TELEMETRY_SERVICE_HOST"), ":", os.Getenv("TELEMETRY_SERVICE_PORT")}
-		//svcEndpoint = strings.Join(serviceaddress, "")
-
 	case "analysis":
 		sb.WriteString(os.Getenv("ANALYSIS_SERVICE_HOST"))
 		sb.WriteString(":")
 		sb.WriteString(os.Getenv("ANALYSIS_SERVICE_PORT"))
 		svcEndpoint = sb.String()
-		//serviceaddress := []string{os.Getenv("ANALYSIS_SERVICE_HOST"), ":", os.Getenv("ANALYSIS_SERVICE_PORT")}
-		//svcEndpoint = strings.Join(serviceaddress, "")
-
 	case "simulation":
 		sb.WriteString(os.Getenv("SIMULATION_SERVICE_HOST"))
 		sb.WriteString(":")
 		sb.WriteString(os.Getenv("SIMULATION_SERVICE_PORT"))
 		svcEndpoint = sb.String()
-		//serviceaddress := []string{os.Getenv("SIMULATION_SERVICE_HOST"), ":", os.Getenv("SIMULATION_SERVICE_PORT")}
-		//svcEndpoint = strings.Join(serviceaddress, "")
-
 	default:
 		return resp, errors.New("invalid service name, valid service names are telemetry, analysis, and simulation")
 	}
@@ -126,7 +116,7 @@ func checkByName(svcname string) (*api.HealthCheckResponse, error) {
 	}
 	defer conn.Close()
 
-	//ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	//For now, use context.WithDeadline instead of context.WithTimeout
 	//ctx, cancel := context.WithTimeout(context.Background(), time.Duration(300)*time.Second)
 
 	// TODO: determine what is the appropriate deadline for health check requests
@@ -164,8 +154,9 @@ func checkByName(svcname string) (*api.HealthCheckResponse, error) {
 func checkAll() {
 
 	resp, err := checkByName("telemetry")
+
 	if err != nil {
-		log.Printf("telemetry service health check failed with error: %v", err)
+		log.Printf("telemetry service health check call failed with error: %v", err)
 	} else {
 		log.Printf("telemetry service health status code   : %v", resp.ServerStatus.Code)
 		log.Printf("telemetry service health status message: %s", resp.ServerStatus.Message)
@@ -173,7 +164,7 @@ func checkAll() {
 
 	resp, err = checkByName("analysis")
 	if err != nil {
-		log.Printf("analysis service health check failed with error: %v", err)
+		log.Printf("analysis service health check call failed with error: %v", err)
 	} else {
 		log.Printf("analysis service health status code   : %v", resp.ServerStatus.Code)
 		log.Printf("analysis service health status message: %s", resp.ServerStatus.Message)
@@ -181,7 +172,7 @@ func checkAll() {
 
 	resp, err = checkByName("simulation")
 	if err != nil {
-		log.Printf("simulation health check failed with error: %v", err)
+		log.Printf("simulation service health check call failed with error: %v", err)
 	} else {
 		log.Printf("simulation service health status code   : %v", resp.ServerStatus.Code)
 		log.Printf("simulation service health status message: %s", resp.ServerStatus.Message)

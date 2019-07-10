@@ -44,17 +44,23 @@ func init() {
 	}
 }
 
-func (s *server) HealthCheck(ctx context.Context, in *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
-	var hcr = api.HealthCheckResponse{ServerStatus: &api.ServerStatus{
+func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
+
+	resp := api.HealthCheckResponse{ServerStatus: &api.ServerStatus{
 		Code: api.StatusCode_OK, Message: "simulation service healthy"}}
 
 	if err := models.PingDB(); err != nil {
-		hcr.ServerStatus.Code = api.StatusCode_ERROR
-		hcr.ServerStatus.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
-		return &hcr, nil
+		resp.ServerStatus.Code = api.StatusCode_ERROR
+		resp.ServerStatus.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
+		logger.Error(fmt.Sprintf("failed to ping database with error: %v", err))
+		// protoc generated code requires error in the return params, return nil here so that clients
+		// of this service call process this FOTAAS error differently than other system errors (e.g.
+		// if this service is not available). Intercept this error and handle it via response code &
+		// message.
+		return &resp, nil
 	}
 
-	return &hcr, nil
+	return &resp, nil
 }
 
 // Need to update this function such that it no longer returns a api.RunSimulationResponse or an error
@@ -62,28 +68,21 @@ func (s *server) HealthCheck(ctx context.Context, in *api.HealthCheckRequest) (*
 // will use this service to get simulation status/results during & after the simulation run
 func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationRequest) (*api.RunSimulationResponse, error) {
 
-	//var resp api.RunSimulationResponse
-
-	var rsr = api.RunSimulationResponse{ServerStatus: &api.ServerStatus{
+	var resp = api.RunSimulationResponse{ServerStatus: &api.ServerStatus{
 		Code: api.StatusCode_OK, Message: fmt.Sprintf("simulation %v successfully started", req.Simulation.Uuid)}}
 
-	//var sim = req.Simulation
-	//var simMemberMap = req.Simulation.SimulationMemberMap
-	//var status api.ServerStatus
-	//var simData map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
-	//var simMemberData map[string]map[api.TelemetryDatumDescription]telemetry.SimulatedTelemetryData
-	//var wg sync.WaitGroup
-	var err error
+	//var err error
 
 	// Validate the simulation request
-	if err = validateSimulationRequest(req); err != nil {
-		rsr.ServerStatus.Code = api.StatusCode_ERROR
-		rsr.ServerStatus.Message = fmt.Sprintf("RunSimulationRequest failed validation: %v", err)
-		return &rsr, nil
-	}
-
-	for _, v := range req.Simulation.SimulationMemberMap {
-		logger.Debug(fmt.Sprintf("req simulation member: %v", *v))
+	if err := validateSimulationRequest(req); err != nil {
+		resp.ServerStatus.Code = api.StatusCode_ERROR
+		resp.ServerStatus.Message = fmt.Sprintf("RunSimulationRequest failed validation: %v", err)
+		logger.Error(fmt.Sprintf("RunSimulationRequest failed validation: %v", err))
+		// protoc generated code requires error in the return params, return nil here so that clients
+		// of this service call process this FOTAAS error differently than other system errors (e.g.
+		// if this service is not available). Intercept this error and handle it via response code &
+		// message.
+		return &resp, nil
 	}
 
 	//REFACTOR OPPORTUNITY
@@ -99,13 +98,34 @@ func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationReques
 	// Simulation progress/status is persisted to the FOTAAS simulation db.
 	go simulation.StartSimulation(sim)
 
-	return &rsr, nil
+	return &resp, nil
 
 }
 
-func (s *server) GetSimulationStatus(ctx context.Context, in *api.GetSimulationStatusRequest) (*api.GetSimulationStatusResponse, error) {
-	var gssr = api.GetSimulationStatusResponse{}
-	return &gssr, nil
+func (s *server) GetSimulationStatus(ctx context.Context, req *api.GetSimulationStatusRequest) (*api.GetSimulationStatusResponse, error) {
+
+	// TODO: need to validate the request (all search terms present and valid)
+
+	var status api.SimulationStatus
+	var err error
+	resp := api.GetSimulationStatusResponse{}
+
+	if status, err = models.RetrieveSimulationStatus(*req); err != nil {
+		resp.ServerStatus.Code = api.StatusCode_ERROR
+		resp.ServerStatus.Message = fmt.Sprintf("failed to retrieve simulation status with error: %v", err)
+		logger.Error(fmt.Sprintf("failed to retrieve simulation status with error: %v", err))
+		// protoc generated code requires error in the return params, return nil here so that clients
+		// of this service call process this FOTAAS error differently than other system errors (e.g.
+		// if this service is not available). Intercept this error and handle it via response code &
+		// message.
+		return &resp, nil
+	}
+
+	resp.ServerStatus.Code = api.StatusCode_OK
+	resp.ServerStatus.Message = fmt.Sprintf("found status for simulation id: %v", status.Uuid)
+	resp.SimulationStatus = &status
+
+	return &resp, nil
 }
 
 func main() {

@@ -56,16 +56,21 @@ func init() {
 func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
 
 	// Assume good health until a health check test fails.
-	var resp = api.HealthCheckResponse{ServerStatus: &api.ServerStatus{Code: api.StatusCode_OK, Message: "telemetry service healthy"}}
+	resp := api.HealthCheckResponse{ServerStatus: &api.ServerStatus{Code: api.StatusCode_OK,
+		Message: "telemetry service healthy"}}
 
 	if err := models.PingDB(); err != nil {
 		resp.ServerStatus.Code = api.StatusCode_ERROR
 		resp.ServerStatus.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
+		logger.Error(fmt.Sprintf("failed to ping database with error: %v", err))
+		// protoc generated code requires error in the return params, return nil here so that clients
+		// of this service call process this FOTAAS error differently than other system errors (e.g.
+		// if this service is not available). Intercept this error and handle it via response code &
+		// message.
 		return &resp, nil
 	}
 
 	return &resp, nil
-
 }
 
 func (s *server) TransmitTelemetry(ctx context.Context, req *api.TransmitTelemetryRequest) (*api.TransmitTelemetryResponse, error) {
@@ -109,7 +114,6 @@ func (s *server) TransmitTelemetry(ctx context.Context, req *api.TransmitTelemet
 			} else {
 				status.Code = api.StatusCode_OK
 				status.Message = fmt.Sprintf("telemetry datum successfully processed.")
-				//logger.Debug(fmt.Sprintf("successfully processed telemetry datum uuid: %v", datum.ID))
 			}
 		}
 		statusMap[i] = &status
@@ -126,7 +130,7 @@ func (s *server) GetTelemetryData(ctx context.Context, req *api.GetTelemetryData
 	data := api.TelemetryData{}
 	//datumMap := make(map[string]api.TelemetryDatum)
 
-	var resp = api.GetTelemetryDataResponse{ServerStatus: &api.ServerStatus{Code: api.StatusCode_OK,
+	resp := api.GetTelemetryDataResponse{ServerStatus: &api.ServerStatus{Code: api.StatusCode_OK,
 		Message: "have some telemetry data"}, TelemetryData: &data}
 
 	return &resp, nil
