@@ -112,7 +112,7 @@ func checkByName(svcname string) (*api.HealthCheckResponse, error) {
 
 	conn, err := grpc.Dial(svcEndpoint, grpc.WithInsecure())
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
 	defer conn.Close()
 

@@ -120,12 +120,11 @@ func TestSimulationModels(t *testing.T) {
 
 func TestRetrieveSimulationInfo(t *testing.T) {
 
-	req := api.GetSimulationInfoRequest{}
-	info := api.SimulationInfo{}
-
+	var req api.GetSimulationInfoRequest
+	var info *api.SimulationInfo
 	var err error
 
-	req.Uuid = "87bfb12d-63a2-4633-8c5b-ba3d95335c45"
+	req.SimulationUuid = "87bfb12d-63a2-4633-8c5b-ba3d95335c45"
 
 	if info, err = RetrieveSimulationInfo(req); err != nil {
 		t.Error("failed to retrieve simulation info with error: ", err)

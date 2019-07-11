@@ -37,10 +37,8 @@ func init() {
 
 func TestTelemetryModels(t *testing.T) {
 
-	req := api.GetSimulatedTelemetryDataRequest{}
-
-	data := api.TelemetryData{}
-
+	var req api.GetSimulatedTelemetryDataRequest
+	var data *api.TelemetryData
 	var err error
 
 	req.SimulationUuid = "dc0d88fa-4e7b-4e3b-b10a-55194944e505"

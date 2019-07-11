@@ -103,7 +103,7 @@ func (s *server) GetSimulationInfo(ctx context.Context, req *api.GetSimulationIn
 
 	// TODO: need to validate the request (all search terms present and valid)
 
-	var info api.SimulationInfo
+	var info *api.SimulationInfo
 	var err error
 	resp := api.GetSimulationInfoResponse{}
 	//var resp = api.GetSimulationInfoResponse{ServerStatus: &api.ServerStatus{
@@ -122,7 +122,7 @@ func (s *server) GetSimulationInfo(ctx context.Context, req *api.GetSimulationIn
 
 	resp.ServerStatus = &api.ServerStatus{Code: api.StatusCode_OK,
 		Message: fmt.Sprintf("found info for simulation id: %v", info.Uuid)}
-	resp.SimulationInfo = &info
+	resp.SimulationInfo = info
 
 	return &resp, nil
 }

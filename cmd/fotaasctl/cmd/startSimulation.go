@@ -78,7 +78,6 @@ func startSimulation() (*api.RunSimulationResponse, error) {
 	var resp *api.RunSimulationResponse
 	var req api.RunSimulationRequest
 	var simID string
-	//var simMember api.SimulationMember
 
 	simMemberMap := make(map[string]*api.SimulationMember)
 	simID = uuid.New().String()

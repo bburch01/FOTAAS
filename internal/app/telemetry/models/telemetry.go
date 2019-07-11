@@ -64,7 +64,7 @@ func (td *TelemetryDatum) Create() error {
 
 }
 
-func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (api.TelemetryData, error) {
+func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (*api.TelemetryData, error) {
 
 	data := api.TelemetryData{}
 	datumMap := make(map[string]*api.TelemetryDatum)
@@ -77,7 +77,7 @@ func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (a
 		req.SimulationUuid, req.Constructor.String(), req.CarNumber, req.DatumDescription.String())
 
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -90,24 +90,24 @@ func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (a
 			&datumUnit, &datum.Value, &datum.HighAlarm, &datum.LowAlarm)
 
 		if err != nil {
-			return data, err
+			return nil, err
 		}
 
 		ordinal, ok := api.TelemetryDatumDescription_value[datumDescription]
 		if !ok {
-			return data, fmt.Errorf("invalid telemetry datum description enum: %v", datumDescription)
+			return nil, fmt.Errorf("invalid telemetry datum description enum: %v", datumDescription)
 		}
 		datum.Description = api.TelemetryDatumDescription(ordinal)
 
 		ordinal, ok = api.TelemetryDatumUnit_value[datumUnit]
 		if !ok {
-			return data, fmt.Errorf("invalid telemetry datum unit enum: %v", datumUnit)
+			return nil, fmt.Errorf("invalid telemetry datum unit enum: %v", datumUnit)
 		}
 		datum.Unit = api.TelemetryDatumUnit(ordinal)
 
 		tsProto, err := ipbts.TimestampProto(ts)
 		if err != nil {
-			return data, errors.New("failed to convert timestamp to protobuf format")
+			return nil, errors.New("failed to convert timestamp to protobuf format")
 		}
 		datum.Timestamp = tsProto
 
@@ -116,13 +116,13 @@ func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (a
 		//datum (even if those values *should* always be correct).
 		ordinal, ok = api.GranPrix_value[granPrix]
 		if !ok {
-			return data, fmt.Errorf("invalid telemetry gran prix enum: %v", granPrix)
+			return nil, fmt.Errorf("invalid telemetry gran prix enum: %v", granPrix)
 		}
 		data.GranPrix = api.GranPrix(ordinal)
 
 		ordinal, ok = api.Track_value[track]
 		if !ok {
-			return data, fmt.Errorf("invalid telemetry track enum: %v", track)
+			return nil, fmt.Errorf("invalid telemetry track enum: %v", track)
 		}
 		data.Track = api.Track(ordinal)
 
@@ -131,14 +131,14 @@ func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (a
 	}
 	err = rows.Err()
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 
 	data.Constructor = req.Constructor
 	data.CarNumber = req.CarNumber
 	data.TelemetryDatumMap = datumMap
 
-	return data, nil
+	return &data, nil
 
 }
 

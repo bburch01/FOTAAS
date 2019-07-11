@@ -279,7 +279,7 @@ func (sim Simulation) FindAllMembers() ([]SimulationMember, error) {
 	return simMembers, nil
 }
 
-func RetrieveSimulationInfo(req api.GetSimulationInfoRequest) (api.SimulationInfo, error) {
+func RetrieveSimulationInfo(req api.GetSimulationInfoRequest) (*api.SimulationInfo, error) {
 
 	var sampleRate, granPrix, track, state string
 	var startTs, endTs time.Time
@@ -289,7 +289,7 @@ func RetrieveSimulationInfo(req api.GetSimulationInfoRequest) (api.SimulationInf
 	rows, err := db.Query("select * from simulation where id = ?", req.SimulationUuid)
 
 	if err != nil {
-		return info, err
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -300,52 +300,52 @@ func RetrieveSimulationInfo(req api.GetSimulationInfoRequest) (api.SimulationInf
 			&info.FinalStatusCode, &info.FinalStatusMessage)
 
 		if err != nil {
-			return info, err
+			return nil, err
 		}
 
 		ordinal, ok := api.SampleRate_value[sampleRate]
 		if !ok {
-			return info, fmt.Errorf("invalid simulation sample rate enum: %v", sampleRate)
+			return nil, fmt.Errorf("invalid simulation sample rate enum: %v", sampleRate)
 		}
 		info.SampleRate = api.SampleRate(ordinal)
 
 		ordinal, ok = api.GranPrix_value[granPrix]
 		if !ok {
-			return info, fmt.Errorf("invalid simulation gran prix enum: %v", granPrix)
+			return nil, fmt.Errorf("invalid simulation gran prix enum: %v", granPrix)
 		}
 		info.GranPrix = api.GranPrix(ordinal)
 
 		ordinal, ok = api.Track_value[track]
 		if !ok {
-			return info, fmt.Errorf("invalid simulation track enum: %v", track)
+			return nil, fmt.Errorf("invalid simulation track enum: %v", track)
 		}
 		info.Track = api.Track(ordinal)
 
 		ordinal, ok = api.SimulationState_value[state]
 		if !ok {
-			return info, fmt.Errorf("invalid simulation state enum: %v", track)
+			return nil, fmt.Errorf("invalid simulation state enum: %v", track)
 		}
 		info.State = api.SimulationState(ordinal)
 
 		tsProto, err := ipbts.TimestampProto(startTs)
 		if err != nil {
-			return info, errors.New("failed to convert start timestamp to protobuf format")
+			return nil, errors.New("failed to convert start timestamp to protobuf format")
 		}
 		info.StartTimestamp = tsProto
 
 		tsProto, err = ipbts.TimestampProto(endTs)
 		if err != nil {
-			return info, errors.New("failed to convert end timestamp to protobuf format")
+			return nil, errors.New("failed to convert end timestamp to protobuf format")
 		}
 		info.EndTimestamp = tsProto
 
 	}
 	err = rows.Err()
 	if err != nil {
-		return info, err
+		return nil, err
 	}
 
-	return info, nil
+	return &info, nil
 
 }
 

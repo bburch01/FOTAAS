@@ -94,7 +94,7 @@ func transmit() (*api.TransmitTelemetryResponse, error) {
 
 	conn, err := grpc.Dial(svcaddr, grpc.WithInsecure())
 	if err != nil {
-		return resp, err
+		return nil, err
 	}
 	defer conn.Close()
 
