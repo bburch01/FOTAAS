@@ -63,9 +63,6 @@ func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (
 	return &resp, nil
 }
 
-// Need to update this function such that it no longer returns a api.RunSimulationResponse or an error
-// All status/results information needs to be persisted to the simulation service db, then clients
-// will use this service to get simulation status/results during & after the simulation run
 func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationRequest) (*api.RunSimulationResponse, error) {
 
 	var resp = api.RunSimulationResponse{ServerStatus: &api.ServerStatus{
@@ -102,18 +99,20 @@ func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationReques
 
 }
 
-func (s *server) GetSimulationStatus(ctx context.Context, req *api.GetSimulationStatusRequest) (*api.GetSimulationStatusResponse, error) {
+func (s *server) GetSimulationInfo(ctx context.Context, req *api.GetSimulationInfoRequest) (*api.GetSimulationInfoResponse, error) {
 
 	// TODO: need to validate the request (all search terms present and valid)
 
-	var status api.SimulationStatus
+	var info api.SimulationInfo
 	var err error
-	resp := api.GetSimulationStatusResponse{}
+	resp := api.GetSimulationInfoResponse{}
+	//var resp = api.GetSimulationInfoResponse{ServerStatus: &api.ServerStatus{
+	//Code: api.StatusCode_OK, Message: fmt.Sprintf("simulation %v successfully started", req.Simulation.Uuid)}}
 
-	if status, err = models.RetrieveSimulationStatus(*req); err != nil {
+	if info, err = models.RetrieveSimulationInfo(*req); err != nil {
 		resp.ServerStatus.Code = api.StatusCode_ERROR
-		resp.ServerStatus.Message = fmt.Sprintf("failed to retrieve simulation status with error: %v", err)
-		logger.Error(fmt.Sprintf("failed to retrieve simulation status with error: %v", err))
+		resp.ServerStatus.Message = fmt.Sprintf("failed to retrieve simulation info with error: %v", err)
+		logger.Error(fmt.Sprintf("failed to retrieve simulation info with error: %v", err))
 		// protoc generated code requires error in the return params, return nil here so that clients
 		// of this service call process this FOTAAS error differently than other system errors (e.g.
 		// if this service is not available). Intercept this error and handle it via response code &
@@ -121,9 +120,9 @@ func (s *server) GetSimulationStatus(ctx context.Context, req *api.GetSimulation
 		return &resp, nil
 	}
 
-	resp.ServerStatus.Code = api.StatusCode_OK
-	resp.ServerStatus.Message = fmt.Sprintf("found status for simulation id: %v", status.Uuid)
-	resp.SimulationStatus = &status
+	resp.ServerStatus = &api.ServerStatus{Code: api.StatusCode_OK,
+		Message: fmt.Sprintf("found info for simulation id: %v", info.Uuid)}
+	resp.SimulationInfo = &info
 
 	return &resp, nil
 }

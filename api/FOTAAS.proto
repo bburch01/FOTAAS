@@ -189,7 +189,7 @@ message Simulation {
     map<string, SimulationMember> simulation_member_map = 7;
 }
 
-message SimulationStatus {
+message SimulationInfo {
     string uuid = 1;
     int32 duration_in_minutes = 2;
     SampleRate sample_rate = 3;
@@ -219,13 +219,13 @@ message RunSimulationResponse {
     ServerStatus server_status = 1;  
 }
 
-message GetSimulationStatusRequest {
-    string uuid = 1;
+message GetSimulationInfoRequest {
+    string simulation_uuid = 1;
 }
 
-message GetSimulationStatusResponse {
+message GetSimulationInfoResponse {
     ServerStatus server_status = 1;
-    SimulationStatus simulation_status = 2;
+    SimulationInfo simulation_info = 2;
 }
 
 message GetTelemetryDataRequest {
@@ -269,5 +269,5 @@ service AnalysisService {
 service SimulationService {
     rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {};
     rpc RunSimulation (RunSimulationRequest) returns (RunSimulationResponse) {};
-    rpc GetSimulationStatus (GetSimulationStatusRequest) returns (GetSimulationStatusResponse) {};
+    rpc GetSimulationInfo (GetSimulationInfoRequest) returns (GetSimulationInfoResponse) {};
 }

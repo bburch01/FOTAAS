@@ -118,31 +118,31 @@ func TestSimulationModels(t *testing.T) {
 
 }
 
-func TestRetrieveSimulationStatus(t *testing.T) {
+func TestRetrieveSimulationInfo(t *testing.T) {
 
-	req := api.GetSimulationStatusRequest{}
-	status := api.SimulationStatus{}
+	req := api.GetSimulationInfoRequest{}
+	info := api.SimulationInfo{}
 
 	var err error
 
 	req.Uuid = "87bfb12d-63a2-4633-8c5b-ba3d95335c45"
 
-	if status, err = RetrieveSimulationStatus(req); err != nil {
-		t.Error("failed to retrieve simulation status with error: ", err)
+	if info, err = RetrieveSimulationInfo(req); err != nil {
+		t.Error("failed to retrieve simulation info with error: ", err)
 		t.FailNow()
 	}
 
-	fmt.Printf("\nsimulation id       : %v ", status.Uuid)
-	fmt.Printf("\nduration in minutes : %v ", status.DurationInMinutes)
-	fmt.Printf("\nsample rate         : %v ", status.SampleRate)
-	fmt.Printf("\ngran prix           : %v ", status.GranPrix)
-	fmt.Printf("\ntrack               : %v ", status.Track)
-	fmt.Printf("\nstate               : %v ", status.State)
-	fmt.Printf("\nstart timestamp     : %v ", ipbts.TimestampString(status.StartTimestamp))
-	fmt.Printf("\nend timestamp       : %v ", ipbts.TimestampString(status.EndTimestamp))
-	fmt.Printf("\npercent complete    : %v ", status.PercentComplete)
-	fmt.Printf("\nfinal status code   : %v ", status.FinalStatusCode)
-	fmt.Printf("\nfinal status message: %v ", status.FinalStatusMessage)
+	fmt.Printf("\nsimulation id       : %v ", info.Uuid)
+	fmt.Printf("\nduration in minutes : %v ", info.DurationInMinutes)
+	fmt.Printf("\nsample rate         : %v ", info.SampleRate)
+	fmt.Printf("\ngran prix           : %v ", info.GranPrix)
+	fmt.Printf("\ntrack               : %v ", info.Track)
+	fmt.Printf("\nstate               : %v ", info.State)
+	fmt.Printf("\nstart timestamp     : %v ", ipbts.TimestampString(info.StartTimestamp))
+	fmt.Printf("\nend timestamp       : %v ", ipbts.TimestampString(info.EndTimestamp))
+	fmt.Printf("\npercent complete    : %v ", info.PercentComplete)
+	fmt.Printf("\nfinal info code   : %v ", info.FinalStatusCode)
+	fmt.Printf("\nfinal info message: %v ", info.FinalStatusMessage)
 	fmt.Print("\n")
 
 }
