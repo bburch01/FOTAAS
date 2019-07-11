@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log"
 	"testing"
+	"time"
+
+	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 
 	"github.com/bburch01/FOTAAS/api"
 	"github.com/joho/godotenv"
@@ -35,7 +38,7 @@ func init() {
 
 }
 
-func TestTelemetryModels(t *testing.T) {
+func TestRetrieveSimulatedTelemetryData(t *testing.T) {
 
 	var req api.GetSimulatedTelemetryDataRequest
 	var data *api.TelemetryData
@@ -51,6 +54,62 @@ func TestTelemetryModels(t *testing.T) {
 		t.FailNow()
 	}
 
+	logger.Debug(fmt.Sprintf("telemetry data gran prix: %v", data.GranPrix))
+	logger.Debug(fmt.Sprintf("telemetry data track: %v", data.Track))
+	logger.Debug(fmt.Sprintf("telemetry data constructor: %v", data.Constructor))
+	logger.Debug(fmt.Sprintf("telemetry data car number: %v", data.CarNumber))
+	logger.Debug(fmt.Sprintf("telemetry data datum count: %v", len(data.TelemetryDatumMap)))
+
+	for _, v := range data.TelemetryDatumMap {
+		logger.Debug(fmt.Sprintf("telemetry data datum: %v", v))
+	}
+
+}
+
+func TestRetrieveTelemetryData(t *testing.T) {
+
+	// The following are valid telemetry db queries:
+	// select * from telemetry_datum where constructor='HAAS' and simulation_transmit_sequence_number=1 and timestamp between '2019-07-09' and '2019-07-11';
+	// select * from telemetry_datum where constructor='HAAS' and simulation_transmit_sequence_number=1 and timestamp between '2019-7-10 00:00:00' and '2019-7-10 23:59:59';
+
+	var req api.GetTelemetryDataRequest
+	var data *api.TelemetryData
+	var err error
+	var startTime, endTime time.Time
+
+	startTime, err = time.Parse(time.RFC3339, "2019-07-08T00:00:00Z")
+	if err != nil {
+		t.Error("failed to create start timestamp with error: ", err)
+		t.FailNow()
+	}
+
+	endTime, err = time.Parse(time.RFC3339, "2019-07-12T00:00:00Z")
+	if err != nil {
+		t.Error("failed to create start timestamp with error: ", err)
+		t.FailNow()
+	}
+
+	req.DateRangeBegin, err = ipbts.TimestampProto(startTime)
+	if err != nil {
+		t.Error("failed to create start timestamp with error: ", err)
+		t.FailNow()
+	}
+	req.DateRangeEnd, err = ipbts.TimestampProto(endTime)
+	if err != nil {
+		t.Error("failed to create start timestamp with error: ", err)
+		t.FailNow()
+	}
+
+	req.GranPrix = api.GranPrix_UNITED_STATES
+	req.Track = api.Track_AUSTIN
+	req.Constructor = api.Constructor_HAAS
+	req.CarNumber = 8
+	req.DatumDescription = api.TelemetryDatumDescription_BRAKE_TEMP_FL
+
+	if data, err = RetrieveTelemetryData(req); err != nil {
+		t.Error("failed to retrieve telemetry data with error: ", err)
+		t.FailNow()
+	}
 	logger.Debug(fmt.Sprintf("telemetry data gran prix: %v", data.GranPrix))
 	logger.Debug(fmt.Sprintf("telemetry data track: %v", data.Track))
 	logger.Debug(fmt.Sprintf("telemetry data constructor: %v", data.Constructor))
