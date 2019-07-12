@@ -64,8 +64,8 @@ var startSimulationCmd = &cobra.Command{
 		if err != nil {
 			log.Printf("start simulation service call failed with error: %v", err)
 		} else {
-			log.Printf("start simulation status code   : %v", resp.ServerStatus.Code)
-			log.Printf("start simulation status message: %s", resp.ServerStatus.Message)
+			log.Printf("start simulation status code   : %v", resp.ServiceStatus.Code)
+			log.Printf("start simulation status message: %s", resp.ServiceStatus.Message)
 		}
 		return nil
 	},

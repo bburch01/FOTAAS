@@ -55,12 +55,12 @@ func init() {
 func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
 
 	// Assume good health until a health check test fails.
-	resp := api.HealthCheckResponse{ServerStatus: &api.ServerStatus{Code: api.StatusCode_OK,
+	resp := api.HealthCheckResponse{ServiceStatus: &api.ServiceStatus{Code: api.StatusCode_OK,
 		 Message: "analysis service healthy"}}
 
 	if err := models.PingDB(); err != nil {
-		resp.ServerStatus.Code = api.StatusCode_ERROR
-		resp.ServerStatus.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
+		resp.ServiceStatus.Code = api.StatusCode_ERROR
+		resp.ServiceStatus.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
 		logger.Error(fmt.Sprintf("failed to ping database with error: %v", err))
 		// protoc generated code requires error in the return params, return nil here so that clients
 		// of this service call process this FOTAAS error differently than other system errors (e.g.

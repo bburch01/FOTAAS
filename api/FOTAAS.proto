@@ -110,16 +110,9 @@ enum StatusCode {
     ERROR = 1;
 }
 
-message ServerStatus {
+message ServiceStatus {
     StatusCode code = 1;
     string message = 2;
-}
-
-message HealthCheckRequest {
-}
-
-message HealthCheckResponse {
-    ServerStatus server_status = 1;
 }
 
 enum SimulationRateMultiplier {
@@ -170,6 +163,29 @@ message TelemetryData {
     map<string, TelemetryDatum> telemetry_datum_map = 5;   
 }
 
+message AlarmAnalysisData {
+    google.protobuf.Timestamp date_range_begin = 1;
+    google.protobuf.Timestamp date_range_end = 2;    
+    Constructor constructor = 3;
+    int32 car_number = 4;
+    message DatumDescriptionAlarmCount {
+        TelemetryDatumDescription datum_description = 1;
+        int32 low_alarm_count = 2;
+        int32 high_alarm_count = 3;
+      }   
+    repeated DatumDescriptionAlarmCount phone = 5;
+}
+
+message SystemStatusReport {
+    bool telemetry_service_alive = 1;
+    bool analysis_service_alive = 2;
+    bool simulation_service_alive = 3;
+    bool simulation_successfully_started = 4;
+    bool simulation_successfully_completed = 5;
+    bool simulation_data_successfully_retrieved = 6;
+    bool alarm_analysis_successfully_completed = 7;  
+}
+
 message SimulationMember {
     string uuid = 1;
     string simulation_uuid = 2;
@@ -203,12 +219,19 @@ message SimulationInfo {
     string final_status_message = 11;
 }
 
+message HealthCheckRequest {
+}
+
+message HealthCheckResponse {
+    ServiceStatus service_status = 1;
+}
+
 message TransmitTelemetryRequest {
     TelemetryData telemetry_data = 1;
 }
 
 message TransmitTelemetryResponse {
-    map<string, ServerStatus> server_status = 1;
+    map<string, ServiceStatus> service_status = 1;
 }
 
 message RunSimulationRequest {
@@ -216,7 +239,7 @@ message RunSimulationRequest {
 }
 
 message RunSimulationResponse {
-    ServerStatus server_status = 1;  
+    ServiceStatus service_status = 1;  
 }
 
 message GetSimulationInfoRequest {
@@ -224,7 +247,7 @@ message GetSimulationInfoRequest {
 }
 
 message GetSimulationInfoResponse {
-    ServerStatus server_status = 1;
+    ServiceStatus service_status = 1;
     SimulationInfo simulation_info = 2;
 }
 
@@ -239,7 +262,7 @@ message GetTelemetryDataRequest {
 }
 
 message GetTelemetryDataResponse {
-    ServerStatus server_status = 1;
+    ServiceStatus service_status = 1;
     TelemetryData telemetry_data = 2;    
 }
 
@@ -251,8 +274,28 @@ message GetSimulatedTelemetryDataRequest {
 }
 
 message GetSimulatedTelemetryDataResponse {
-    ServerStatus server_status = 1;
+    ServiceStatus service_status = 1;
     TelemetryData telemetry_data = 2;    
+}
+
+message GetAlarmAnalysisRequest {
+    google.protobuf.Timestamp date_range_begin = 1;
+    google.protobuf.Timestamp date_range_end = 2;        
+    Constructor constructor = 3;
+    int32 car_number = 4;
+}
+
+message GetAlarmAnalysisResponse {
+    ServiceStatus service_status = 1;
+    AlarmAnalysisData alarm_analysis_data = 2;    
+}
+
+message GetSystemStatusRequest {
+}
+
+message GetSystemStatusResponse {
+    ServiceStatus service_status = 1;
+    SystemStatusReport system_status_report = 2;    
 }
 
 service TelemetryService {
@@ -270,4 +313,8 @@ service SimulationService {
     rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {};
     rpc RunSimulation (RunSimulationRequest) returns (RunSimulationResponse) {};
     rpc GetSimulationInfo (GetSimulationInfoRequest) returns (GetSimulationInfoResponse) {};
+}
+
+service SystemStatusService {
+    rpc GetSystemStatus (GetSystemStatusRequest) returns (GetSystemStatusResponse) {};
 }

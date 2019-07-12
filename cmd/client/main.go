@@ -32,7 +32,7 @@ func main() {
 		if resp, err := transmit(); err != nil {
 			log.Fatalf("an error occurred while trying to transmit telemetry data: %v", err)
 		} else {
-			for i, v := range resp.ServerStatus {
+			for i, v := range resp.ServiceStatus {
 				log.Printf("uuid: %v status code: %v status msg: %v", i, v.Code, v.Message)
 			}
 		}
@@ -42,7 +42,7 @@ func main() {
 		if resp, err := runSimulation(); err != nil {
 			log.Fatalf("an error occurred while trying to run the simulation: %v", err)
 		} else {
-			for i, v := range resp.ServerStatus {
+			for i, v := range resp.ServiceStatus {
 				log.Printf("uuid: %v status code: %v status msg: %v", i, v.Code, v.Message)
 			}
 		}

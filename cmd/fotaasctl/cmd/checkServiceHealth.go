@@ -74,8 +74,8 @@ var checkServiceHealthCmd = &cobra.Command{
 				if err != nil {
 					log.Printf("%v service health check call failed with error: %v", svcname, err)
 				} else {
-					log.Printf("%v service health status code   : %v", svcname, resp.ServerStatus.Code)
-					log.Printf("%v service health status message: %s", svcname, resp.ServerStatus.Message)
+					log.Printf("%v service health status code   : %v", svcname, resp.ServiceStatus.Code)
+					log.Printf("%v service health status message: %s", svcname, resp.ServiceStatus.Message)
 				}
 			}
 		}
@@ -158,23 +158,23 @@ func checkAll() {
 	if err != nil {
 		log.Printf("telemetry service health check call failed with error: %v", err)
 	} else {
-		log.Printf("telemetry service health status code   : %v", resp.ServerStatus.Code)
-		log.Printf("telemetry service health status message: %s", resp.ServerStatus.Message)
+		log.Printf("telemetry service health status code   : %v", resp.ServiceStatus.Code)
+		log.Printf("telemetry service health status message: %s", resp.ServiceStatus.Message)
 	}
 
 	resp, err = checkByName("analysis")
 	if err != nil {
 		log.Printf("analysis service health check call failed with error: %v", err)
 	} else {
-		log.Printf("analysis service health status code   : %v", resp.ServerStatus.Code)
-		log.Printf("analysis service health status message: %s", resp.ServerStatus.Message)
+		log.Printf("analysis service health status code   : %v", resp.ServiceStatus.Code)
+		log.Printf("analysis service health status message: %s", resp.ServiceStatus.Message)
 	}
 
 	resp, err = checkByName("simulation")
 	if err != nil {
 		log.Printf("simulation service health check call failed with error: %v", err)
 	} else {
-		log.Printf("simulation service health status code   : %v", resp.ServerStatus.Code)
-		log.Printf("simulation service health status message: %s", resp.ServerStatus.Message)
+		log.Printf("simulation service health status code   : %v", resp.ServiceStatus.Code)
+		log.Printf("simulation service health status message: %s", resp.ServiceStatus.Message)
 	}
 }
