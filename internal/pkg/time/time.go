@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+// NullTime provides an implementation of time that can be used by model code to
+// scan null timestamps from a mysql database
 type NullTime struct {
 	Time  time.Time
 	Valid bool // Valid is true if Time is not NULL
