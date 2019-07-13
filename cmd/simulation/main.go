@@ -103,7 +103,7 @@ func (s *server) GetSimulationInfo(ctx context.Context, req *api.GetSimulationIn
 
 	// TODO: need to validate the request (all search terms present and valid)
 
-	resp := api.GetSimulationInfoResponse{}
+	resp := api.GetSimulationInfoResponse{Details: &api.ResponseDetails{}}
 	var info *api.SimulationInfo
 	var err error
 

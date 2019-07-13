@@ -72,6 +72,14 @@ func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (
 	return &resp, nil
 }
 
+func (s *server) GetAlarmAnalysis(ctx context.Context, req *api.GetAlarmAnalysisRequest) (*api.GetAlarmAnalysisResponse, error) {
+
+	resp := api.GetAlarmAnalysisResponse{Details: &api.ResponseDetails{Code: api.ResponseCode_ERROR,
+		Message: "GetAlarmAnalysis development not complete"}}
+
+	return &resp, nil
+}
+
 func main() {
 
 	var sb strings.Builder

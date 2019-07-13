@@ -273,9 +273,24 @@ message GetTelemetryDataResponse {
 
 message GetSimulatedTelemetryDataRequest {
     string simulation_uuid = 1;
-    Constructor constructor = 2;
-    int32 car_number = 3;
-    TelemetryDatumDescription datum_description = 4;
+    google.protobuf.Timestamp date_range_begin = 2;
+    google.protobuf.Timestamp date_range_end = 3;    
+    Constructor constructor = 4;
+    int32 car_number = 5;
+    TelemetryDatumDescription datum_description = 6;
+    GranPrix gran_prix = 7;
+    Track track = 8;
+    message SearchBy {
+        bool date_range = 1;
+        bool constructor = 2;
+        bool car_number = 3;
+        bool datum_description = 4;
+        bool gran_prix = 5;
+        bool track = 6;
+        bool high_alarm = 7;
+        bool low_alarm = 8;
+    }
+    SearchBy search_by = 9;
 }
 
 message GetSimulatedTelemetryDataResponse {
@@ -312,6 +327,7 @@ service TelemetryService {
 
 service AnalysisService {
     rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {};
+    rpc GetAlarmAnalysis (GetAlarmAnalysisRequest) returns (GetAlarmAnalysisResponse) {};
 }
 
 service SimulationService {

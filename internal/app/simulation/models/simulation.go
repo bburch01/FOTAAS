@@ -6,6 +6,7 @@ import (
 	"time"
 
 	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
+	itime "github.com/bburch01/FOTAAS/internal/pkg/time"
 	pbts "github.com/golang/protobuf/ptypes/timestamp"
 
 	"github.com/bburch01/FOTAAS/api"
@@ -282,7 +283,7 @@ func (sim Simulation) FindAllMembers() ([]SimulationMember, error) {
 func RetrieveSimulationInfo(req api.GetSimulationInfoRequest) (*api.SimulationInfo, error) {
 
 	var sampleRate, granPrix, track, state string
-	var startTs, endTs time.Time
+	var startTs, endTs itime.NullTime
 
 	info := api.SimulationInfo{}
 
@@ -327,13 +328,13 @@ func RetrieveSimulationInfo(req api.GetSimulationInfoRequest) (*api.SimulationIn
 		}
 		info.State = api.SimulationState(ordinal)
 
-		tsProto, err := ipbts.TimestampProto(startTs)
+		tsProto, err := ipbts.TimestampProto(startTs.Time)
 		if err != nil {
 			return nil, errors.New("failed to convert start timestamp to protobuf format")
 		}
 		info.StartTimestamp = tsProto
 
-		tsProto, err = ipbts.TimestampProto(endTs)
+		tsProto, err = ipbts.TimestampProto(endTs.Time)
 		if err != nil {
 			return nil, errors.New("failed to convert end timestamp to protobuf format")
 		}
@@ -373,3 +374,24 @@ func NewFromRunSimulationRequest(req api.RunSimulationRequest) *Simulation {
 
 	return sim
 }
+
+/*
+type NullTime struct {
+	Time  time.Time
+	Valid bool // Valid is true if Time is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (nt *NullTime) Scan(value interface{}) error {
+	nt.Time, nt.Valid = value.(time.Time)
+	return nil
+}
+
+// Value implements the driver Valuer interface.
+func (nt NullTime) Value() (driver.Value, error) {
+	if !nt.Valid {
+		return nil, nil
+	}
+	return nt.Time, nil
+}
+*/

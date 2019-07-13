@@ -44,6 +44,7 @@ func init() {
 
 	//checkServiceHealthCmd.Flags().StringP("name", "n", "", "run health check on a FOTAAS service by name")
 	//checkServiceHealthCmd.Flags().BoolP("all", "a", false, "run health check on all FOTAAS services")
+	startSimulationCmd.Flags().BoolP("alarm", "a", false, "force an alarm during the simulation")
 
 	// Loads values from .env into the system.
 	// NOTE: the .env file must be present in execution directory which is a
@@ -60,7 +61,8 @@ var startSimulationCmd = &cobra.Command{
 	Short: "Starts a pre-defined FOTAAS simulation.",
 	Long:  `Starts a FOTAAS simulation that will generate and persist telemetry data`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := startSimulation()
+		forceAlarm, _ := cmd.Flags().GetBool("alarm")
+		resp, err := startSimulation(forceAlarm)
 		if err != nil {
 			log.Printf("start simulation service call failed with error: %v", err)
 		} else {
@@ -71,26 +73,35 @@ var startSimulationCmd = &cobra.Command{
 	},
 }
 
-func startSimulation() (*api.RunSimulationResponse, error) {
+func startSimulation(forceAlarm bool) (*api.RunSimulationResponse, error) {
 
 	var simulationSvcEndpoint string
 	var sb strings.Builder
 	var resp *api.RunSimulationResponse
 	var req api.RunSimulationRequest
 	var simID string
+	var forceAlarmFlag, noAlarmFlag bool
+
+	if forceAlarm {
+		forceAlarmFlag = true
+		noAlarmFlag = false
+	} else {
+		forceAlarmFlag = false
+		noAlarmFlag = true
+	}
 
 	simMemberMap := make(map[string]*api.SimulationMember)
 	simID = uuid.New().String()
 
 	simMemberID := uuid.New().String()
 	simMember1 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_HAAS,
-		CarNumber: 8, ForceAlarm: false, NoAlarms: true,
+		CarNumber: 8, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
 	}
 	simMemberMap[simMemberID] = &simMember1
 
 	simMemberID = uuid.New().String()
 	simMember2 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_MERCEDES,
-		CarNumber: 44, ForceAlarm: false, NoAlarms: true,
+		CarNumber: 44, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
 	}
 	simMemberMap[simMemberID] = &simMember2
 
