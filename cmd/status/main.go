@@ -55,16 +55,16 @@ func init() {
 
 func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRequest) (*api.GetSystemStatusResponse, error) {
 
-	var resp api.GetSystemStatusResponse
+	//var resp api.GetSystemStatusResponse
 	var statusReport api.SystemStatusReport
 
-	statusReport.TelemetryServiceAlive = isServiceAlive("telemetry")
-	statusReport.AnalysisServiceAlive = isServiceAlive("analysis")
-	statusReport.SimulationServiceAlive = isServiceAlive("simulation")
+	statusReport.TelemetryServiceAliveness = runServiceAlivenessTest("telemetry")
+	statusReport.AnalysisServiceAliveness = runServiceAlivenessTest("analysis")
+	statusReport.SimulationServiceAliveness = runServiceAlivenessTest("simulation")
 
-	resp.ServiceStatus.Code = api.StatusCode_OK
-	resp.ServiceStatus.Message = ""
-	resp.SystemStatusReport = &statusReport
+	resp := api.GetSystemStatusResponse{ServiceStatus: &api.ServiceStatus{
+		Code: api.StatusCode_OK, Message: "successfully completed system status checks"},
+		SystemStatusReport: &statusReport}
 
 	return &resp, nil
 }
@@ -111,7 +111,7 @@ func main() {
 
 }
 
-func isServiceAlive(svcname string) bool {
+func runServiceAlivenessTest(svcname string) api.TestResult {
 
 	var svcEndpoint string
 	var resp *api.HealthCheckResponse
@@ -135,13 +135,13 @@ func isServiceAlive(svcname string) bool {
 		svcEndpoint = sb.String()
 	default:
 		logger.Error(fmt.Sprintf("service aliveness check failed, invalid service name: %v", svcname))
-		return false
+		return api.TestResult_FAIL
 	}
 
 	conn, err := grpc.Dial(svcEndpoint, grpc.WithInsecure())
 	if err != nil {
 		logger.Error(fmt.Sprintf("%v service aliveness check failed with error: %v", svcname, err))
-		return false
+		return api.TestResult_FAIL
 	}
 	defer conn.Close()
 
@@ -160,35 +160,35 @@ func isServiceAlive(svcname string) bool {
 		resp, err = client.HealthCheck(ctx, &api.HealthCheckRequest{})
 		if err != nil {
 			logger.Error(fmt.Sprintf("%v service aliveness check failed with error: %v", svcname, err))
-			return false
+			return api.TestResult_FAIL
 		}
 	case "analysis":
 		client := api.NewAnalysisServiceClient(conn)
 		resp, err = client.HealthCheck(ctx, &api.HealthCheckRequest{})
 		if err != nil {
 			logger.Error(fmt.Sprintf("%v service aliveness check failed with error: %v", svcname, err))
-			return false
+			return api.TestResult_FAIL
 		}
 	case "simulation":
 		client := api.NewSimulationServiceClient(conn)
 		resp, err = client.HealthCheck(ctx, &api.HealthCheckRequest{})
 		if err != nil {
 			logger.Error(fmt.Sprintf("%v service aliveness check failed with error: %v", svcname, err))
-			return false
+			return api.TestResult_FAIL
 		}
 	default:
 		logger.Error(fmt.Sprintf("service aliveness check failed, invalid service name: %v", svcname))
-		return false
+		return api.TestResult_FAIL
 	}
 
 	switch resp.ServiceStatus.Code {
 	case api.StatusCode_OK:
-		return true
+		return api.TestResult_PASS
 	case api.StatusCode_ERROR:
 		logger.Error(fmt.Sprintf("%v service aliveness test failed with message: %v", svcname, resp.ServiceStatus.Message))
-		return false
+		return api.TestResult_FAIL
 	default:
 		logger.Error(fmt.Sprintf("service aliveness check failed, invalid service status code: %v", resp.ServiceStatus.Code.String()))
-		return false
+		return api.TestResult_FAIL
 	}
 }

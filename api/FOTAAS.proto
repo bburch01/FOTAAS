@@ -115,6 +115,11 @@ message ServiceStatus {
     string message = 2;
 }
 
+enum TestResult {
+    PASS = 0;
+    FAIL = 1;
+}
+
 enum SimulationRateMultiplier {
     X1 = 0;
     X2 = 1;
@@ -177,13 +182,13 @@ message AlarmAnalysisData {
 }
 
 message SystemStatusReport {
-    bool telemetry_service_alive = 1;
-    bool analysis_service_alive = 2;
-    bool simulation_service_alive = 3;
-    bool simulation_successfully_started = 4;
-    bool simulation_successfully_completed = 5;
-    bool simulation_data_successfully_retrieved = 6;
-    bool alarm_analysis_successfully_completed = 7;  
+    TestResult telemetry_service_aliveness = 1;
+    TestResult analysis_service_aliveness = 2;
+    TestResult simulation_service_aliveness = 3;
+    TestResult start_simulation = 4;
+    TestResult poll_for_simulation_complete = 5;
+    TestResult retrieve_simulation_data = 6;
+    TestResult get_simulation_data_analysis = 7;  
 }
 
 message SimulationMember {
