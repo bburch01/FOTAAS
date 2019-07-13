@@ -56,12 +56,12 @@ func init() {
 func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
 
 	// Assume good health until a health check test fails.
-	resp := api.HealthCheckResponse{ServiceStatus: &api.ServiceStatus{Code: api.StatusCode_OK,
+	resp := api.HealthCheckResponse{Details: &api.ResponseDetails{Code: api.ResponseCode_OK,
 		Message: "telemetry service healthy"}}
 
 	if err := models.PingDB(); err != nil {
-		resp.ServiceStatus.Code = api.StatusCode_ERROR
-		resp.ServiceStatus.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
+		resp.Details.Code = api.ResponseCode_ERROR
+		resp.Details.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
 		logger.Error(fmt.Sprintf("failed to ping database with error: %v", err))
 		// protoc generated code requires error in the return params, return nil here so that clients
 		// of this service call process this FOTAAS error differently than other system errors (e.g.
@@ -78,8 +78,8 @@ func (s *server) TransmitTelemetry(ctx context.Context, req *api.TransmitTelemet
 	var resp api.TransmitTelemetryResponse
 	var datum models.TelemetryDatum
 	var datumMap = req.TelemetryData.TelemetryDatumMap
-	var status api.ServiceStatus
-	var statusMap = make(map[string]*api.ServiceStatus)
+	var status api.ResponseDetails
+	var statusMap = make(map[string]*api.ResponseDetails)
 
 	datum.GranPrix = req.TelemetryData.GranPrix.String()
 	datum.Track = req.TelemetryData.Track.String()
@@ -89,7 +89,7 @@ func (s *server) TransmitTelemetry(ctx context.Context, req *api.TransmitTelemet
 	for i, v := range datumMap {
 		err := validate(v)
 		if err != nil {
-			status.Code = api.StatusCode_ERROR
+			status.Code = api.ResponseCode_ERROR
 			status.Message = fmt.Sprintf("telemetry datum validation failed with error: %v", err)
 		} else {
 			datum.ID = v.Uuid
@@ -109,17 +109,17 @@ func (s *server) TransmitTelemetry(ctx context.Context, req *api.TransmitTelemet
 			datum.LoAlarm = v.LowAlarm
 			err = datum.Create()
 			if err != nil {
-				status.Code = api.StatusCode_ERROR
+				status.Code = api.ResponseCode_ERROR
 				status.Message = fmt.Sprintf("server side error: %v", err)
 			} else {
-				status.Code = api.StatusCode_OK
+				status.Code = api.ResponseCode_OK
 				status.Message = fmt.Sprintf("telemetry datum successfully processed.")
 			}
 		}
 		statusMap[i] = &status
 	}
 
-	resp.ServiceStatus = statusMap
+	resp.Details = statusMap
 	return &resp, nil
 }
 
@@ -132,8 +132,8 @@ func (s *server) GetTelemetryData(ctx context.Context, req *api.GetTelemetryData
 	var err error
 
 	if data, err = models.RetrieveTelemetryData(*req); err != nil {
-		resp.ServiceStatus.Code = api.StatusCode_ERROR
-		resp.ServiceStatus.Message = fmt.Sprintf("failed to retrieve simulated telemetry data with error: %v", err)
+		resp.Details.Code = api.ResponseCode_ERROR
+		resp.Details.Message = fmt.Sprintf("failed to retrieve simulated telemetry data with error: %v", err)
 		logger.Error(fmt.Sprintf("failed to retrieve simulated telemetry data with error: %v", err))
 		// protoc generated code requires error in the return params, return nil here so that clients
 		// of this service call process this FOTAAS error differently than other system errors (e.g.
@@ -142,7 +142,7 @@ func (s *server) GetTelemetryData(ctx context.Context, req *api.GetTelemetryData
 		return &resp, nil
 	}
 
-	resp.ServiceStatus = &api.ServiceStatus{Code: api.StatusCode_OK,
+	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
 		Message: fmt.Sprintf("found %v telemetry datum", len(data.TelemetryDatumMap))}
 
 	resp.TelemetryData = data
@@ -160,8 +160,8 @@ func (s *server) GetSimulatedTelemetryData(ctx context.Context, req *api.GetSimu
 	var err error
 
 	if data, err = models.RetrieveSimulatedTelemetryData(*req); err != nil {
-		resp.ServiceStatus.Code = api.StatusCode_ERROR
-		resp.ServiceStatus.Message = fmt.Sprintf("failed to retrieve simulated telemetry data with error: %v", err)
+		resp.Details.Code = api.ResponseCode_ERROR
+		resp.Details.Message = fmt.Sprintf("failed to retrieve simulated telemetry data with error: %v", err)
 		logger.Error(fmt.Sprintf("failed to retrieve simulated telemetry data with error: %v", err))
 		// protoc generated code requires error in the return params, return nil here so that clients
 		// of this service call process this FOTAAS error differently than other system errors (e.g.
@@ -170,7 +170,7 @@ func (s *server) GetSimulatedTelemetryData(ctx context.Context, req *api.GetSimu
 		return &resp, nil
 	}
 
-	resp.ServiceStatus = &api.ServiceStatus{Code: api.StatusCode_OK,
+	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
 		Message: fmt.Sprintf("found %v simulated telemetry datum", len(data.TelemetryDatumMap))}
 
 	resp.TelemetryData = data

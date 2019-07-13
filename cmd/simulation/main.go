@@ -46,12 +46,12 @@ func init() {
 
 func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
 
-	resp := api.HealthCheckResponse{ServiceStatus: &api.ServiceStatus{
-		Code: api.StatusCode_OK, Message: "simulation service healthy"}}
+	resp := api.HealthCheckResponse{Details: &api.ResponseDetails{
+		Code: api.ResponseCode_OK, Message: "simulation service healthy"}}
 
 	if err := models.PingDB(); err != nil {
-		resp.ServiceStatus.Code = api.StatusCode_ERROR
-		resp.ServiceStatus.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
+		resp.Details.Code = api.ResponseCode_ERROR
+		resp.Details.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
 		logger.Error(fmt.Sprintf("failed to ping database with error: %v", err))
 		// protoc generated code requires error in the return params, return nil here so that clients
 		// of this service call process this FOTAAS error differently than other system errors (e.g.
@@ -65,15 +65,15 @@ func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (
 
 func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationRequest) (*api.RunSimulationResponse, error) {
 
-	var resp = api.RunSimulationResponse{ServiceStatus: &api.ServiceStatus{
-		Code: api.StatusCode_OK, Message: fmt.Sprintf("simulation %v successfully started", req.Simulation.Uuid)}}
+	var resp = api.RunSimulationResponse{Details: &api.ResponseDetails{
+		Code: api.ResponseCode_OK, Message: fmt.Sprintf("simulation %v successfully started", req.Simulation.Uuid)}}
 
 	//var err error
 
 	// Validate the simulation request
 	if err := validateSimulationRequest(req); err != nil {
-		resp.ServiceStatus.Code = api.StatusCode_ERROR
-		resp.ServiceStatus.Message = fmt.Sprintf("RunSimulationRequest failed validation: %v", err)
+		resp.Details.Code = api.ResponseCode_ERROR
+		resp.Details.Message = fmt.Sprintf("RunSimulationRequest failed validation: %v", err)
 		logger.Error(fmt.Sprintf("RunSimulationRequest failed validation: %v", err))
 		// protoc generated code requires error in the return params, return nil here so that clients
 		// of this service call process this FOTAAS error differently than other system errors (e.g.
@@ -108,8 +108,8 @@ func (s *server) GetSimulationInfo(ctx context.Context, req *api.GetSimulationIn
 	var err error
 
 	if info, err = models.RetrieveSimulationInfo(*req); err != nil {
-		resp.ServiceStatus.Code = api.StatusCode_ERROR
-		resp.ServiceStatus.Message = fmt.Sprintf("failed to retrieve simulation info with error: %v", err)
+		resp.Details.Code = api.ResponseCode_ERROR
+		resp.Details.Message = fmt.Sprintf("failed to retrieve simulation info with error: %v", err)
 		logger.Error(fmt.Sprintf("failed to retrieve simulation info with error: %v", err))
 		// protoc generated code requires error in the return params, return nil here so that clients
 		// of this service call process this FOTAAS error differently than other system errors (e.g.
@@ -118,7 +118,7 @@ func (s *server) GetSimulationInfo(ctx context.Context, req *api.GetSimulationIn
 		return &resp, nil
 	}
 
-	resp.ServiceStatus = &api.ServiceStatus{Code: api.StatusCode_OK,
+	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
 		Message: fmt.Sprintf("found info for simulation id: %v", info.Uuid)}
 	resp.SimulationInfo = info
 

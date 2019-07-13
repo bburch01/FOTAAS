@@ -62,8 +62,8 @@ func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRe
 	statusReport.AnalysisServiceAliveness = runServiceAlivenessTest("analysis")
 	statusReport.SimulationServiceAliveness = runServiceAlivenessTest("simulation")
 
-	resp := api.GetSystemStatusResponse{ServiceStatus: &api.ServiceStatus{
-		Code: api.StatusCode_OK, Message: "successfully completed system status checks"},
+	resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
+		Code: api.ResponseCode_OK, Message: "successfully completed system status checks"},
 		SystemStatusReport: &statusReport}
 
 	return &resp, nil
@@ -181,14 +181,14 @@ func runServiceAlivenessTest(svcname string) api.TestResult {
 		return api.TestResult_FAIL
 	}
 
-	switch resp.ServiceStatus.Code {
-	case api.StatusCode_OK:
+	switch resp.Details.Code {
+	case api.ResponseCode_OK:
 		return api.TestResult_PASS
-	case api.StatusCode_ERROR:
-		logger.Error(fmt.Sprintf("%v service aliveness test failed with message: %v", svcname, resp.ServiceStatus.Message))
+	case api.ResponseCode_ERROR:
+		logger.Error(fmt.Sprintf("%v service aliveness test failed with message: %v", svcname, resp.Details.Message))
 		return api.TestResult_FAIL
 	default:
-		logger.Error(fmt.Sprintf("service aliveness check failed, invalid service status code: %v", resp.ServiceStatus.Code.String()))
+		logger.Error(fmt.Sprintf("service aliveness check failed, invalid service status code: %v", resp.Details.Code.String()))
 		return api.TestResult_FAIL
 	}
 }

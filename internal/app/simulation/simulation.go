@@ -22,11 +22,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-type SimResult struct {
-	UUID   string
-	Status api.ServiceStatus
-}
-
 var logger *zap.Logger
 
 func init() {
@@ -315,8 +310,8 @@ func StartSimulation(sim *models.Simulation) {
 				return
 			}
 
-			for _, v := range resp.ServiceStatus {
-				if v.Code != api.StatusCode_OK {
+			for _, v := range resp.Details {
+				if v.Code != api.ResponseCode_OK {
 					logger.Error(fmt.Sprintf("simulation %v failed with telemetry service code: %v", sim.ID, v.Code))
 					logger.Error(fmt.Sprintf("simulation %v failed with telemetry service message: %v", sim.ID, v.Message))
 					sim.State = "FAILED"

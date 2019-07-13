@@ -63,8 +63,8 @@ var getSystemStatusCmd = &cobra.Command{
 		if err != nil {
 			log.Printf("get system status service call failed with error: %v", err)
 		} else {
-			log.Printf("get system status status code   : %v", resp.ServiceStatus.Code)
-			log.Printf("get system status status message: %s", resp.ServiceStatus.Message)
+			log.Printf("get system status response code   : %v", resp.Details.Code)
+			log.Printf("get system status response message: %s", resp.Details.Message)
 			log.Printf("telemetry service aliveness test: %v", resp.SystemStatusReport.TelemetryServiceAliveness.String())
 			log.Printf("analysis service aliveness test: %v", resp.SystemStatusReport.AnalysisServiceAliveness.String())
 			log.Printf("simulation service aliveness test: %v", resp.SystemStatusReport.SimulationServiceAliveness.String())

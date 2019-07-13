@@ -105,13 +105,13 @@ enum TelemetryDatumDescription {
     TIRE_TEMP_RL = 24;        
 }
 
-enum StatusCode {
+enum ResponseCode {
     OK = 0;
     ERROR = 1;
 }
 
-message ServiceStatus {
-    StatusCode code = 1;
+message ResponseDetails {
+    ResponseCode code = 1;
     string message = 2;
 }
 
@@ -228,7 +228,7 @@ message HealthCheckRequest {
 }
 
 message HealthCheckResponse {
-    ServiceStatus service_status = 1;
+    ResponseDetails details = 1;
 }
 
 message TransmitTelemetryRequest {
@@ -236,7 +236,7 @@ message TransmitTelemetryRequest {
 }
 
 message TransmitTelemetryResponse {
-    map<string, ServiceStatus> service_status = 1;
+    map<string, ResponseDetails> details = 1;
 }
 
 message RunSimulationRequest {
@@ -244,7 +244,7 @@ message RunSimulationRequest {
 }
 
 message RunSimulationResponse {
-    ServiceStatus service_status = 1;  
+    ResponseDetails details = 1;
 }
 
 message GetSimulationInfoRequest {
@@ -252,7 +252,7 @@ message GetSimulationInfoRequest {
 }
 
 message GetSimulationInfoResponse {
-    ServiceStatus service_status = 1;
+    ResponseDetails details = 1;
     SimulationInfo simulation_info = 2;
 }
 
@@ -267,7 +267,7 @@ message GetTelemetryDataRequest {
 }
 
 message GetTelemetryDataResponse {
-    ServiceStatus service_status = 1;
+    ResponseDetails details = 1;
     TelemetryData telemetry_data = 2;    
 }
 
@@ -279,7 +279,7 @@ message GetSimulatedTelemetryDataRequest {
 }
 
 message GetSimulatedTelemetryDataResponse {
-    ServiceStatus service_status = 1;
+    ResponseDetails details = 1;
     TelemetryData telemetry_data = 2;    
 }
 
@@ -291,7 +291,7 @@ message GetAlarmAnalysisRequest {
 }
 
 message GetAlarmAnalysisResponse {
-    ServiceStatus service_status = 1;
+    ResponseDetails details = 1;
     AlarmAnalysisData alarm_analysis_data = 2;    
 }
 
@@ -299,7 +299,7 @@ message GetSystemStatusRequest {
 }
 
 message GetSystemStatusResponse {
-    ServiceStatus service_status = 1;
+    ResponseDetails details = 1;
     SystemStatusReport system_status_report = 2;    
 }
 

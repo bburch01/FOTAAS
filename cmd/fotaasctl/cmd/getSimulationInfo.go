@@ -77,8 +77,8 @@ var getSimulationInfoCmd = &cobra.Command{
 		if err != nil {
 			log.Printf("get simulation info service call failed with error: %v", err)
 		} else {
-			log.Printf("get simulation info status code   : %v", resp.ServiceStatus.Code)
-			log.Printf("get simulation info status message: %s", resp.ServiceStatus.Message)
+			log.Printf("get simulation info response code   : %v", resp.Details.Code)
+			log.Printf("get simulation info response message: %s", resp.Details.Message)
 
 			log.Printf("\nsimulation id       : %v ", resp.SimulationInfo.Uuid)
 			log.Printf("\nduration in minutes : %v ", resp.SimulationInfo.DurationInMinutes)
