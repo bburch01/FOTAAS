@@ -55,9 +55,9 @@ func init() {
 
 func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
 
-	// Assume good health until a health check test fails.
-	resp := api.HealthCheckResponse{Details: &api.ResponseDetails{Code: api.ResponseCode_OK,
-		Message: "telemetry service healthy"}}
+	resp := new(api.HealthCheckResponse)
+	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
+		Message: "telemetry service healthy"}
 
 	if err := models.PingDB(); err != nil {
 		resp.Details.Code = api.ResponseCode_ERROR
@@ -67,10 +67,10 @@ func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (
 		// of this service call process this FOTAAS error differently than other system errors (e.g.
 		// if this service is not available). Intercept this error and handle it via response code &
 		// message.
-		return &resp, nil
+		return resp, nil
 	}
 
-	return &resp, nil
+	return resp, nil
 }
 
 func (s *server) TransmitTelemetry(ctx context.Context, req *api.TransmitTelemetryRequest) (*api.TransmitTelemetryResponse, error) {

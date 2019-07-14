@@ -43,11 +43,41 @@ func TestRetrieveSimulatedTelemetryData(t *testing.T) {
 	var req api.GetSimulatedTelemetryDataRequest
 	var data *api.TelemetryData
 	var err error
+	var startTime, endTime time.Time
 
 	req.SimulationUuid = "dc0d88fa-4e7b-4e3b-b10a-55194944e505"
-	req.Constructor = api.Constructor_MERCEDES
-	req.CarNumber = 44
-	req.DatumDescription = api.TelemetryDatumDescription_BRAKE_TEMP_FL
+
+	req.SearchBy.DateRange = true
+	req.SearchBy.HighAlarm = true
+	req.SearchBy.LowAlarm = true
+
+	startTime, err = time.Parse(time.RFC3339, "2019-07-08T00:00:00Z")
+	if err != nil {
+		t.Error("failed to create start timestamp with error: ", err)
+		t.FailNow()
+	}
+
+	endTime, err = time.Parse(time.RFC3339, "2019-07-12T23:59:59Z")
+	if err != nil {
+		t.Error("failed to create start timestamp with error: ", err)
+		t.FailNow()
+	}
+
+	req.DateRangeBegin, err = ipbts.TimestampProto(startTime)
+	if err != nil {
+		t.Error("failed to create start timestamp with error: ", err)
+		t.FailNow()
+	}
+	req.DateRangeEnd, err = ipbts.TimestampProto(endTime)
+	if err != nil {
+		t.Error("failed to create start timestamp with error: ", err)
+		t.FailNow()
+	}
+
+	//req.SimulationUuid = "dc0d88fa-4e7b-4e3b-b10a-55194944e505"
+	//req.Constructor = api.Constructor_MERCEDES
+	//req.CarNumber = 44
+	//req.DatumDescription = api.TelemetryDatumDescription_BRAKE_TEMP_FL
 
 	if data, err = RetrieveSimulatedTelemetryData(req); err != nil {
 		t.Error("failed to retrieve simulated telemetry data with error: ", err)

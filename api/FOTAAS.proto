@@ -108,6 +108,8 @@ enum TelemetryDatumDescription {
 enum ResponseCode {
     OK = 0;
     ERROR = 1;
+    INFO = 2;
+    WARN = 3;
 }
 
 message ResponseDetails {
@@ -158,6 +160,10 @@ message TelemetryDatum {
     bool simulated = 11;
     string simulation_uuid = 12;
     int32 simulation_transmit_sequence_number = 13;
+    //GranPrix gran_prix = 14;
+    //Track track = 15;
+    //Constructor constructor = 16;
+    //int32 car_number = 17;    
 }
 
 message TelemetryData {

@@ -80,18 +80,22 @@ var getSimulationInfoCmd = &cobra.Command{
 			log.Printf("get simulation info response code   : %v", resp.Details.Code)
 			log.Printf("get simulation info response message: %s", resp.Details.Message)
 
-			log.Printf("\nsimulation id       : %v ", resp.SimulationInfo.Uuid)
-			log.Printf("\nduration in minutes : %v ", resp.SimulationInfo.DurationInMinutes)
-			log.Printf("\nsample rate         : %v ", resp.SimulationInfo.SampleRate)
-			log.Printf("\ngran prix           : %v ", resp.SimulationInfo.GranPrix)
-			log.Printf("\ntrack               : %v ", resp.SimulationInfo.Track)
-			log.Printf("\nstate               : %v ", resp.SimulationInfo.State)
-			log.Printf("\nstart timestamp     : %v ", ipbts.TimestampString(resp.SimulationInfo.StartTimestamp))
-			log.Printf("\nend timestamp       : %v ", ipbts.TimestampString(resp.SimulationInfo.EndTimestamp))
-			log.Printf("\npercent complete    : %v ", resp.SimulationInfo.PercentComplete)
-			log.Printf("\nfinal info code   : %v ", resp.SimulationInfo.FinalStatusCode)
-			log.Printf("\nfinal info message: %v ", resp.SimulationInfo.FinalStatusMessage)
-			log.Print("\n")
+			if resp.SimulationInfo != nil {
+
+				log.Printf("\nsimulation id       : %v ", resp.SimulationInfo.Uuid)
+				log.Printf("\nduration in minutes : %v ", resp.SimulationInfo.DurationInMinutes)
+				log.Printf("\nsample rate         : %v ", resp.SimulationInfo.SampleRate)
+				log.Printf("\ngran prix           : %v ", resp.SimulationInfo.GranPrix)
+				log.Printf("\ntrack               : %v ", resp.SimulationInfo.Track)
+				log.Printf("\nstate               : %v ", resp.SimulationInfo.State)
+				log.Printf("\nstart timestamp     : %v ", ipbts.TimestampString(resp.SimulationInfo.StartTimestamp))
+				log.Printf("\nend timestamp       : %v ", ipbts.TimestampString(resp.SimulationInfo.EndTimestamp))
+				log.Printf("\npercent complete    : %v ", resp.SimulationInfo.PercentComplete)
+				log.Printf("\nfinal info code   : %v ", resp.SimulationInfo.FinalStatusCode)
+				log.Printf("\nfinal info message: %v ", resp.SimulationInfo.FinalStatusMessage)
+				log.Print("\n")
+
+			}
 
 		}
 		return nil

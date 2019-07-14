@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -285,25 +286,20 @@ func RetrieveSimulationInfo(req api.GetSimulationInfoRequest) (*api.SimulationIn
 	var sampleRate, granPrix, track, state string
 	var startTs, endTs itime.NullTime
 
-	info := api.SimulationInfo{}
+	info := new(api.SimulationInfo)
 
-	rows, err := db.Query("select * from simulation where id = ?", req.SimulationUuid)
+	err := db.QueryRow("select * from simulation where id = ?", req.SimulationUuid).Scan(&info.Uuid,
+		&info.DurationInMinutes, &sampleRate, &granPrix, &track, &state, &startTs, &endTs,
+		&info.PercentComplete, &info.FinalStatusCode, &info.FinalStatusMessage)
 
-	if err != nil {
+	switch {
+	case err == sql.ErrNoRows:
+		// no rows & no errors, caller needs to check for nil SimulationInfo
+		return nil, nil
+	case err != nil:
+		logger.Error(fmt.Sprintf("failed to retrieve simulation info with error: %v", err))
 		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-
-		err := rows.Scan(&info.Uuid, &info.DurationInMinutes,
-			&sampleRate, &granPrix, &track, &state, &startTs, &endTs, &info.PercentComplete,
-			&info.FinalStatusCode, &info.FinalStatusMessage)
-
-		if err != nil {
-			return nil, err
-		}
-
+	default:
 		ordinal, ok := api.SampleRate_value[sampleRate]
 		if !ok {
 			return nil, fmt.Errorf("invalid simulation sample rate enum: %v", sampleRate)
@@ -339,15 +335,9 @@ func RetrieveSimulationInfo(req api.GetSimulationInfoRequest) (*api.SimulationIn
 			return nil, errors.New("failed to convert end timestamp to protobuf format")
 		}
 		info.EndTimestamp = tsProto
-
-	}
-	err = rows.Err()
-	if err != nil {
-		return nil, err
 	}
 
-	return &info, nil
-
+	return info, nil
 }
 
 func NewFromRunSimulationRequest(req api.RunSimulationRequest) *Simulation {
@@ -374,24 +364,3 @@ func NewFromRunSimulationRequest(req api.RunSimulationRequest) *Simulation {
 
 	return sim
 }
-
-/*
-type NullTime struct {
-	Time  time.Time
-	Valid bool // Valid is true if Time is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (nt *NullTime) Scan(value interface{}) error {
-	nt.Time, nt.Valid = value.(time.Time)
-	return nil
-}
-
-// Value implements the driver Valuer interface.
-func (nt NullTime) Value() (driver.Value, error) {
-	if !nt.Valid {
-		return nil, nil
-	}
-	return nt.Time, nil
-}
-*/

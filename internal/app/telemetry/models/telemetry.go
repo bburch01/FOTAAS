@@ -100,9 +100,6 @@ func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (*
 		sb.WriteString(" and track = ")
 		sb.WriteString(req.Track.String())
 	}
-
-	//AND (state = 'Florida' OR state = 'California')
-
 	if req.SearchBy.HighAlarm && !req.SearchBy.LowAlarm {
 		sb.WriteString(" and hi_alarm = true")
 	}

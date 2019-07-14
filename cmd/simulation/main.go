@@ -46,8 +46,9 @@ func init() {
 
 func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
 
-	resp := api.HealthCheckResponse{Details: &api.ResponseDetails{
-		Code: api.ResponseCode_OK, Message: "simulation service healthy"}}
+	resp := new(api.HealthCheckResponse)
+	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
+		Message: "simulation service healthy"}
 
 	if err := models.PingDB(); err != nil {
 		resp.Details.Code = api.ResponseCode_ERROR
@@ -57,10 +58,10 @@ func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (
 		// of this service call process this FOTAAS error differently than other system errors (e.g.
 		// if this service is not available). Intercept this error and handle it via response code &
 		// message.
-		return &resp, nil
+		return resp, nil
 	}
 
-	return &resp, nil
+	return resp, nil
 }
 
 func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationRequest) (*api.RunSimulationResponse, error) {
@@ -103,7 +104,9 @@ func (s *server) GetSimulationInfo(ctx context.Context, req *api.GetSimulationIn
 
 	// TODO: need to validate the request (all search terms present and valid)
 
-	resp := api.GetSimulationInfoResponse{Details: &api.ResponseDetails{}}
+	resp := new(api.GetSimulationInfoResponse)
+	resp.Details = new(api.ResponseDetails)
+
 	var info *api.SimulationInfo
 	var err error
 
@@ -115,14 +118,20 @@ func (s *server) GetSimulationInfo(ctx context.Context, req *api.GetSimulationIn
 		// of this service call process this FOTAAS error differently than other system errors (e.g.
 		// if this service is not available). Intercept this error and handle it via response code &
 		// message.
-		return &resp, nil
+		return resp, nil
+	}
+
+	if info == nil {
+		resp.Details = &api.ResponseDetails{Code: api.ResponseCode_WARN,
+			Message: fmt.Sprintf("no info found for simulation id: %v", req.SimulationUuid)}
+		return resp, nil
 	}
 
 	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
-		Message: fmt.Sprintf("found info for simulation id: %v", info.Uuid)}
+		Message: fmt.Sprintf("found info for simulation id: %v", req.SimulationUuid)}
 	resp.SimulationInfo = info
 
-	return &resp, nil
+	return resp, nil
 }
 
 func main() {
