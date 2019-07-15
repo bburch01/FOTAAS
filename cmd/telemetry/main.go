@@ -53,9 +53,9 @@ func init() {
 
 }
 
-func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
+func (s *server) AlivenessCheck(ctx context.Context, req *api.AlivenessCheckRequest) (*api.AlivenessCheckResponse, error) {
 
-	resp := new(api.HealthCheckResponse)
+	resp := new(api.AlivenessCheckResponse)
 	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
 		Message: "telemetry service healthy"}
 
@@ -152,6 +152,7 @@ func (s *server) GetTelemetryData(ctx context.Context, req *api.GetTelemetryData
 
 }
 
+/*
 func (s *server) GetSimulatedTelemetryData(ctx context.Context, req *api.GetSimulatedTelemetryDataRequest) (*api.GetSimulatedTelemetryDataResponse, error) {
 
 	// TODO: need to validate the request (all search terms present and valid)
@@ -178,6 +179,7 @@ func (s *server) GetSimulatedTelemetryData(ctx context.Context, req *api.GetSimu
 
 	return &resp, nil
 }
+*/
 
 func validate(datum *api.TelemetryDatum) error {
 

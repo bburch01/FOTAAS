@@ -44,9 +44,9 @@ func init() {
 	}
 }
 
-func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
+func (s *server) AlivenessCheck(ctx context.Context, req *api.AlivenessCheckRequest) (*api.AlivenessCheckResponse, error) {
 
-	resp := new(api.HealthCheckResponse)
+	resp := new(api.AlivenessCheckResponse)
 	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
 		Message: "simulation service healthy"}
 

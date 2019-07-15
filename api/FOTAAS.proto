@@ -177,16 +177,29 @@ message TelemetryData {
 }
 
 message AlarmAnalysisData {
-    google.protobuf.Timestamp date_range_begin = 1;
-    google.protobuf.Timestamp date_range_end = 2;    
-    Constructor constructor = 3;
-    int32 car_number = 4;
-    message DatumDescriptionAlarmCount {
+    bool simulated = 1;
+    google.protobuf.Timestamp date_range_begin = 2;
+    google.protobuf.Timestamp date_range_end = 3;    
+    message AlarmCountsByConstructorAndCar {
+        Constructor constructor = 1;
+        int32 car_number = 2;
+        int32 low_alarm_count = 3;
+        int32 high_alarm_count = 4;
+      }   
+    repeated AlarmCountsByConstructorAndCar alarm_counts = 4;
+}
+message AlarmAnalysisDataForConstructorAndCar {
+    bool simulated = 1;
+    google.protobuf.Timestamp date_range_begin = 2;
+    google.protobuf.Timestamp date_range_end = 3;    
+    Constructor constructor = 4;
+    int32 car_number = 5;
+    message AlarmCountsByDatumDescription {
         TelemetryDatumDescription datum_description = 1;
         int32 low_alarm_count = 2;
         int32 high_alarm_count = 3;
       }   
-    repeated DatumDescriptionAlarmCount phone = 5;
+    repeated AlarmCountsByDatumDescription alarm_counts = 6;
 }
 
 message SystemStatusReport {
@@ -232,10 +245,10 @@ message SimulationInfo {
     string final_status_message = 11;
 }
 
-message HealthCheckRequest {
+message AlivenessCheckRequest {
 }
 
-message HealthCheckResponse {
+message AlivenessCheckResponse {
     ResponseDetails details = 1;
 }
 
@@ -265,13 +278,15 @@ message GetSimulationInfoResponse {
 }
 
 message GetTelemetryDataRequest {
-    google.protobuf.Timestamp date_range_begin = 1;
-    google.protobuf.Timestamp date_range_end = 2;
-    GranPrix gran_prix = 3;
-    Track track = 4;
-    Constructor constructor = 5;
-    int32 car_number = 6;
-    TelemetryDatumDescription datum_description = 7;
+    bool simulated = 1;
+    string simulation_uuid = 2;
+    google.protobuf.Timestamp date_range_begin = 3;
+    google.protobuf.Timestamp date_range_end = 4;
+    GranPrix gran_prix = 5;
+    Track track = 6;
+    Constructor constructor = 7;
+    int32 car_number = 8;
+    TelemetryDatumDescription datum_description = 9;
     message SearchBy {
         bool date_range = 1;
         bool constructor = 2;
@@ -282,7 +297,7 @@ message GetTelemetryDataRequest {
         bool high_alarm = 7;
         bool low_alarm = 8;
     }
-    SearchBy search_by = 8;    
+    SearchBy search_by = 10;    
 }
 
 message GetTelemetryDataResponse {
@@ -290,44 +305,31 @@ message GetTelemetryDataResponse {
     TelemetryData telemetry_data = 2;    
 }
 
-message GetSimulatedTelemetryDataRequest {
-    string simulation_uuid = 1;
-    google.protobuf.Timestamp date_range_begin = 2;
-    google.protobuf.Timestamp date_range_end = 3;    
-    Constructor constructor = 4;
-    int32 car_number = 5;
-    TelemetryDatumDescription datum_description = 6;
-    GranPrix gran_prix = 7;
-    Track track = 8;
-    message SearchBy {
-        bool date_range = 1;
-        bool constructor = 2;
-        bool car_number = 3;
-        bool datum_description = 4;
-        bool gran_prix = 5;
-        bool track = 6;
-        bool high_alarm = 7;
-        bool low_alarm = 8;
-    }
-    SearchBy search_by = 9;
-}
-
-message GetSimulatedTelemetryDataResponse {
-    ResponseDetails details = 1;
-    TelemetryData telemetry_data = 2;    
-}
-
 message GetAlarmAnalysisRequest {
     google.protobuf.Timestamp date_range_begin = 1;
-    google.protobuf.Timestamp date_range_end = 2;        
-    Constructor constructor = 3;
-    int32 car_number = 4;
+    google.protobuf.Timestamp date_range_end = 2;
+    bool simulated = 3;       
 }
 
 message GetAlarmAnalysisResponse {
     ResponseDetails details = 1;
     AlarmAnalysisData alarm_analysis_data = 2;    
 }
+
+
+message GetAlarmAnalysisForConstructorAndCarRequest {
+    google.protobuf.Timestamp date_range_begin = 1;
+    google.protobuf.Timestamp date_range_end = 2;
+    Constructor constructor = 3;
+    int32 car_number = 4;
+    bool simulated = 5;       
+}
+
+message GetAlarmAnalysisForConstructorAndCarResponse {
+    ResponseDetails details = 1;
+    AlarmAnalysisDataForConstructorAndCar alarm_analysis_data_for_constructor_and_car = 2;    
+}
+
 
 message GetSystemStatusRequest {
 }
@@ -338,19 +340,19 @@ message GetSystemStatusResponse {
 }
 
 service TelemetryService {
-    rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {};
+    rpc AlivenessCheck (AlivenessCheckRequest) returns (AlivenessCheckResponse) {};
     rpc TransmitTelemetry (TransmitTelemetryRequest) returns (TransmitTelemetryResponse) {};
     rpc GetTelemetryData (GetTelemetryDataRequest) returns (GetTelemetryDataResponse) {};
-    rpc GetSimulatedTelemetryData (GetSimulatedTelemetryDataRequest) returns (GetSimulatedTelemetryDataResponse) {};
 }
 
 service AnalysisService {
-    rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {};
+    rpc AlivenessCheck (AlivenessCheckRequest) returns (AlivenessCheckResponse) {};
     rpc GetAlarmAnalysis (GetAlarmAnalysisRequest) returns (GetAlarmAnalysisResponse) {};
+    rpc GetAlarmAnalysisForConstructorAndCar (GetAlarmAnalysisForConstructorAndCarRequest) returns (GetAlarmAnalysisForConstructorAndCarResponse) {};
 }
 
 service SimulationService {
-    rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {};
+    rpc AlivenessCheck (AlivenessCheckRequest) returns (AlivenessCheckResponse) {};
     rpc RunSimulation (RunSimulationRequest) returns (RunSimulationResponse) {};
     rpc GetSimulationInfo (GetSimulationInfoRequest) returns (GetSimulationInfoResponse) {};
 }

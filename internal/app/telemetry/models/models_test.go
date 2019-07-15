@@ -45,9 +45,10 @@ func TestRetrieveSimulatedTelemetryData(t *testing.T) {
 	var err error
 	var startTime, endTime time.Time
 
-	req := new(api.GetSimulatedTelemetryDataRequest)
-	req.SearchBy = new(api.GetSimulatedTelemetryDataRequest_SearchBy)
+	req := new(api.GetTelemetryDataRequest)
+	req.SearchBy = new(api.GetTelemetryDataRequest_SearchBy)
 
+	req.Simulated = true
 	req.SimulationUuid = "a75c9b70-48a7-4c3a-bc80-db545bcdaaf5"
 	req.Constructor = api.Constructor_MERCEDES
 	req.CarNumber = 44
@@ -80,7 +81,7 @@ func TestRetrieveSimulatedTelemetryData(t *testing.T) {
 		t.FailNow()
 	}
 
-	if data, err = RetrieveSimulatedTelemetryData(*req); err != nil {
+	if data, err = RetrieveTelemetryData(*req); err != nil {
 		t.Error("failed to retrieve simulated telemetry data with error: ", err)
 		t.FailNow()
 	}
@@ -106,6 +107,7 @@ func TestRetrieveTelemetryData(t *testing.T) {
 	var err error
 	var startTime, endTime time.Time
 
+	req.Simulated = false
 	req.Constructor = api.Constructor_MERCEDES
 	req.CarNumber = 44
 	req.SearchBy.DateRange = true

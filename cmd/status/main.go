@@ -114,7 +114,7 @@ func main() {
 func runServiceAlivenessTest(svcname string) api.TestResult {
 
 	var svcEndpoint string
-	var resp *api.HealthCheckResponse
+	var resp *api.AlivenessCheckResponse
 	var sb strings.Builder
 
 	switch svcname {
@@ -157,21 +157,21 @@ func runServiceAlivenessTest(svcname string) api.TestResult {
 	switch svcname {
 	case "telemetry":
 		client := api.NewTelemetryServiceClient(conn)
-		resp, err = client.HealthCheck(ctx, &api.HealthCheckRequest{})
+		resp, err = client.AlivenessCheck(ctx, &api.AlivenessCheckRequest{})
 		if err != nil {
 			logger.Error(fmt.Sprintf("%v service aliveness check failed with error: %v", svcname, err))
 			return api.TestResult_FAIL
 		}
 	case "analysis":
 		client := api.NewAnalysisServiceClient(conn)
-		resp, err = client.HealthCheck(ctx, &api.HealthCheckRequest{})
+		resp, err = client.AlivenessCheck(ctx, &api.AlivenessCheckRequest{})
 		if err != nil {
 			logger.Error(fmt.Sprintf("%v service aliveness check failed with error: %v", svcname, err))
 			return api.TestResult_FAIL
 		}
 	case "simulation":
 		client := api.NewSimulationServiceClient(conn)
-		resp, err = client.HealthCheck(ctx, &api.HealthCheckRequest{})
+		resp, err = client.AlivenessCheck(ctx, &api.AlivenessCheckRequest{})
 		if err != nil {
 			logger.Error(fmt.Sprintf("%v service aliveness check failed with error: %v", svcname, err))
 			return api.TestResult_FAIL

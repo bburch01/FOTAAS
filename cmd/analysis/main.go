@@ -12,6 +12,8 @@ import (
 	zhttp "github.com/openzipkin/zipkin-go/reporter/http"
 
 	"github.com/bburch01/FOTAAS/api"
+	"github.com/bburch01/FOTAAS/internal/app/analysis"
+	//"github.com/bburch01/FOTAAS/internal/app/analysis"
 	"github.com/bburch01/FOTAAS/internal/app/analysis/models"
 	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/joho/godotenv"
@@ -52,9 +54,9 @@ func init() {
 
 }
 
-func (s *server) HealthCheck(ctx context.Context, req *api.HealthCheckRequest) (*api.HealthCheckResponse, error) {
+func (s *server) AlivenessCheck(ctx context.Context, req *api.AlivenessCheckRequest) (*api.AlivenessCheckResponse, error) {
 
-	resp := new(api.HealthCheckResponse)
+	resp := new(api.AlivenessCheckResponse)
 	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
 		Message: "analysis service healthy"}
 
@@ -77,6 +79,23 @@ func (s *server) GetAlarmAnalysis(ctx context.Context, req *api.GetAlarmAnalysis
 	resp := new(api.GetAlarmAnalysisResponse)
 	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_INFO,
 		Message: "GetAlarmAnalysis service call not implemented."}
+
+
+
+
+
+
+
+
+	return resp, nil
+}
+
+func (s *server) GetAlarmAnalysisForConstructorAndCar(ctx context.Context,
+	req *api.GetAlarmAnalysisForConstructorAndCarRequest) (*api.GetAlarmAnalysisForConstructorAndCarResponse, error) {
+
+	resp := new(api.GetAlarmAnalysisForConstructorAndCarResponse)
+	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_INFO,
+		Message: "GetAlarmAnalysisForConstructorAndCar service call not implemented."}
 
 	return resp, nil
 }

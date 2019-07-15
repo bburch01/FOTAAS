@@ -34,16 +34,16 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// checkServiceHealthCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// checkServiceAlivenessCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// checkServiceHealthCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// checkServiceAlivenessCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	rootCmd.AddCommand(checkServiceHealthCmd)
+	rootCmd.AddCommand(checkServiceAlivenessCmd)
 
-	checkServiceHealthCmd.Flags().StringP("name", "n", "", "run health check on a FOTAAS service by name")
-	checkServiceHealthCmd.Flags().BoolP("all", "a", false, "run health check on all FOTAAS services")
+	checkServiceAlivenessCmd.Flags().StringP("name", "n", "", "run health check on a FOTAAS service by name")
+	checkServiceAlivenessCmd.Flags().BoolP("all", "a", false, "run health check on all FOTAAS services")
 
 	// Loads values from .env into the system.
 	// NOTE: the .env file must be present in execution directory which is a
@@ -55,9 +55,9 @@ func init() {
 	}
 }
 
-// checkServiceHealthCmd represents the checkServiceHealth command
-var checkServiceHealthCmd = &cobra.Command{
-	Use:   "checkServiceHealth",
+// checkServiceAlivenessCmd represents the checkServiceAliveness command
+var checkServiceAlivenessCmd = &cobra.Command{
+	Use:   "checkServiceAliveness",
 	Short: "FOTAAS services health check.",
 	Long:  `Runs a health check on one or more of the FOTAAS services`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -84,10 +84,10 @@ var checkServiceHealthCmd = &cobra.Command{
 	},
 }
 
-func checkByName(svcname string) (*api.HealthCheckResponse, error) {
+func checkByName(svcname string) (*api.AlivenessCheckResponse, error) {
 
 	var svcEndpoint string
-	var resp *api.HealthCheckResponse
+	var resp *api.AlivenessCheckResponse
 	var sb strings.Builder
 
 	switch svcname {
@@ -128,19 +128,19 @@ func checkByName(svcname string) (*api.HealthCheckResponse, error) {
 	switch svcname {
 	case "telemetry":
 		client := api.NewTelemetryServiceClient(conn)
-		resp, err = client.HealthCheck(ctx, &api.HealthCheckRequest{})
+		resp, err = client.AlivenessCheck(ctx, &api.AlivenessCheckRequest{})
 		if err != nil {
 			return nil, err
 		}
 	case "analysis":
 		client := api.NewAnalysisServiceClient(conn)
-		resp, err = client.HealthCheck(ctx, &api.HealthCheckRequest{})
+		resp, err = client.AlivenessCheck(ctx, &api.AlivenessCheckRequest{})
 		if err != nil {
 			return nil, err
 		}
 	case "simulation":
 		client := api.NewSimulationServiceClient(conn)
-		resp, err = client.HealthCheck(ctx, &api.HealthCheckRequest{})
+		resp, err = client.AlivenessCheck(ctx, &api.AlivenessCheckRequest{})
 		if err != nil {
 			return nil, err
 		}

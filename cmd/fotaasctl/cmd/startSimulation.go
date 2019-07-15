@@ -34,16 +34,16 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// checkServiceHealthCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// checkServiceAlivenessCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// checkServiceHealthCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// checkServiceAlivenessCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	rootCmd.AddCommand(startSimulationCmd)
 
-	//checkServiceHealthCmd.Flags().StringP("name", "n", "", "run health check on a FOTAAS service by name")
-	//checkServiceHealthCmd.Flags().BoolP("all", "a", false, "run health check on all FOTAAS services")
+	//checkServiceAlivenessCmd.Flags().StringP("name", "n", "", "run health check on a FOTAAS service by name")
+	//checkServiceAlivenessCmd.Flags().BoolP("all", "a", false, "run health check on all FOTAAS services")
 	startSimulationCmd.Flags().BoolP("alarm", "a", false, "force an alarm during the simulation")
 
 	// Loads values from .env into the system.

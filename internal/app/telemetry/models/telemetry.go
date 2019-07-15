@@ -66,7 +66,7 @@ func (td *TelemetryDatum) Create() error {
 
 }
 
-func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (*api.TelemetryData, error) {
+func RetrieveTelemetryData(req api.GetTelemetryDataRequest) (*api.TelemetryData, error) {
 
 	data := api.TelemetryData{}
 	datumMap := make(map[string]*api.TelemetryDatum)
@@ -78,9 +78,17 @@ func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (*
 	// Build the select query based on the search by flags in the request. If none of the search flags
 	// are set, select by simulation uuid only.
 	var sb strings.Builder
-	sb.WriteString("select * from telemetry_datum where simulation_id = '")
-	sb.WriteString(req.SimulationUuid)
-	sb.WriteString("'")
+
+	switch req.Simulated {
+	case true:
+		sb.WriteString("select * from telemetry_datum where simulated = true and simulation_id = '")
+		sb.WriteString(req.SimulationUuid)
+		sb.WriteString("'")
+	case false:
+		sb.WriteString("select * from telemetry_datum where simulated = false")
+	default:
+		return nil, fmt.Errorf("failed to retrieve telemetry data, bad value for api.GetTelemetryDataRequest.Simulated ")
+	}
 
 	if req.SearchBy.Constructor {
 		sb.WriteString(" and constructor = '")
@@ -216,85 +224,6 @@ func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (*
 }
 
 /*
-func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (*api.TelemetryData, error) {
-
-	data := api.TelemetryData{}
-	datumMap := make(map[string]*api.TelemetryDatum)
-
-	var txSeqNum, carNumber int32
-	var granPrix, track, constructor, datumDescription, datumUnit string
-	var ts time.Time
-
-	rows, err := db.Query("select * from telemetry_datum where simulation_id = ? and constructor = ? and car_number = ? and description = ?",
-		req.SimulationUuid, req.Constructor.String(), req.CarNumber, req.DatumDescription.String())
-
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-
-		datum := api.TelemetryDatum{}
-
-		err := rows.Scan(&datum.Uuid, &datum.Simulated, &datum.SimulationUuid, &txSeqNum, &granPrix,
-			&track, &constructor, &carNumber, &ts, &datum.Latitude, &datum.Longitude, &datum.Elevation, &datumDescription,
-			&datumUnit, &datum.Value, &datum.HighAlarm, &datum.LowAlarm)
-
-		if err != nil {
-			return nil, err
-		}
-
-		ordinal, ok := api.TelemetryDatumDescription_value[datumDescription]
-		if !ok {
-			return nil, fmt.Errorf("invalid telemetry datum description enum: %v", datumDescription)
-		}
-		datum.Description = api.TelemetryDatumDescription(ordinal)
-
-		ordinal, ok = api.TelemetryDatumUnit_value[datumUnit]
-		if !ok {
-			return nil, fmt.Errorf("invalid telemetry datum unit enum: %v", datumUnit)
-		}
-		datum.Unit = api.TelemetryDatumUnit(ordinal)
-
-		tsProto, err := ipbts.TimestampProto(ts)
-		if err != nil {
-			return nil, errors.New("failed to convert timestamp to protobuf format")
-		}
-		datum.Timestamp = tsProto
-
-		//TODO: GranPrix & Track need to be retrieved with a GetSimulation grpc call to the
-		//simulation service. This is a hack to just use the values from the final retrieved
-		//datum (even if those values *should* always be correct).
-		ordinal, ok = api.GranPrix_value[granPrix]
-		if !ok {
-			return nil, fmt.Errorf("invalid telemetry gran prix enum: %v", granPrix)
-		}
-		data.GranPrix = api.GranPrix(ordinal)
-
-		ordinal, ok = api.Track_value[track]
-		if !ok {
-			return nil, fmt.Errorf("invalid telemetry track enum: %v", track)
-		}
-		data.Track = api.Track(ordinal)
-
-		datumMap[datum.Uuid] = &datum
-
-	}
-	err = rows.Err()
-	if err != nil {
-		return nil, err
-	}
-
-	data.Constructor = req.Constructor
-	data.CarNumber = req.CarNumber
-	data.TelemetryDatumMap = datumMap
-
-	return &data, nil
-
-}
-*/
-
 func RetrieveTelemetryData(req api.GetTelemetryDataRequest) (*api.TelemetryData, error) {
 
 	data := api.TelemetryData{}
@@ -407,3 +336,4 @@ func RetrieveTelemetryData(req api.GetTelemetryDataRequest) (*api.TelemetryData,
 	return &data, nil
 
 }
+*/
