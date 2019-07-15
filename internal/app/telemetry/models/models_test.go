@@ -40,24 +40,30 @@ func init() {
 
 func TestRetrieveSimulatedTelemetryData(t *testing.T) {
 
-	var req api.GetSimulatedTelemetryDataRequest
+	//var req api.GetSimulatedTelemetryDataRequest
 	var data *api.TelemetryData
 	var err error
 	var startTime, endTime time.Time
 
-	req.SimulationUuid = "dc0d88fa-4e7b-4e3b-b10a-55194944e505"
+	req := new(api.GetSimulatedTelemetryDataRequest)
+	req.SearchBy = new(api.GetSimulatedTelemetryDataRequest_SearchBy)
 
+	req.SimulationUuid = "a75c9b70-48a7-4c3a-bc80-db545bcdaaf5"
+	req.Constructor = api.Constructor_MERCEDES
+	req.CarNumber = 44
+	req.SearchBy.Constructor = true
+	req.SearchBy.CarNumber = true
 	req.SearchBy.DateRange = true
 	req.SearchBy.HighAlarm = true
 	req.SearchBy.LowAlarm = true
 
-	startTime, err = time.Parse(time.RFC3339, "2019-07-08T00:00:00Z")
+	startTime, err = time.Parse(time.RFC3339, "2019-07-14T00:00:00Z")
 	if err != nil {
 		t.Error("failed to create start timestamp with error: ", err)
 		t.FailNow()
 	}
 
-	endTime, err = time.Parse(time.RFC3339, "2019-07-12T23:59:59Z")
+	endTime, err = time.Parse(time.RFC3339, "2019-07-16T23:59:59Z")
 	if err != nil {
 		t.Error("failed to create start timestamp with error: ", err)
 		t.FailNow()
@@ -74,25 +80,18 @@ func TestRetrieveSimulatedTelemetryData(t *testing.T) {
 		t.FailNow()
 	}
 
-	//req.SimulationUuid = "dc0d88fa-4e7b-4e3b-b10a-55194944e505"
-	//req.Constructor = api.Constructor_MERCEDES
-	//req.CarNumber = 44
-	//req.DatumDescription = api.TelemetryDatumDescription_BRAKE_TEMP_FL
-
-	if data, err = RetrieveSimulatedTelemetryData(req); err != nil {
+	if data, err = RetrieveSimulatedTelemetryData(*req); err != nil {
 		t.Error("failed to retrieve simulated telemetry data with error: ", err)
 		t.FailNow()
 	}
 
-	logger.Debug(fmt.Sprintf("telemetry data gran prix: %v", data.GranPrix))
-	logger.Debug(fmt.Sprintf("telemetry data track: %v", data.Track))
-	logger.Debug(fmt.Sprintf("telemetry data constructor: %v", data.Constructor))
-	logger.Debug(fmt.Sprintf("telemetry data car number: %v", data.CarNumber))
 	logger.Debug(fmt.Sprintf("telemetry data datum count: %v", len(data.TelemetryDatumMap)))
 
-	for _, v := range data.TelemetryDatumMap {
-		logger.Debug(fmt.Sprintf("telemetry data datum: %v", v))
-	}
+	/*
+		for _, v := range data.TelemetryDatumMap {
+			logger.Debug(fmt.Sprintf("telemetry data datum: %v", v))
+		}
+	*/
 
 }
 
@@ -106,6 +105,10 @@ func TestRetrieveTelemetryData(t *testing.T) {
 	var data *api.TelemetryData
 	var err error
 	var startTime, endTime time.Time
+
+	req.Constructor = api.Constructor_MERCEDES
+	req.CarNumber = 44
+	req.SearchBy.DateRange = true
 
 	startTime, err = time.Parse(time.RFC3339, "2019-07-08T00:00:00Z")
 	if err != nil {
@@ -130,24 +133,17 @@ func TestRetrieveTelemetryData(t *testing.T) {
 		t.FailNow()
 	}
 
-	req.GranPrix = api.GranPrix_UNITED_STATES
-	req.Track = api.Track_AUSTIN
-	req.Constructor = api.Constructor_HAAS
-	req.CarNumber = 8
-	req.DatumDescription = api.TelemetryDatumDescription_BRAKE_TEMP_FL
-
 	if data, err = RetrieveTelemetryData(req); err != nil {
 		t.Error("failed to retrieve telemetry data with error: ", err)
 		t.FailNow()
 	}
-	logger.Debug(fmt.Sprintf("telemetry data gran prix: %v", data.GranPrix))
-	logger.Debug(fmt.Sprintf("telemetry data track: %v", data.Track))
-	logger.Debug(fmt.Sprintf("telemetry data constructor: %v", data.Constructor))
-	logger.Debug(fmt.Sprintf("telemetry data car number: %v", data.CarNumber))
+
 	logger.Debug(fmt.Sprintf("telemetry data datum count: %v", len(data.TelemetryDatumMap)))
 
-	for _, v := range data.TelemetryDatumMap {
-		logger.Debug(fmt.Sprintf("telemetry data datum: %v", v))
-	}
+	/*
+		for _, v := range data.TelemetryDatumMap {
+			logger.Debug(fmt.Sprintf("telemetry data datum: %v", v))
+		}
+	*/
 
 }

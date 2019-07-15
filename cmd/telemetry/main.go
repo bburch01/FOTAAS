@@ -81,11 +81,6 @@ func (s *server) TransmitTelemetry(ctx context.Context, req *api.TransmitTelemet
 	var status api.ResponseDetails
 	var statusMap = make(map[string]*api.ResponseDetails)
 
-	datum.GranPrix = req.TelemetryData.GranPrix.String()
-	datum.Track = req.TelemetryData.Track.String()
-	datum.Constructor = req.TelemetryData.Constructor.String()
-	datum.CarNumber = req.TelemetryData.CarNumber
-
 	for i, v := range datumMap {
 		err := validate(v)
 		if err != nil {
@@ -99,6 +94,12 @@ func (s *server) TransmitTelemetry(ctx context.Context, req *api.TransmitTelemet
 				datum.SimulationTransmitSequenceNumber = v.SimulationTransmitSequenceNumber
 			}
 			datum.Description = v.Description.String()
+
+			datum.GranPrix = v.GranPrix.String()
+			datum.Track = v.Track.String()
+			datum.Constructor = v.Constructor.String()
+			datum.CarNumber = v.CarNumber
+
 			datum.Unit = v.Unit.String()
 			datum.Timestamp = v.Timestamp
 			datum.Latitude = v.Latitude

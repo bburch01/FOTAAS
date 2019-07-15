@@ -78,27 +78,33 @@ func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (*
 	// Build the select query based on the search by flags in the request. If none of the search flags
 	// are set, select by simulation uuid only.
 	var sb strings.Builder
-	sb.WriteString("select * from telemetry_datum where simulation_id = ")
+	sb.WriteString("select * from telemetry_datum where simulation_id = '")
 	sb.WriteString(req.SimulationUuid)
+	sb.WriteString("'")
+
 	if req.SearchBy.Constructor {
-		sb.WriteString(" and constructor = ")
+		sb.WriteString(" and constructor = '")
 		sb.WriteString(req.Constructor.String())
+		sb.WriteString("'")
 	}
 	if req.SearchBy.CarNumber {
 		sb.WriteString(" and car_number = ")
 		sb.WriteString(strconv.Itoa(int(req.CarNumber)))
 	}
 	if req.SearchBy.DatumDescription {
-		sb.WriteString(" and description = ")
+		sb.WriteString(" and description = '")
 		sb.WriteString(req.DatumDescription.String())
+		sb.WriteString("'")
 	}
 	if req.SearchBy.GranPrix {
-		sb.WriteString(" and gran_prix = ")
+		sb.WriteString(" and gran_prix = '")
 		sb.WriteString(req.GranPrix.String())
+		sb.WriteString("'")
 	}
 	if req.SearchBy.Track {
-		sb.WriteString(" and track = ")
+		sb.WriteString(" and track = '")
 		sb.WriteString(req.Track.String())
+		sb.WriteString("'")
 	}
 	if req.SearchBy.HighAlarm && !req.SearchBy.LowAlarm {
 		sb.WriteString(" and hi_alarm = true")
@@ -122,20 +128,22 @@ func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (*
 			return nil, err
 		}
 
-		sb.WriteString(" and timestamp between ")
+		sb.WriteString(" and timestamp between '")
 		sb.WriteString(strconv.Itoa(startTs.Year()))
 		sb.WriteString("-")
 		sb.WriteString(strconv.Itoa(int(startTs.Month())))
 		sb.WriteString("-")
 		sb.WriteString(strconv.Itoa(startTs.Day()))
-		sb.WriteString(" and ")
+		sb.WriteString("' and '")
 		sb.WriteString(strconv.Itoa(endTs.Year()))
 		sb.WriteString("-")
 		sb.WriteString(strconv.Itoa(int(endTs.Month())))
 		sb.WriteString("-")
 		sb.WriteString(strconv.Itoa(endTs.Day()))
+		sb.WriteString("'")
 	}
 
+	logger.Debug(fmt.Sprintf("select sql: %v", sb.String()))
 	rows, err := db.Query(sb.String())
 
 	if err != nil {
@@ -173,20 +181,25 @@ func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (*
 		}
 		datum.Timestamp = tsProto
 
-		//TODO: GranPrix & Track need to be retrieved with a GetSimulation grpc call to the
-		//simulation service. This is a hack to just use the values from the final retrieved
-		//datum (even if those values *should* always be correct).
 		ordinal, ok = api.GranPrix_value[granPrix]
 		if !ok {
-			return nil, fmt.Errorf("invalid telemetry gran prix enum: %v", granPrix)
+			return nil, fmt.Errorf("invalid gran prix enum: %v", granPrix)
 		}
-		data.GranPrix = api.GranPrix(ordinal)
+		datum.GranPrix = api.GranPrix(ordinal)
 
 		ordinal, ok = api.Track_value[track]
 		if !ok {
-			return nil, fmt.Errorf("invalid telemetry track enum: %v", track)
+			return nil, fmt.Errorf("invalid track enum: %v", track)
 		}
-		data.Track = api.Track(ordinal)
+		datum.Track = api.Track(ordinal)
+
+		ordinal, ok = api.Constructor_value[constructor]
+		if !ok {
+			return nil, fmt.Errorf("invalid constructor enum: %v", constructor)
+		}
+		datum.Constructor = api.Constructor(ordinal)
+
+		datum.CarNumber = req.CarNumber
 
 		datumMap[datum.Uuid] = &datum
 
@@ -196,8 +209,6 @@ func RetrieveSimulatedTelemetryData(req api.GetSimulatedTelemetryDataRequest) (*
 		return nil, err
 	}
 
-	data.Constructor = req.Constructor
-	data.CarNumber = req.CarNumber
 	data.TelemetryDatumMap = datumMap
 
 	return &data, nil
@@ -363,20 +374,25 @@ func RetrieveTelemetryData(req api.GetTelemetryDataRequest) (*api.TelemetryData,
 		}
 		datum.Timestamp = tsProto
 
-		//TODO: GranPrix & Track need to be retrieved with a GetSimulation grpc call to the
-		//simulation service. This is a hack to just use the values from the final retrieved
-		//datum (even if those values *should* always be correct).
 		ordinal, ok = api.GranPrix_value[granPrix]
 		if !ok {
-			return nil, fmt.Errorf("invalid telemetry gran prix enum: %v", granPrix)
+			return nil, fmt.Errorf("invalid gran prix enum: %v", granPrix)
 		}
-		data.GranPrix = api.GranPrix(ordinal)
+		datum.GranPrix = api.GranPrix(ordinal)
 
 		ordinal, ok = api.Track_value[track]
 		if !ok {
-			return nil, fmt.Errorf("invalid telemetry track enum: %v", track)
+			return nil, fmt.Errorf("invalid track enum: %v", track)
 		}
-		data.Track = api.Track(ordinal)
+		datum.Track = api.Track(ordinal)
+
+		ordinal, ok = api.Constructor_value[constructor]
+		if !ok {
+			return nil, fmt.Errorf("invalid constructor enum: %v", constructor)
+		}
+		datum.Constructor = api.Constructor(ordinal)
+
+		datum.CarNumber = req.CarNumber
 
 		datumMap[datum.Uuid] = &datum
 
@@ -386,8 +402,6 @@ func RetrieveTelemetryData(req api.GetTelemetryDataRequest) (*api.TelemetryData,
 		return nil, err
 	}
 
-	data.Constructor = req.Constructor
-	data.CarNumber = req.CarNumber
 	data.TelemetryDatumMap = datumMap
 
 	return &data, nil

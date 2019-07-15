@@ -326,7 +326,7 @@ func GenerateSimulatedTelemetryData(sim models.Simulation, simMember models.Simu
 	logger.Debug(fmt.Sprintf("starting data generation workers for simulation member: %v", simMember.ID))
 
 	for datumDesc, datumParams := range telemetryDatumParametersMap {
-		go telemetryDataGenerationWorker(sim.ID, datumDesc, datumParams, sampleRateInMillis,
+		go telemetryDataGenerationWorker(sim, simMember, datumDesc, datumParams, sampleRateInMillis,
 			alarmTypeChoice.Item.(telemetry.AlarmParams), datumCount,
 			simStartTime, genAlarm, sem, &workerWg, workerResultsChan, workerErrChan)
 	}
@@ -349,7 +349,7 @@ func GenerateSimulatedTelemetryData(sim models.Simulation, simMember models.Simu
 	return
 }
 
-func telemetryDataGenerationWorker(simUUID string, tdd api.TelemetryDatumDescription, tdp telemetry.TelemetryDatumParameters, sampleRateInMillis int32, ap telemetry.AlarmParams, datumCount int32,
+func telemetryDataGenerationWorker(sim models.Simulation, simMember models.SimulationMember, tdd api.TelemetryDatumDescription, tdp telemetry.TelemetryDatumParameters, sampleRateInMillis int32, ap telemetry.AlarmParams, datumCount int32,
 	simStartTime time.Time, genAlarm bool, sem chan int, wg *sync.WaitGroup,
 	resultsChan chan telemetry.SimulatedTelemetryData, errChan chan error) {
 
@@ -409,7 +409,11 @@ func telemetryDataGenerationWorker(simUUID string, tdd api.TelemetryDatumDescrip
 		}
 		simData.Data[i].Uuid = uuid.New().String()
 		simData.Data[i].Simulated = true
-		simData.Data[i].SimulationUuid = simUUID
+		simData.Data[i].SimulationUuid = sim.ID
+		simData.Data[i].GranPrix = sim.GranPrix
+		simData.Data[i].Track = sim.Track
+		simData.Data[i].Constructor = simMember.Constructor
+		simData.Data[i].CarNumber = simMember.CarNumber
 		simData.Data[i].Description = tdd
 		simData.Data[i].Unit = tdp.Unit
 		simData.Data[i].Timestamp = datumTimestamp

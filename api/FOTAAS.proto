@@ -160,17 +160,19 @@ message TelemetryDatum {
     bool simulated = 11;
     string simulation_uuid = 12;
     int32 simulation_transmit_sequence_number = 13;
-    //GranPrix gran_prix = 14;
-    //Track track = 15;
-    //Constructor constructor = 16;
-    //int32 car_number = 17;    
+    GranPrix gran_prix = 14;
+    Track track = 15;
+    Constructor constructor = 16;
+    int32 car_number = 17;    
 }
 
 message TelemetryData {
+    /*
     GranPrix gran_prix = 1;
     Track track = 2;
     Constructor constructor = 3;
     int32 car_number = 4;
+    */
     map<string, TelemetryDatum> telemetry_datum_map = 5;   
 }
 
@@ -270,6 +272,17 @@ message GetTelemetryDataRequest {
     Constructor constructor = 5;
     int32 car_number = 6;
     TelemetryDatumDescription datum_description = 7;
+    message SearchBy {
+        bool date_range = 1;
+        bool constructor = 2;
+        bool car_number = 3;
+        bool datum_description = 4;
+        bool gran_prix = 5;
+        bool track = 6;
+        bool high_alarm = 7;
+        bool low_alarm = 8;
+    }
+    SearchBy search_by = 8;    
 }
 
 message GetTelemetryDataResponse {

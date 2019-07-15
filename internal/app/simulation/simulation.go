@@ -276,10 +276,6 @@ func StartSimulation(sim *models.Simulation) {
 		for _, v := range sim.SimulationMembers {
 
 			tdata := api.TelemetryData{}
-			tdata.GranPrix = sim.GranPrix
-			tdata.Track = sim.Track
-			tdata.Constructor = v.Constructor
-			tdata.CarNumber = v.CarNumber
 
 			simMemberData := simMemberDataMap[v.ID]
 			datumMap := make(map[string]*api.TelemetryDatum, len(simMemberData))
