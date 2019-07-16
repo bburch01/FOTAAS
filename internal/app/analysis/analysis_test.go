@@ -84,3 +84,62 @@ func TestExtractAlarmAnalysisData(t *testing.T) {
 	}
 
 }
+
+func TestExtractConstructorAlarmAnalysisData(t *testing.T) {
+
+	var err error
+	var startTime, endTime time.Time
+
+	req := new(api.GetConstructorAlarmAnalysisRequest)
+
+	startTime, err = time.Parse(time.RFC3339, "2019-07-14T00:00:00Z")
+	if err != nil {
+		t.Error("failed to create start timestamp with error: ", err)
+		t.FailNow()
+	}
+
+	endTime, err = time.Parse(time.RFC3339, "2019-07-18T23:59:59Z")
+	if err != nil {
+		t.Error("failed to create start timestamp with error: ", err)
+		t.FailNow()
+	}
+
+	req.DateRangeBegin, err = ipbts.TimestampProto(startTime)
+	if err != nil {
+		t.Error("failed to create start timestamp with error: ", err)
+		t.FailNow()
+	}
+	req.DateRangeEnd, err = ipbts.TimestampProto(endTime)
+	if err != nil {
+		t.Error("failed to create start timestamp with error: ", err)
+		t.FailNow()
+	}
+
+	req.Simulated = true
+
+	req.Constructor = api.Constructor_MERCEDES
+
+	req.CarNumber = 44
+
+	data, err := ExtractConstructorAlarmAnalysisData(req)
+	if err != nil {
+		t.Error("failed to extract constructor alarm analysis data with error: ", err)
+		t.FailNow()
+	}
+
+	if data != nil {
+		logger.Debug(fmt.Sprintf("simulated: %v", data.Simulated))
+		logger.Debug(fmt.Sprintf("date range begin: %v", ipbts.TimestampString(data.DateRangeBegin)))
+		logger.Debug(fmt.Sprintf("date range end: %v", ipbts.TimestampString(data.DateRangeEnd)))
+		logger.Debug(fmt.Sprintf("constructor: %v", data.Constructor))
+		logger.Debug(fmt.Sprintf("car number: %v", data.CarNumber))
+
+		for _, ac := range data.AlarmCounts {
+			logger.Debug(fmt.Sprintf("description: %v low alarm count: %v high alarm count: %v",
+				ac.DatumDescription.String(), ac.LowAlarmCount, ac.HighAlarmCount))
+		}
+	} else {
+		logger.Debug("no constructor alarm analysis data found")
+	}
+
+}

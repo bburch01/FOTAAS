@@ -76,17 +76,17 @@ func (s *server) GetAlarmAnalysis(ctx context.Context, req *api.GetAlarmAnalysis
 
 	resp := new(api.GetAlarmAnalysisResponse)
 	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_INFO,
-		Message: "GetAlarmAnalysis service call not implemented."}
+		Message: "GetAlarmAnalysis service call not implemented yet."}
 
 	return resp, nil
 }
 
-func (s *server) GetAlarmAnalysisForConstructorAndCar(ctx context.Context,
-	req *api.GetAlarmAnalysisForConstructorAndCarRequest) (*api.GetAlarmAnalysisForConstructorAndCarResponse, error) {
+func (s *server) GetConstructorAlarmAnalysis(ctx context.Context,
+	req *api.GetConstructorAlarmAnalysisRequest) (*api.GetConstructorAlarmAnalysisResponse, error) {
 
-	resp := new(api.GetAlarmAnalysisForConstructorAndCarResponse)
+	resp := new(api.GetConstructorAlarmAnalysisResponse)
 	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_INFO,
-		Message: "GetAlarmAnalysisForConstructorAndCar service call not implemented."}
+		Message: "GetConstructorAlarmAnalysis service call not implemented yet."}
 
 	return resp, nil
 }

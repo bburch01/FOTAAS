@@ -179,16 +179,17 @@ message TelemetryData {
 message AlarmAnalysisData {
     bool simulated = 1;
     google.protobuf.Timestamp date_range_begin = 2;
-    google.protobuf.Timestamp date_range_end = 3;    
+    google.protobuf.Timestamp date_range_end = 3;
     message AlarmCountsByConstructorAndCar {
         Constructor constructor = 1;
         int32 car_number = 2;
         int32 low_alarm_count = 3;
         int32 high_alarm_count = 4;
       }   
-    repeated AlarmCountsByConstructorAndCar alarm_counts = 4;
+    repeated AlarmCountsByConstructorAndCar alarm_counts = 7;
 }
-message AlarmAnalysisDataForConstructorAndCar {
+
+message ConstructorAlarmAnalysisData {
     bool simulated = 1;
     google.protobuf.Timestamp date_range_begin = 2;
     google.protobuf.Timestamp date_range_end = 3;    
@@ -306,9 +307,9 @@ message GetTelemetryDataResponse {
 }
 
 message GetAlarmAnalysisRequest {
-    google.protobuf.Timestamp date_range_begin = 1;
-    google.protobuf.Timestamp date_range_end = 2;
-    bool simulated = 3;       
+    bool simulated = 1;       
+    google.protobuf.Timestamp date_range_begin = 2;
+    google.protobuf.Timestamp date_range_end = 3;
 }
 
 message GetAlarmAnalysisResponse {
@@ -316,8 +317,7 @@ message GetAlarmAnalysisResponse {
     AlarmAnalysisData alarm_analysis_data = 2;    
 }
 
-
-message GetAlarmAnalysisForConstructorAndCarRequest {
+message GetConstructorAlarmAnalysisRequest {
     google.protobuf.Timestamp date_range_begin = 1;
     google.protobuf.Timestamp date_range_end = 2;
     Constructor constructor = 3;
@@ -325,11 +325,10 @@ message GetAlarmAnalysisForConstructorAndCarRequest {
     bool simulated = 5;       
 }
 
-message GetAlarmAnalysisForConstructorAndCarResponse {
+message GetConstructorAlarmAnalysisResponse {
     ResponseDetails details = 1;
-    AlarmAnalysisDataForConstructorAndCar alarm_analysis_data_for_constructor_and_car = 2;    
+    ConstructorAlarmAnalysisData constructor_alarm_analysis_data = 2;    
 }
-
 
 message GetSystemStatusRequest {
 }
@@ -348,7 +347,7 @@ service TelemetryService {
 service AnalysisService {
     rpc AlivenessCheck (AlivenessCheckRequest) returns (AlivenessCheckResponse) {};
     rpc GetAlarmAnalysis (GetAlarmAnalysisRequest) returns (GetAlarmAnalysisResponse) {};
-    rpc GetAlarmAnalysisForConstructorAndCar (GetAlarmAnalysisForConstructorAndCarRequest) returns (GetAlarmAnalysisForConstructorAndCarResponse) {};
+    rpc GetConstructorAlarmAnalysis (GetConstructorAlarmAnalysisRequest) returns (GetConstructorAlarmAnalysisResponse) {};
 }
 
 service SimulationService {
