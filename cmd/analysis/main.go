@@ -12,6 +12,8 @@ import (
 	zhttp "github.com/openzipkin/zipkin-go/reporter/http"
 
 	"github.com/bburch01/FOTAAS/api"
+	//"github.com/bburch01/FOTAAS/internal/app/analysis"
+	"github.com/bburch01/FOTAAS/internal/app/analysis"
 	"github.com/bburch01/FOTAAS/internal/app/analysis/models"
 	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/joho/godotenv"
@@ -75,8 +77,22 @@ func (s *server) AlivenessCheck(ctx context.Context, req *api.AlivenessCheckRequ
 func (s *server) GetAlarmAnalysis(ctx context.Context, req *api.GetAlarmAnalysisRequest) (*api.GetAlarmAnalysisResponse, error) {
 
 	resp := new(api.GetAlarmAnalysisResponse)
-	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_INFO,
-		Message: "GetAlarmAnalysis service call not implemented yet."}
+
+	data, err := analysis.ExtractAlarmAnalysisData(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if data == nil {
+		resp.Details = &api.ResponseDetails{Code: api.ResponseCode_INFO,
+			Message: "no alarm analysis data found"}
+		return resp, nil
+	}
+
+	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
+		Message: "alarm analysis data found"}
+
+	resp.AlarmAnalysisData = data
 
 	return resp, nil
 }
@@ -85,8 +101,22 @@ func (s *server) GetConstructorAlarmAnalysis(ctx context.Context,
 	req *api.GetConstructorAlarmAnalysisRequest) (*api.GetConstructorAlarmAnalysisResponse, error) {
 
 	resp := new(api.GetConstructorAlarmAnalysisResponse)
-	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_INFO,
-		Message: "GetConstructorAlarmAnalysis service call not implemented yet."}
+
+	data, err := analysis.ExtractConstructorAlarmAnalysisData(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if data == nil {
+		resp.Details = &api.ResponseDetails{Code: api.ResponseCode_INFO,
+			Message: "no constructor alarm analysis data found"}
+		return resp, nil
+	}
+
+	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
+		Message: "constructor alarm analysis data found"}
+
+	resp.ConstructorAlarmAnalysisData = data
 
 	return resp, nil
 }
