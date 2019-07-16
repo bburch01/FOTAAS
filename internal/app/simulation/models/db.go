@@ -5,11 +5,11 @@ import (
 	"log"
 	"os"
 
+	logging "github.com/bburch01/FOTAAS/internal/pkg/logging"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
-
-	logging "github.com/bburch01/FOTAAS/internal/pkg/logging"
 )
 
 var db *sql.DB
@@ -48,7 +48,7 @@ func InitDB() error {
 	var err error
 
 	dbConURL := dbUser + ":" + dbPass + "@tcp(" + dbHost + ")" + "/" + dbName + "?parseTime=true"
-	db, err = sql.Open(dbDriver, dbConURL)	
+	db, err = sql.Open(dbDriver, dbConURL)
 	if err != nil {
 		return err
 	}

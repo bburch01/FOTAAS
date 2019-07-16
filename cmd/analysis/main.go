@@ -12,8 +12,6 @@ import (
 	zhttp "github.com/openzipkin/zipkin-go/reporter/http"
 
 	"github.com/bburch01/FOTAAS/api"
-	"github.com/bburch01/FOTAAS/internal/app/analysis"
-	//"github.com/bburch01/FOTAAS/internal/app/analysis"
 	"github.com/bburch01/FOTAAS/internal/app/analysis/models"
 	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/joho/godotenv"
@@ -79,13 +77,6 @@ func (s *server) GetAlarmAnalysis(ctx context.Context, req *api.GetAlarmAnalysis
 	resp := new(api.GetAlarmAnalysisResponse)
 	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_INFO,
 		Message: "GetAlarmAnalysis service call not implemented."}
-
-
-
-
-
-
-
 
 	return resp, nil
 }

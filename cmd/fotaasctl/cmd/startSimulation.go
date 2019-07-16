@@ -100,10 +100,70 @@ func startSimulation(forceAlarm bool) (*api.RunSimulationResponse, error) {
 	simMemberMap[simMemberID] = &simMember1
 
 	simMemberID = uuid.New().String()
-	simMember2 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_MERCEDES,
-		CarNumber: 44, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
+	simMember2 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_HAAS,
+		CarNumber: 20, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
 	}
 	simMemberMap[simMemberID] = &simMember2
+
+	simMemberID = uuid.New().String()
+	simMember3 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_MERCEDES,
+		CarNumber: 44, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
+	}
+	simMemberMap[simMemberID] = &simMember3
+
+	simMemberID = uuid.New().String()
+	simMember4 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_MERCEDES,
+		CarNumber: 77, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
+	}
+	simMemberMap[simMemberID] = &simMember4
+
+	simMemberID = uuid.New().String()
+	simMember5 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_FERRARI,
+		CarNumber: 5, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
+	}
+	simMemberMap[simMemberID] = &simMember5
+
+	simMemberID = uuid.New().String()
+	simMember6 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_FERRARI,
+		CarNumber: 16, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
+	}
+	simMemberMap[simMemberID] = &simMember6
+
+	simMemberID = uuid.New().String()
+	simMember7 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_RED_BULL_RACING,
+		CarNumber: 33, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
+	}
+	simMemberMap[simMemberID] = &simMember7
+
+	simMemberID = uuid.New().String()
+	simMember8 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_RED_BULL_RACING,
+		CarNumber: 10, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
+	}
+	simMemberMap[simMemberID] = &simMember8
+
+	simMemberID = uuid.New().String()
+	simMember9 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_MCLAREN,
+		CarNumber: 55, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
+	}
+	simMemberMap[simMemberID] = &simMember9
+
+	simMemberID = uuid.New().String()
+	simMember10 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_MCLAREN,
+		CarNumber: 4, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
+	}
+	simMemberMap[simMemberID] = &simMember10
+
+	simMemberID = uuid.New().String()
+	simMember11 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_WILLIAMS,
+		CarNumber: 88, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
+	}
+	simMemberMap[simMemberID] = &simMember11
+
+	simMemberID = uuid.New().String()
+	simMember12 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_WILLIAMS,
+		CarNumber: 63, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
+	}
+	simMemberMap[simMemberID] = &simMember12
 
 	sim := api.Simulation{Uuid: simID, DurationInMinutes: int32(1), SampleRate: api.SampleRate_SR_1000_MS,
 		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GranPrix: api.GranPrix_UNITED_STATES,

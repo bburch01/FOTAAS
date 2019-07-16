@@ -5,7 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/bburch01/FOTAAS/internal/pkg/logging"
+	logging "github.com/bburch01/FOTAAS/internal/pkg/logging"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"

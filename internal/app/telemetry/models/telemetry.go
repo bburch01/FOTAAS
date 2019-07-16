@@ -81,9 +81,12 @@ func RetrieveTelemetryData(req api.GetTelemetryDataRequest) (*api.TelemetryData,
 
 	switch req.Simulated {
 	case true:
-		sb.WriteString("select * from telemetry_datum where simulated = true and simulation_id = '")
-		sb.WriteString(req.SimulationUuid)
-		sb.WriteString("'")
+		sb.WriteString("select * from telemetry_datum where simulated = true")
+		if req.SimulationUuid != "" {
+			sb.WriteString(" and simulation_id = '")
+			sb.WriteString(req.SimulationUuid)
+			sb.WriteString("'")
+		}
 	case false:
 		sb.WriteString("select * from telemetry_datum where simulated = false")
 	default:
@@ -207,7 +210,7 @@ func RetrieveTelemetryData(req api.GetTelemetryDataRequest) (*api.TelemetryData,
 		}
 		datum.Constructor = api.Constructor(ordinal)
 
-		datum.CarNumber = req.CarNumber
+		datum.CarNumber = carNumber
 
 		datumMap[datum.Uuid] = &datum
 
