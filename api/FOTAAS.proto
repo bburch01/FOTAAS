@@ -167,12 +167,6 @@ message TelemetryDatum {
 }
 
 message TelemetryData {
-    /*
-    GranPrix gran_prix = 1;
-    Track track = 2;
-    Constructor constructor = 3;
-    int32 car_number = 4;
-    */
     map<string, TelemetryDatum> telemetry_datum_map = 5;   
 }
 

@@ -52,3 +52,14 @@ services:
     ports:
       - "50053:50053"
 
+  status:
+    container_name: status
+    image: us.gcr.io/kubedemo-233218/fotaas/status
+    build:
+      context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/status/Dockerfile
+    expose:
+      - 9411
+      - 50054
+    ports:
+      - "50054:50054"      

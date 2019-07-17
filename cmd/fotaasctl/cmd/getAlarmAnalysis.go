@@ -68,21 +68,17 @@ var getAlarmAnalysisCmd = &cobra.Command{
 
 		startDate, _ := cmd.Flags().GetString("start-date")
 		if startDate == "" {
-			//log.Panic("start-date must be specified (yyyy-mm-dd)")
 			return errors.New("start-date must be specified, format is yyyy-mm-dd")
 		}
 		if _, err := time.Parse("2006-01-02", startDate); err != nil {
-			//log.Panic("invalid start-date specified, format is yyyy-mm-dd")
 			return errors.New("invalid start-date specified, format is yyyy-mm-dd")
 		}
 
 		endDate, _ := cmd.Flags().GetString("end-date")
 		if endDate == "" {
-			//log.Panic("start-date must be specified (yyyy-mm-dd)")
 			return errors.New("end-date must be specified, format is yyyy-mm-dd")
 		}
 		if _, err := time.Parse("2006-01-02", endDate); err != nil {
-			//log.Panic("invalid start-date specified, format is yyyy-mm-dd")
 			return errors.New("invalid end-date specified, format is yyyy-mm-dd")
 		}
 
@@ -91,7 +87,6 @@ var getAlarmAnalysisCmd = &cobra.Command{
 		constructor, _ := cmd.Flags().GetString("constructor")
 		if constructor != "" {
 
-			//var apiConstructor api.Constructor
 			constructor = strings.ToUpper(constructor)
 
 			constructorOrdinal, ok := api.Constructor_value[constructor]
@@ -99,29 +94,19 @@ var getAlarmAnalysisCmd = &cobra.Command{
 				return errors.New("invalid constructor specified, valid constructors are: alpha_romeo, ferrari, haas, mclaren, mercedes, racing_point, red_bull_racing, scuderia_toro_roso, williams")
 			}
 
-			/*
-				; !ok {
-					return errors.New("invalid constructor specified, valid constructors are: alpha_romeo, ferrari, haas, mclaren, mercedes, racing_point, red_bull_racing, scuderia_toro_roso, williams")
-				} else {
-					apiConstructor = api.Constructor(constructorOrdinal)
-				}
-			*/
-
 			carNumber, err := cmd.Flags().GetInt32("car-number")
 
 			if err != nil || carNumber < 0 {
 				return errors.New("car-number must be specified and must be greater than or equal to 0")
 			}
 
-			//log.Printf("getConstructorAlarmAnalysis params are startDate: %v endDate: %v constructor: %v carNumber: %v simulated: %v",
-			//startDate, endDate, constructorOrdinal, carNumber, simulated)
-
 			resp, err := getConstructorAlarmAnalysis(startDate, endDate, simulated, constructorOrdinal, carNumber)
 			if err != nil {
 				return err
 			}
 
-			//log.Printf("response code: %v message: %v", resp.Details.Code.String(), resp.Details.Message)
+			log.Printf("analysis service response code: %v", resp.Details.Code.String())
+			log.Printf("analysis service response message: %v", resp.Details.Message)
 
 			data := resp.ConstructorAlarmAnalysisData
 			if data != nil {
@@ -136,40 +121,67 @@ var getAlarmAnalysisCmd = &cobra.Command{
 					log.Printf("description: %v low alarm count: %v high alarm count: %v",
 						ac.DatumDescription.String(), ac.LowAlarmCount, ac.HighAlarmCount)
 				}
-			} else {
-				log.Print("no constructor alarm analysis data found")
 			}
 
 		} else {
-			log.Printf("getAlarmAnalysis params are startDate: %v endDate: %v simulated: %v",
-				startDate, endDate, simulated)
+
+			resp, err := getAlarmAnalysis(startDate, endDate, simulated)
+			if err != nil {
+				return err
+			}
+
+			log.Printf("analysis service response code: %v", resp.Details.Code.String())
+			log.Printf("analysis service response message: %v", resp.Details.Message)
+
+			data := resp.AlarmAnalysisData
+			if data != nil {
+				log.Printf("simulated: %v", data.Simulated)
+				log.Printf("date range begin: %v", ipbts.TimestampString(data.DateRangeBegin))
+				log.Printf("date range end: %v", ipbts.TimestampString(data.DateRangeEnd))
+
+				for _, ac := range data.AlarmCounts {
+					log.Printf("constructor: %v car number: %v low alarm count: %v high alarm count: %v",
+						ac.Constructor.String(), ac.CarNumber, ac.LowAlarmCount, ac.HighAlarmCount)
+				}
+			}
 
 		}
-
-		/*
-			resp, err := getAlarmAnalysis()
-			if err != nil {
-				log.Printf("get system status service call failed with error: %v", err)
-			} else {
-				log.Printf("get system status response code   : %v", resp.Details.Code)
-				log.Printf("get system status response message: %s", resp.Details.Message)
-				log.Printf("telemetry service aliveness test: %v", resp.AlarmAnalysisReport.TelemetryServiceAliveness.String())
-				log.Printf("analysis service aliveness test: %v", resp.AlarmAnalysisReport.AnalysisServiceAliveness.String())
-				log.Printf("simulation service aliveness test: %v", resp.AlarmAnalysisReport.SimulationServiceAliveness.String())
-			}
-		*/
 
 		return nil
 	},
 }
 
-func getAlarmAnalysis() (*api.GetAlarmAnalysisResponse, error) {
+func getAlarmAnalysis(startDate string, endDate string, simulated bool) (*api.GetAlarmAnalysisResponse, error) {
 
 	var analysisSvcEndpoint string
+	var startTime, endTime time.Time
 	var sb strings.Builder
 	var resp *api.GetAlarmAnalysisResponse
+	var err error
 
-	req := api.GetAlarmAnalysisRequest{}
+	req := new(api.GetAlarmAnalysisRequest)
+
+	startTime, err = time.Parse(time.RFC3339, startDate+"T00:00:00Z")
+	if err != nil {
+		return nil, err
+	}
+
+	endTime, err = time.Parse(time.RFC3339, endDate+"T23:59:59Z")
+	if err != nil {
+		return nil, err
+	}
+
+	req.DateRangeBegin, err = ipbts.TimestampProto(startTime)
+	if err != nil {
+		return nil, err
+	}
+
+	req.DateRangeEnd, err = ipbts.TimestampProto(endTime)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Simulated = simulated
 
 	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_HOST"))
 	sb.WriteString(":")
@@ -191,12 +203,13 @@ func getAlarmAnalysis() (*api.GetAlarmAnalysisResponse, error) {
 
 	var client = api.NewAnalysisServiceClient(conn)
 
-	resp, err = client.GetAlarmAnalysis(ctx, &req)
+	resp, err = client.GetAlarmAnalysis(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
 	return resp, nil
+
 }
 
 func getConstructorAlarmAnalysis(startDate string, endDate string, simulated bool,
