@@ -12,7 +12,6 @@ import (
 	zhttp "github.com/openzipkin/zipkin-go/reporter/http"
 
 	"github.com/bburch01/FOTAAS/api"
-	//"github.com/bburch01/FOTAAS/internal/app/analysis"
 	"github.com/bburch01/FOTAAS/internal/app/analysis"
 	"github.com/bburch01/FOTAAS/internal/app/analysis/models"
 	"github.com/bburch01/FOTAAS/internal/pkg/logging"

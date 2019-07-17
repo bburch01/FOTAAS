@@ -140,17 +140,20 @@ func RetrieveTelemetryData(req api.GetTelemetryDataRequest) (*api.TelemetryData,
 		}
 
 		sb.WriteString(" and timestamp between '")
+
 		sb.WriteString(strconv.Itoa(startTs.Year()))
 		sb.WriteString("-")
 		sb.WriteString(strconv.Itoa(int(startTs.Month())))
 		sb.WriteString("-")
 		sb.WriteString(strconv.Itoa(startTs.Day()))
+		sb.WriteString(" 00:00:00")
 		sb.WriteString("' and '")
 		sb.WriteString(strconv.Itoa(endTs.Year()))
 		sb.WriteString("-")
 		sb.WriteString(strconv.Itoa(int(endTs.Month())))
 		sb.WriteString("-")
 		sb.WriteString(strconv.Itoa(endTs.Day()))
+		sb.WriteString(" 23:59:59")
 		sb.WriteString("'")
 	}
 
