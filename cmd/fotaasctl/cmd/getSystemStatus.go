@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/bburch01/FOTAAS/api"
+	"github.com/briandowns/spinner"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
@@ -65,9 +66,13 @@ var getSystemStatusCmd = &cobra.Command{
 		} else {
 			log.Printf("get system status response code   : %v", resp.Details.Code)
 			log.Printf("get system status response message: %s", resp.Details.Message)
-			log.Printf("telemetry service aliveness test: %v", resp.SystemStatusReport.TelemetryServiceAliveness.String())
-			log.Printf("analysis service aliveness test: %v", resp.SystemStatusReport.AnalysisServiceAliveness.String())
-			log.Printf("simulation service aliveness test: %v", resp.SystemStatusReport.SimulationServiceAliveness.String())
+			log.Printf("telemetry service aliveness test  : %v", resp.SystemStatusReport.TelemetryServiceAliveness.String())
+			log.Printf("analysis service aliveness test   : %v", resp.SystemStatusReport.AnalysisServiceAliveness.String())
+			log.Printf("simulation service aliveness test : %v", resp.SystemStatusReport.SimulationServiceAliveness.String())
+			log.Printf("start simulation test             : %v", resp.SystemStatusReport.StartSimulation.String())
+			log.Printf("poll for simulation complete test : %v", resp.SystemStatusReport.PollForSimulationComplete.String())
+			log.Printf("retrieve simulation data test     : %v", resp.SystemStatusReport.RetrieveSimulationData.String())
+			log.Printf("simulation data analysis test     : %v", resp.SystemStatusReport.SimulationDataAnalysis.String())
 		}
 		return nil
 	},
@@ -101,10 +106,16 @@ func getSystemStatus() (*api.GetSystemStatusResponse, error) {
 
 	var client = api.NewSystemStatusServiceClient(conn)
 
+	s := spinner.New(spinner.CharSets[7], 100*time.Millisecond)
+	s.Prefix = "system status test in progress, this could take a few minutes... "
+	s.Start()
+
 	resp, err = client.GetSystemStatus(ctx, &req)
 	if err != nil {
 		return nil, err
 	}
+
+	s.Stop()
 
 	return resp, nil
 }

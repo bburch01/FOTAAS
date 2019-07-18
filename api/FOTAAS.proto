@@ -120,6 +120,7 @@ message ResponseDetails {
 enum TestResult {
     PASS = 0;
     FAIL = 1;
+    INCOMPLETE = 2;
 }
 
 enum SimulationRateMultiplier {
@@ -204,7 +205,7 @@ message SystemStatusReport {
     TestResult start_simulation = 4;
     TestResult poll_for_simulation_complete = 5;
     TestResult retrieve_simulation_data = 6;
-    TestResult get_simulation_data_analysis = 7;  
+    TestResult simulation_data_analysis = 7;  
 }
 
 message SimulationMember {

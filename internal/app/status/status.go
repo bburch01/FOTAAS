@@ -1,30 +1,22 @@
-package main
+package status
 
 import (
 	"context"
 	"fmt"
 	"log"
-	"net"
 	"os"
 	"strings"
-
-	zgrpc "github.com/openzipkin/zipkin-go/middleware/grpc"
-	zhttp "github.com/openzipkin/zipkin-go/reporter/http"
+	"time"
 
 	"github.com/bburch01/FOTAAS/api"
-	"github.com/bburch01/FOTAAS/internal/app/status"
-	"github.com/bburch01/FOTAAS/internal/app/telemetry/models"
 	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
-	"github.com/openzipkin/zipkin-go"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
 var logger *zap.Logger
-
-type server struct{}
 
 func init() {
 
@@ -48,111 +40,9 @@ func init() {
 		log.Panicf("failed to initialize logging subsystem with error: %v", err)
 	}
 
-	if err = models.InitDB(); err != nil {
-		logger.Fatal(fmt.Sprintf("failed to initialize database driver with error: %v", err))
-	}
-
 }
 
-func main() {
-
-	var sb strings.Builder
-
-	reporter := zhttp.NewReporter(os.Getenv("ZIPKIN_ENDPOINT_URL"))
-	defer reporter.Close()
-
-	sb.WriteString(os.Getenv("STATUS_SERVICE_HOST"))
-	sb.WriteString(":")
-	sb.WriteString(os.Getenv("STATUS_SERVICE_PORT"))
-	statusSvcEndpoint := sb.String()
-
-	zipkinLocalEndpoint, err := zipkin.NewEndpoint("status-service", statusSvcEndpoint)
-	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to create zipkin local endpoint with error: %v", err))
-	}
-
-	tracer, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(zipkinLocalEndpoint))
-	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to create zipkin tracer with error: %v", err))
-	}
-
-	sb.Reset()
-	sb.WriteString(":")
-	sb.WriteString(os.Getenv("STATUS_SERVICE_PORT"))
-	statusSvcPort := sb.String()
-
-	listener, err := net.Listen("tcp", statusSvcPort)
-	if err != nil {
-		logger.Fatal(fmt.Sprintf("tcp failed to listen on status service port %v with error: %v", statusSvcPort, err))
-	}
-
-	svr := grpc.NewServer(grpc.StatsHandler(zgrpc.NewServerHandler(tracer)))
-
-	api.RegisterSystemStatusServiceServer(svr, &server{})
-
-	if err := svr.Serve(listener); err != nil {
-		logger.Fatal(fmt.Sprintf("failed to serve on status service port %v with error: %v", statusSvcPort, err))
-	}
-
-}
-
-func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRequest) (*api.GetSystemStatusResponse, error) {
-
-	//var resp api.GetSystemStatusResponse
-	var statusReport api.SystemStatusReport
-
-	statusReport.TelemetryServiceAliveness = status.RunServiceAlivenessTest("telemetry")
-	statusReport.AnalysisServiceAliveness = status.RunServiceAlivenessTest("analysis")
-	statusReport.SimulationServiceAliveness = status.RunServiceAlivenessTest("simulation")
-	statusReport.StartSimulation = api.TestResult_INCOMPLETE
-	statusReport.PollForSimulationComplete = api.TestResult_INCOMPLETE
-	statusReport.RetrieveSimulationData = api.TestResult_INCOMPLETE
-	statusReport.SimulationDataAnalysis = api.TestResult_INCOMPLETE
-
-	if statusReport.TelemetryServiceAliveness == api.TestResult_FAIL ||
-		statusReport.AnalysisServiceAliveness == api.TestResult_FAIL ||
-		statusReport.SimulationServiceAliveness == api.TestResult_FAIL {
-
-		resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
-			Code: api.ResponseCode_INFO, Message: "one or more prerequisite system status tests have failed, test sequence aborted"},
-			SystemStatusReport: &statusReport}
-
-		return &resp, nil
-
-	}
-
-	simDurationInMinutes := int32(1)
-	simID := uuid.New().String()
-
-	statusReport.StartSimulation = status.RunStartSimulationTest(simID, simDurationInMinutes)
-
-	if statusReport.StartSimulation == api.TestResult_FAIL {
-		resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
-			Code: api.ResponseCode_INFO, Message: "one or more prerequisite system status tests have failed, test sequence aborted"},
-			SystemStatusReport: &statusReport}
-
-		return &resp, nil
-	}
-
-	statusReport.PollForSimulationComplete = status.RunPollForSimulationCompleteTest(simID, simDurationInMinutes)
-
-	if statusReport.PollForSimulationComplete == api.TestResult_FAIL {
-		resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
-			Code: api.ResponseCode_INFO, Message: "one or more prerequisite system status tests have failed, test sequence aborted"},
-			SystemStatusReport: &statusReport}
-
-		return &resp, nil
-	}
-
-	resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
-		Code: api.ResponseCode_OK, Message: "system status test sequence complete"},
-		SystemStatusReport: &statusReport}
-
-	return &resp, nil
-}
-
-/*
-func runServiceAlivenessTest(svcname string) api.TestResult {
+func RunServiceAlivenessTest(svcname string) api.TestResult {
 
 	var svcEndpoint string
 	var resp *api.AlivenessCheckResponse
@@ -234,7 +124,7 @@ func runServiceAlivenessTest(svcname string) api.TestResult {
 	}
 }
 
-func runStartSimulationTest(simID string, simDurationInMinutes int32) api.TestResult {
+func RunStartSimulationTest(simID string, simDurationInMinutes int32) api.TestResult {
 
 	var req api.RunSimulationRequest
 	var forceAlarmFlag, noAlarmFlag bool
@@ -365,7 +255,7 @@ func runStartSimulationTest(simID string, simDurationInMinutes int32) api.TestRe
 
 }
 
-func runPollForSimulationCompleteTest(simID string, simDurationInMinutes int32) api.TestResult {
+func RunPollForSimulationCompleteTest(simID string, simDurationInMinutes int32) api.TestResult {
 
 	var simulationSvcEndpoint string
 	var sb strings.Builder
@@ -434,4 +324,3 @@ func runPollForSimulationCompleteTest(simID string, simDurationInMinutes int32) 
 	return api.TestResult_FAIL
 
 }
-*/
