@@ -53,6 +53,7 @@ func ExtractAlarmAnalysisData(req *api.GetAlarmAnalysisRequest) (*api.AlarmAnaly
 	dataReq := new(api.GetTelemetryDataRequest)
 	dataReq.SearchBy = new(api.GetTelemetryDataRequest_SearchBy)
 	dataReq.Simulated = req.Simulated
+	dataReq.SimulationUuid = req.SimulationUuid
 	dataReq.DateRangeBegin = req.DateRangeBegin
 	dataReq.DateRangeEnd = req.DateRangeEnd
 	dataReq.SearchBy.DateRange = true
@@ -148,6 +149,7 @@ func ExtractConstructorAlarmAnalysisData(req *api.GetConstructorAlarmAnalysisReq
 	dataReq := new(api.GetTelemetryDataRequest)
 	dataReq.SearchBy = new(api.GetTelemetryDataRequest_SearchBy)
 	dataReq.Simulated = req.Simulated
+	dataReq.SimulationUuid = req.SimulationUuid
 	dataReq.DateRangeBegin = req.DateRangeBegin
 	dataReq.DateRangeEnd = req.DateRangeEnd
 	dataReq.Constructor = req.Constructor

@@ -302,9 +302,10 @@ message GetTelemetryDataResponse {
 }
 
 message GetAlarmAnalysisRequest {
-    bool simulated = 1;       
-    google.protobuf.Timestamp date_range_begin = 2;
-    google.protobuf.Timestamp date_range_end = 3;
+    bool simulated = 1;
+    string simulation_uuid = 2;       
+    google.protobuf.Timestamp date_range_begin = 3;
+    google.protobuf.Timestamp date_range_end = 4;
 }
 
 message GetAlarmAnalysisResponse {
@@ -313,11 +314,12 @@ message GetAlarmAnalysisResponse {
 }
 
 message GetConstructorAlarmAnalysisRequest {
-    google.protobuf.Timestamp date_range_begin = 1;
-    google.protobuf.Timestamp date_range_end = 2;
-    Constructor constructor = 3;
-    int32 car_number = 4;
-    bool simulated = 5;       
+    bool simulated = 1;
+    string simulation_uuid = 2;       
+    google.protobuf.Timestamp date_range_begin = 3;
+    google.protobuf.Timestamp date_range_end = 4;
+    Constructor constructor = 5;
+    int32 car_number = 6;    
 }
 
 message GetConstructorAlarmAnalysisResponse {

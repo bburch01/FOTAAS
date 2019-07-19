@@ -23,6 +23,7 @@ import (
 	"time"
 
 	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
+	"github.com/google/uuid"
 
 	"github.com/bburch01/FOTAAS/api"
 	"github.com/joho/godotenv"
@@ -48,6 +49,7 @@ func init() {
 	getAlarmAnalysisCmd.Flags().StringP("constructor", "c", "", "constructor (e.g. MERCEDES")
 	getAlarmAnalysisCmd.Flags().Int32P("car-number", "n", -1, "car number (e.g. 44)")
 	getAlarmAnalysisCmd.Flags().BoolP("simulated", "i", false, "get alarm analysis for simulated data")
+	getAlarmAnalysisCmd.Flags().BoolP("simulation-id", "d", false, "get alarm analysis for a specific simulation")
 
 	// Loads values from .env into the system.
 	// NOTE: the .env file must be present in execution directory which is a
@@ -84,6 +86,15 @@ var getAlarmAnalysisCmd = &cobra.Command{
 
 		simulated, _ := cmd.Flags().GetBool("simulated")
 
+		simID, _ := cmd.Flags().GetString("simulation-id")
+
+		if simID != "" {
+			if _, err := uuid.Parse(simID); err != nil {
+				log.Printf("invalid simulation id: %v", err)
+				return nil
+			}
+		}
+
 		constructor, _ := cmd.Flags().GetString("constructor")
 		if constructor != "" {
 
@@ -100,7 +111,7 @@ var getAlarmAnalysisCmd = &cobra.Command{
 				return errors.New("car-number must be specified and must be greater than or equal to 0")
 			}
 
-			resp, err := getConstructorAlarmAnalysis(startDate, endDate, simulated, constructorOrdinal, carNumber)
+			resp, err := getConstructorAlarmAnalysis(startDate, endDate, simulated, simID, constructorOrdinal, carNumber)
 			if err != nil {
 				return err
 			}
@@ -125,7 +136,7 @@ var getAlarmAnalysisCmd = &cobra.Command{
 
 		} else {
 
-			resp, err := getAlarmAnalysis(startDate, endDate, simulated)
+			resp, err := getAlarmAnalysis(startDate, endDate, simulated, simID)
 			if err != nil {
 				return err
 			}
@@ -151,7 +162,7 @@ var getAlarmAnalysisCmd = &cobra.Command{
 	},
 }
 
-func getAlarmAnalysis(startDate string, endDate string, simulated bool) (*api.GetAlarmAnalysisResponse, error) {
+func getAlarmAnalysis(startDate string, endDate string, simulated bool, simID string) (*api.GetAlarmAnalysisResponse, error) {
 
 	var analysisSvcEndpoint string
 	var startTime, endTime time.Time
@@ -183,6 +194,8 @@ func getAlarmAnalysis(startDate string, endDate string, simulated bool) (*api.Ge
 
 	req.Simulated = simulated
 
+	req.SimulationUuid = simID
+
 	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_HOST"))
 	sb.WriteString(":")
 	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_PORT"))
@@ -212,7 +225,7 @@ func getAlarmAnalysis(startDate string, endDate string, simulated bool) (*api.Ge
 
 }
 
-func getConstructorAlarmAnalysis(startDate string, endDate string, simulated bool,
+func getConstructorAlarmAnalysis(startDate string, endDate string, simulated bool, simID string,
 	constructorOrdinal int32, carNumber int32) (*api.GetConstructorAlarmAnalysisResponse, error) {
 
 	var analysisSvcEndpoint string
@@ -244,6 +257,8 @@ func getConstructorAlarmAnalysis(startDate string, endDate string, simulated boo
 	}
 
 	req.Simulated = simulated
+
+	req.SimulationUuid = simID
 
 	req.Constructor = api.Constructor(constructorOrdinal)
 
