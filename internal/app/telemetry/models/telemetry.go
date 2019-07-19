@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"strconv"
@@ -160,70 +161,78 @@ func RetrieveTelemetryData(req api.GetTelemetryDataRequest) (*api.TelemetryData,
 	logger.Debug(fmt.Sprintf("select sql: %v", sb.String()))
 	rows, err := db.Query(sb.String())
 
-	if err != nil {
+	switch {
+	case err == sql.ErrNoRows:
+		// no rows & no errors, caller needs to check for nil TelemetryData
+		return nil, nil
+	case err != nil:
+		logger.Error(fmt.Sprintf("failed to retrieve telemetry data with error: %v", err))
 		return nil, err
-	}
-	defer rows.Close()
+	default:
 
-	for rows.Next() {
+		defer rows.Close()
 
-		datum := api.TelemetryDatum{}
+		for rows.Next() {
 
-		err := rows.Scan(&datum.Uuid, &datum.Simulated, &datum.SimulationUuid, &txSeqNum, &granPrix,
-			&track, &constructor, &carNumber, &ts, &datum.Latitude, &datum.Longitude, &datum.Elevation, &datumDescription,
-			&datumUnit, &datum.Value, &datum.HighAlarm, &datum.LowAlarm)
+			datum := api.TelemetryDatum{}
 
+			err := rows.Scan(&datum.Uuid, &datum.Simulated, &datum.SimulationUuid, &txSeqNum, &granPrix,
+				&track, &constructor, &carNumber, &ts, &datum.Latitude, &datum.Longitude, &datum.Elevation, &datumDescription,
+				&datumUnit, &datum.Value, &datum.HighAlarm, &datum.LowAlarm)
+
+			if err != nil {
+				return nil, err
+			}
+
+			ordinal, ok := api.TelemetryDatumDescription_value[datumDescription]
+			if !ok {
+				return nil, fmt.Errorf("invalid telemetry datum description enum: %v", datumDescription)
+			}
+			datum.Description = api.TelemetryDatumDescription(ordinal)
+
+			ordinal, ok = api.TelemetryDatumUnit_value[datumUnit]
+			if !ok {
+				return nil, fmt.Errorf("invalid telemetry datum unit enum: %v", datumUnit)
+			}
+			datum.Unit = api.TelemetryDatumUnit(ordinal)
+
+			tsProto, err := ipbts.TimestampProto(ts)
+			if err != nil {
+				return nil, errors.New("failed to convert timestamp to protobuf format")
+			}
+			datum.Timestamp = tsProto
+
+			ordinal, ok = api.GranPrix_value[granPrix]
+			if !ok {
+				return nil, fmt.Errorf("invalid gran prix enum: %v", granPrix)
+			}
+			datum.GranPrix = api.GranPrix(ordinal)
+
+			ordinal, ok = api.Track_value[track]
+			if !ok {
+				return nil, fmt.Errorf("invalid track enum: %v", track)
+			}
+			datum.Track = api.Track(ordinal)
+
+			ordinal, ok = api.Constructor_value[constructor]
+			if !ok {
+				return nil, fmt.Errorf("invalid constructor enum: %v", constructor)
+			}
+			datum.Constructor = api.Constructor(ordinal)
+
+			datum.CarNumber = carNumber
+
+			datumMap[datum.Uuid] = &datum
+
+		}
+		err = rows.Err()
 		if err != nil {
 			return nil, err
 		}
 
-		ordinal, ok := api.TelemetryDatumDescription_value[datumDescription]
-		if !ok {
-			return nil, fmt.Errorf("invalid telemetry datum description enum: %v", datumDescription)
-		}
-		datum.Description = api.TelemetryDatumDescription(ordinal)
-
-		ordinal, ok = api.TelemetryDatumUnit_value[datumUnit]
-		if !ok {
-			return nil, fmt.Errorf("invalid telemetry datum unit enum: %v", datumUnit)
-		}
-		datum.Unit = api.TelemetryDatumUnit(ordinal)
-
-		tsProto, err := ipbts.TimestampProto(ts)
-		if err != nil {
-			return nil, errors.New("failed to convert timestamp to protobuf format")
-		}
-		datum.Timestamp = tsProto
-
-		ordinal, ok = api.GranPrix_value[granPrix]
-		if !ok {
-			return nil, fmt.Errorf("invalid gran prix enum: %v", granPrix)
-		}
-		datum.GranPrix = api.GranPrix(ordinal)
-
-		ordinal, ok = api.Track_value[track]
-		if !ok {
-			return nil, fmt.Errorf("invalid track enum: %v", track)
-		}
-		datum.Track = api.Track(ordinal)
-
-		ordinal, ok = api.Constructor_value[constructor]
-		if !ok {
-			return nil, fmt.Errorf("invalid constructor enum: %v", constructor)
-		}
-		datum.Constructor = api.Constructor(ordinal)
-
-		datum.CarNumber = carNumber
-
-		datumMap[datum.Uuid] = &datum
+		data.TelemetryDatumMap = datumMap
 
 	}
-	err = rows.Err()
-	if err != nil {
-		return nil, err
-	}
-
-	data.TelemetryDatumMap = datumMap
 
 	return &data, nil
 

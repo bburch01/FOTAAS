@@ -128,9 +128,11 @@ func (s *server) GetTelemetryData(ctx context.Context, req *api.GetTelemetryData
 
 	// TODO: need to validate the request (all search terms present and valid)
 
-	var resp api.GetTelemetryDataResponse
 	var data *api.TelemetryData
 	var err error
+
+	resp := new(api.GetTelemetryDataResponse)
+	resp.Details = new(api.ResponseDetails)
 
 	if data, err = models.RetrieveTelemetryData(*req); err != nil {
 		resp.Details.Code = api.ResponseCode_ERROR
@@ -140,7 +142,7 @@ func (s *server) GetTelemetryData(ctx context.Context, req *api.GetTelemetryData
 		// of this service call process this FOTAAS error differently than other system errors (e.g.
 		// if this service is not available). Intercept this error and handle it via response code &
 		// message.
-		return &resp, nil
+		return resp, nil
 	}
 
 	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
@@ -148,7 +150,7 @@ func (s *server) GetTelemetryData(ctx context.Context, req *api.GetTelemetryData
 
 	resp.TelemetryData = data
 
-	return &resp, nil
+	return resp, nil
 
 }
 

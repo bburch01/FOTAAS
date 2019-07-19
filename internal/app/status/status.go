@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
+
+	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 
 	"github.com/bburch01/FOTAAS/api"
 	"github.com/bburch01/FOTAAS/internal/pkg/logging"
@@ -42,7 +45,7 @@ func init() {
 
 }
 
-func RunServiceAlivenessTest(svcname string) api.TestResult {
+func CheckServiceAliveness(svcname string) api.TestResult {
 
 	var svcEndpoint string
 	var resp *api.AlivenessCheckResponse
@@ -124,7 +127,7 @@ func RunServiceAlivenessTest(svcname string) api.TestResult {
 	}
 }
 
-func RunStartSimulationTest(simID string, simDurationInMinutes int32) api.TestResult {
+func StartSimulation(simID string, simDurationInMinutes int32) api.TestResult {
 
 	var req api.RunSimulationRequest
 	var forceAlarmFlag, noAlarmFlag bool
@@ -255,7 +258,7 @@ func RunStartSimulationTest(simID string, simDurationInMinutes int32) api.TestRe
 
 }
 
-func RunPollForSimulationCompleteTest(simID string, simDurationInMinutes int32) api.TestResult {
+func PollForSimulationComplete(simID string, simDurationInMinutes int32) api.TestResult {
 
 	var simulationSvcEndpoint string
 	var sb strings.Builder
@@ -308,7 +311,6 @@ func RunPollForSimulationCompleteTest(simID string, simDurationInMinutes int32) 
 			sb.WriteString("poll for simulation complete test failed, ")
 			sb.WriteString(fmt.Sprintf("simulation service response code: %v ", resp.Details.Code.String()))
 			sb.WriteString(fmt.Sprintf("simulation service response message: %v ", resp.Details.Message))
-			sb.WriteString(fmt.Sprintf("simulation info state: %v ", resp.SimulationInfo.State.String()))
 			logger.Error(sb.String())
 			return api.TestResult_FAIL
 		default:
@@ -323,4 +325,101 @@ func RunPollForSimulationCompleteTest(simID string, simDurationInMinutes int32) 
 
 	return api.TestResult_FAIL
 
+}
+
+func RetrieveSimulationData(simID string) api.TestResult {
+
+	dataReq := new(api.GetTelemetryDataRequest)
+	dataReq.SearchBy = new(api.GetTelemetryDataRequest_SearchBy)
+	dataReq.Simulated = true
+	dataReq.SimulationUuid = simID
+	dataReq.SearchBy.DateRange = true
+	dataReq.SearchBy.Constructor = true
+	dataReq.SearchBy.CarNumber = true
+
+	var sb strings.Builder
+	sb.WriteString(os.Getenv("TELEMETRY_SERVICE_HOST"))
+	sb.WriteString(":")
+	sb.WriteString(os.Getenv("TELEMETRY_SERVICE_PORT"))
+	telemetrySvcEndpoint := sb.String()
+
+	conn, err := grpc.Dial(telemetrySvcEndpoint, grpc.WithInsecure())
+	if err != nil {
+		logger.Error(fmt.Sprintf("retrieve simulation data test failed with error: %v", err))
+		return api.TestResult_FAIL
+	}
+	defer conn.Close()
+
+	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
+	// based on the size of SimulationMap.
+	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
+	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
+
+	defer cancel()
+
+	var client = api.NewTelemetryServiceClient(conn)
+
+	var startTime, endTime time.Time
+
+	year, month, day := time.Now().Date()
+
+	sb.Reset()
+	sb.WriteString(strconv.Itoa(year))
+	sb.WriteString("-")
+	if int(month) < 10 {
+		sb.WriteString("0")
+	}
+	sb.WriteString(strconv.Itoa(int(month)))
+	sb.WriteString("-")
+	if day < 10 {
+		sb.WriteString("0")
+	}
+	sb.WriteString(strconv.Itoa(day))
+
+	startTime, err = time.Parse(time.RFC3339, sb.String()+"T00:00:00Z")
+	if err != nil {
+		logger.Error(fmt.Sprintf("retrieve simulation data test failed with error: %v", err))
+		return api.TestResult_FAIL
+	}
+
+	endTime, err = time.Parse(time.RFC3339, sb.String()+"T23:59:59Z")
+	if err != nil {
+		logger.Error(fmt.Sprintf("retrieve simulation data test failed with error: %v", err))
+		return api.TestResult_FAIL
+	}
+
+	dataReq.DateRangeBegin, err = ipbts.TimestampProto(startTime)
+	if err != nil {
+		logger.Error(fmt.Sprintf("retrieve simulation data test failed with error: %v", err))
+		return api.TestResult_FAIL
+	}
+	dataReq.DateRangeEnd, err = ipbts.TimestampProto(endTime)
+	if err != nil {
+		logger.Error(fmt.Sprintf("retrieve simulation data test failed with error: %v", err))
+		return api.TestResult_FAIL
+	}
+
+	dataReq.Constructor = api.Constructor_HAAS
+	dataReq.CarNumber = 8
+
+	resp, err := client.GetTelemetryData(ctx, dataReq)
+	if err != nil {
+		logger.Error(fmt.Sprintf("retrieve simulation data test failed with error: %v", err))
+		return api.TestResult_FAIL
+	}
+
+	if resp.Details.Code != api.ResponseCode_OK {
+		logger.Error(fmt.Sprintf("retrieve simulation data test failed with telemetry service message: %v", resp.Details.Message))
+		return api.TestResult_FAIL
+	}
+
+	// 1500 looks like a magic number here. The simulation that is run as part of the system status tests will always
+	// produce 1500 telemetry datums per constructor/car number.
+	if resp.TelemetryData == nil || len(resp.TelemetryData.TelemetryDatumMap) != 1500 {
+		logger.Error(fmt.Sprintf("retrieve simulation data test failed, invalid telemetry datum count for constructor %v car number %v",
+			dataReq.Constructor.String(), dataReq.CarNumber))
+		return api.TestResult_FAIL
+	}
+
+	return api.TestResult_PASS
 }

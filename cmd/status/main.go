@@ -101,9 +101,9 @@ func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRe
 	//var resp api.GetSystemStatusResponse
 	var statusReport api.SystemStatusReport
 
-	statusReport.TelemetryServiceAliveness = status.RunServiceAlivenessTest("telemetry")
-	statusReport.AnalysisServiceAliveness = status.RunServiceAlivenessTest("analysis")
-	statusReport.SimulationServiceAliveness = status.RunServiceAlivenessTest("simulation")
+	statusReport.TelemetryServiceAliveness = status.CheckServiceAliveness("telemetry")
+	statusReport.AnalysisServiceAliveness = status.CheckServiceAliveness("analysis")
+	statusReport.SimulationServiceAliveness = status.CheckServiceAliveness("simulation")
 	statusReport.StartSimulation = api.TestResult_INCOMPLETE
 	statusReport.PollForSimulationComplete = api.TestResult_INCOMPLETE
 	statusReport.RetrieveSimulationData = api.TestResult_INCOMPLETE
@@ -124,7 +124,7 @@ func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRe
 	simDurationInMinutes := int32(1)
 	simID := uuid.New().String()
 
-	statusReport.StartSimulation = status.RunStartSimulationTest(simID, simDurationInMinutes)
+	statusReport.StartSimulation = status.StartSimulation(simID, simDurationInMinutes)
 
 	if statusReport.StartSimulation == api.TestResult_FAIL {
 		resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
@@ -134,9 +134,19 @@ func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRe
 		return &resp, nil
 	}
 
-	statusReport.PollForSimulationComplete = status.RunPollForSimulationCompleteTest(simID, simDurationInMinutes)
+	statusReport.PollForSimulationComplete = status.PollForSimulationComplete(simID, simDurationInMinutes)
 
 	if statusReport.PollForSimulationComplete == api.TestResult_FAIL {
+		resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
+			Code: api.ResponseCode_INFO, Message: "one or more prerequisite system status tests have failed, test sequence aborted"},
+			SystemStatusReport: &statusReport}
+
+		return &resp, nil
+	}
+
+	statusReport.RetrieveSimulationData = status.RetrieveSimulationData(simID)
+
+	if statusReport.RetrieveSimulationData == api.TestResult_FAIL {
 		resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
 			Code: api.ResponseCode_INFO, Message: "one or more prerequisite system status tests have failed, test sequence aborted"},
 			SystemStatusReport: &statusReport}

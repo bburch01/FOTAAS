@@ -102,15 +102,25 @@ func TestRetrieveTelemetryData(t *testing.T) {
 	// select * from telemetry_datum where constructor='HAAS' and simulation_transmit_sequence_number=1 and timestamp between '2019-07-09' and '2019-07-11';
 	// select * from telemetry_datum where constructor='HAAS' and simulation_transmit_sequence_number=1 and timestamp between '2019-7-10 00:00:00' and '2019-7-10 23:59:59';
 
-	var req api.GetTelemetryDataRequest
+	//var req api.GetTelemetryDataRequest
 	var data *api.TelemetryData
 	var err error
 	var startTime, endTime time.Time
 
-	req.Simulated = false
-	req.Constructor = api.Constructor_MERCEDES
-	req.CarNumber = 44
+	//req.Simulated = true
+	//req.Constructor = api.Constructor_MERCEDES
+	//req.CarNumber = 44
+	//req.SearchBy.DateRange = true
+
+	req := new(api.GetTelemetryDataRequest)
+	req.SearchBy = new(api.GetTelemetryDataRequest_SearchBy)
+	req.Constructor = api.Constructor_HAAS
+	req.CarNumber = 8
+	req.Simulated = true
+	req.SimulationUuid = "dca35e1b-b10f-4098-b8e8-34e1d30f35cc"
 	req.SearchBy.DateRange = true
+	req.SearchBy.Constructor = true
+	req.SearchBy.CarNumber = true
 
 	startTime, err = time.Parse(time.RFC3339, "2019-07-08T00:00:00Z")
 	if err != nil {
@@ -118,7 +128,7 @@ func TestRetrieveTelemetryData(t *testing.T) {
 		t.FailNow()
 	}
 
-	endTime, err = time.Parse(time.RFC3339, "2019-07-12T00:00:00Z")
+	endTime, err = time.Parse(time.RFC3339, "2019-07-20T00:00:00Z")
 	if err != nil {
 		t.Error("failed to create start timestamp with error: ", err)
 		t.FailNow()
@@ -135,8 +145,13 @@ func TestRetrieveTelemetryData(t *testing.T) {
 		t.FailNow()
 	}
 
-	if data, err = RetrieveTelemetryData(req); err != nil {
+	if data, err = RetrieveTelemetryData(*req); err != nil {
 		t.Error("failed to retrieve telemetry data with error: ", err)
+		t.FailNow()
+	}
+
+	if data == nil {
+		t.Error("telemetry data was nil, no rows returned...")
 		t.FailNow()
 	}
 

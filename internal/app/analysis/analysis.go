@@ -89,7 +89,7 @@ func ExtractAlarmAnalysisData(req *api.GetAlarmAnalysisRequest) (*api.AlarmAnaly
 	case api.ResponseCode_OK:
 
 		telemetryData := resp.TelemetryData
-		if len(telemetryData.TelemetryDatumMap) == 0 {
+		if telemetryData == nil || len(telemetryData.TelemetryDatumMap) == 0 {
 			// no errors & no telemetry data, caller needs to check for nil
 			return nil, nil
 		}
@@ -188,7 +188,7 @@ func ExtractConstructorAlarmAnalysisData(req *api.GetConstructorAlarmAnalysisReq
 	case api.ResponseCode_OK:
 
 		telemetryData := resp.TelemetryData
-		if len(telemetryData.TelemetryDatumMap) == 0 {
+		if telemetryData == nil || len(telemetryData.TelemetryDatumMap) == 0 {
 			// no errors & no telemetry data, caller needs to check for nil
 			return nil, nil
 		}
