@@ -80,18 +80,16 @@ func RetrieveTelemetryData(req api.GetTelemetryDataRequest) (*api.TelemetryData,
 	// are set, select by simulation uuid only.
 	var sb strings.Builder
 
-	switch req.Simulated {
-	case true:
-		sb.WriteString("select * from telemetry_datum where simulated = true")
+	if req.Simulated || req.SimulationUuid != "" {
 		if req.SimulationUuid != "" {
-			sb.WriteString(" and simulation_id = '")
+			sb.WriteString("select * from telemetry_datum where simulation_id = '")
 			sb.WriteString(req.SimulationUuid)
 			sb.WriteString("'")
+		} else {
+			sb.WriteString("select * from telemetry_datum where simulated = true")
 		}
-	case false:
+	} else {
 		sb.WriteString("select * from telemetry_datum where simulated = false")
-	default:
-		return nil, fmt.Errorf("failed to retrieve telemetry data, bad value for api.GetTelemetryDataRequest.Simulated ")
 	}
 
 	if req.SearchBy.Constructor {

@@ -49,7 +49,7 @@ func init() {
 	getAlarmAnalysisCmd.Flags().StringP("constructor", "c", "", "constructor (e.g. MERCEDES")
 	getAlarmAnalysisCmd.Flags().Int32P("car-number", "n", -1, "car number (e.g. 44)")
 	getAlarmAnalysisCmd.Flags().BoolP("simulated", "i", false, "get alarm analysis for simulated data")
-	getAlarmAnalysisCmd.Flags().BoolP("simulation-id", "d", false, "get alarm analysis for a specific simulation")
+	getAlarmAnalysisCmd.Flags().StringP("simulation-id", "d", "", "get alarm analysis for a specific simulation uuid")
 
 	// Loads values from .env into the system.
 	// NOTE: the .env file must be present in execution directory which is a
