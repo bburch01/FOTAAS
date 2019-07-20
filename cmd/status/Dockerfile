@@ -21,9 +21,9 @@ RUN go get github.com/google/uuid
 RUN go get go.uber.org/zap
 RUN go mod download
 
-WORKDIR /app/go/src/github.com/bburch01/FOTAAS/cmd/telemetry
+WORKDIR /app/go/src/github.com/bburch01/FOTAAS/cmd/status
 
-RUN GOOS=linux go build -a -o telemetry
+RUN GOOS=linux go build -a -o status
 
 FROM alpine:latest
 
@@ -36,7 +36,7 @@ RUN mkdir -p /var/log/fotaas
 RUN touch /var/log/fotaas/fotaas.log
 RUN chown fotaas /var/log/fotaas/fotaas.log
 
-COPY --from=builder /app/go/src/github.com/bburch01/FOTAAS/cmd/telemetry/telemetry .
-COPY --from=builder /app/go/src/github.com/bburch01/FOTAAS/cmd/telemetry/.env .
+COPY --from=builder /app/go/src/github.com/bburch01/FOTAAS/cmd/status/status .
+COPY --from=builder /app/go/src/github.com/bburch01/FOTAAS/cmd/status/.env .
 
-CMD ./telemetry
+CMD ./status

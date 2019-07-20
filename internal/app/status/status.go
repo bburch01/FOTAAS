@@ -423,3 +423,100 @@ func RetrieveSimulationData(simID string) api.TestResult {
 
 	return api.TestResult_PASS
 }
+
+func SimulationDataAnalysis(simID string) api.TestResult {
+
+	var analysisSvcEndpoint string
+	var startTime, endTime time.Time
+	var sb strings.Builder
+	var resp *api.GetAlarmAnalysisResponse
+	var err error
+
+	req := new(api.GetAlarmAnalysisRequest)
+
+	year, month, day := time.Now().Date()
+
+	sb.WriteString(strconv.Itoa(year))
+	sb.WriteString("-")
+	if int(month) < 10 {
+		sb.WriteString("0")
+	}
+	sb.WriteString(strconv.Itoa(int(month)))
+	sb.WriteString("-")
+	if day < 10 {
+		sb.WriteString("0")
+	}
+	sb.WriteString(strconv.Itoa(day))
+
+	startTime, err = time.Parse(time.RFC3339, sb.String()+"T00:00:00Z")
+	if err != nil {
+		logger.Error(fmt.Sprintf("retrieve simulation data test failed with error: %v", err))
+		return api.TestResult_FAIL
+	}
+
+	endTime, err = time.Parse(time.RFC3339, sb.String()+"T23:59:59Z")
+	if err != nil {
+		logger.Error(fmt.Sprintf("retrieve simulation data test failed with error: %v", err))
+		return api.TestResult_FAIL
+	}
+
+	req.DateRangeBegin, err = ipbts.TimestampProto(startTime)
+	if err != nil {
+		logger.Error(fmt.Sprintf("simulation data analysis test failed with error: %v", err))
+		return api.TestResult_FAIL
+	}
+
+	req.DateRangeEnd, err = ipbts.TimestampProto(endTime)
+	if err != nil {
+		logger.Error(fmt.Sprintf("simulation data analysis test failed with error: %v", err))
+		return api.TestResult_FAIL
+	}
+
+	req.Simulated = true
+
+	req.SimulationUuid = simID
+
+	sb.Reset()
+	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_HOST"))
+	sb.WriteString(":")
+	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_PORT"))
+	analysisSvcEndpoint = sb.String()
+
+	conn, err := grpc.Dial(analysisSvcEndpoint, grpc.WithInsecure())
+	if err != nil {
+		logger.Error(fmt.Sprintf("simulation data analysis test failed with error: %v", err))
+		return api.TestResult_FAIL
+	}
+	defer conn.Close()
+
+	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
+	// based on the size of SimulationMap.
+	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
+	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
+
+	defer cancel()
+
+	var client = api.NewAnalysisServiceClient(conn)
+
+	resp, err = client.GetAlarmAnalysis(ctx, req)
+	if err != nil {
+		logger.Error(fmt.Sprintf("simulation data analysis test failed with error: %v", err))
+		return api.TestResult_FAIL
+	}
+
+	if resp.Details.Code != api.ResponseCode_OK {
+		logger.Error(fmt.Sprintf("simulation data analysis test failed with analysis service message: %v", resp.Details.Message))
+		return api.TestResult_FAIL
+	}
+
+	// TODO: this is a very minmal alarm analysis test. Add more tests on the contents of the
+	// GetAlarmAnalysisResponse. Also, add tests for the GetConstructorAlarmAnalysis service call.
+	if len(resp.AlarmAnalysisData.AlarmCounts) != 12 {
+		logger.Error(fmt.Sprintf("simulation data analysis test failed with invalid alarm count: %v",
+			len(resp.AlarmAnalysisData.AlarmCounts)))
+		return api.TestResult_FAIL
+	}
+
+	return api.TestResult_PASS
+
+}

@@ -154,8 +154,18 @@ func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRe
 		return &resp, nil
 	}
 
+	statusReport.SimulationDataAnalysis = status.SimulationDataAnalysis(simID)
+
+	if statusReport.SimulationDataAnalysis == api.TestResult_FAIL {
+		resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
+			Code: api.ResponseCode_WARN, Message: "test sequence complete, one or more system status tests failed"},
+			SystemStatusReport: &statusReport}
+
+		return &resp, nil
+	}
+
 	resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
-		Code: api.ResponseCode_OK, Message: "system status test sequence complete"},
+		Code: api.ResponseCode_OK, Message: "system status test sequence complete, all system status tests passed"},
 		SystemStatusReport: &statusReport}
 
 	return &resp, nil
