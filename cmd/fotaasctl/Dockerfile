@@ -17,6 +17,7 @@ RUN go get github.com/spf13/viper/
 RUN go get github.com/joho/godotenv/
 RUN go get github.com/google/uuid
 RUN go get google.golang.org/grpc/
+RUN go get github.com/briandowns/spinner
 
 RUN go mod download
 
