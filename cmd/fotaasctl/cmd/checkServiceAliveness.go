@@ -106,8 +106,13 @@ func checkByName(svcname string) (*api.AlivenessCheckResponse, error) {
 		sb.WriteString(":")
 		sb.WriteString(os.Getenv("SIMULATION_SERVICE_PORT"))
 		svcEndpoint = sb.String()
+	case "status":
+		sb.WriteString(os.Getenv("STATUS_SERVICE_HOST"))
+		sb.WriteString(":")
+		sb.WriteString(os.Getenv("STATUS_SERVICE_PORT"))
+		svcEndpoint = sb.String()
 	default:
-		return resp, errors.New("invalid service name, valid service names are telemetry, analysis, and simulation")
+		return resp, errors.New("invalid service name, valid service names are telemetry, analysis, simulation, status")
 	}
 
 	conn, err := grpc.Dial(svcEndpoint, grpc.WithInsecure())
@@ -144,8 +149,14 @@ func checkByName(svcname string) (*api.AlivenessCheckResponse, error) {
 		if err != nil {
 			return nil, err
 		}
+	case "status":
+		client := api.NewSystemStatusServiceClient(conn)
+		resp, err = client.AlivenessCheck(ctx, &api.AlivenessCheckRequest{})
+		if err != nil {
+			return nil, err
+		}
 	default:
-		return nil, errors.New("invalid service name, valid service names are: telemetry, analysis, simulation")
+		return nil, errors.New("invalid service name, valid service names are: telemetry, analysis, simulation, status")
 	}
 
 	return resp, nil
@@ -176,5 +187,13 @@ func checkAll() {
 	} else {
 		log.Printf("simulation service health check response code   : %v", resp.Details.Code)
 		log.Printf("simulation service health check response message: %s", resp.Details.Message)
+	}
+
+	resp, err = checkByName("status")
+	if err != nil {
+		log.Printf("status service health check call failed with error: %v", err)
+	} else {
+		log.Printf("status service health check response code   : %v", resp.Details.Code)
+		log.Printf("status service health check response message: %s", resp.Details.Message)
 	}
 }

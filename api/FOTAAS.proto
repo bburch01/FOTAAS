@@ -354,5 +354,6 @@ service SimulationService {
 }
 
 service SystemStatusService {
+    rpc AlivenessCheck (AlivenessCheckRequest) returns (AlivenessCheckResponse) {};
     rpc GetSystemStatus (GetSystemStatusRequest) returns (GetSystemStatusResponse) {};
 }

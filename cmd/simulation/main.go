@@ -44,6 +44,46 @@ func init() {
 	}
 }
 
+func main() {
+	var sb strings.Builder
+
+	reporter := zhttp.NewReporter(os.Getenv("ZIPKIN_ENDPOINT_URL"))
+	defer reporter.Close()
+
+	sb.WriteString(os.Getenv("SIMULATION_SERVICE_HOST"))
+	sb.WriteString(":")
+	sb.WriteString(os.Getenv("SIMULATION_SERVICE_PORT"))
+	simulationSvcEndpoint := sb.String()
+
+	zipkinLocalEndpoint, err := zipkin.NewEndpoint("simulation-service", simulationSvcEndpoint)
+	if err != nil {
+		logger.Fatal(fmt.Sprintf("failed to create zipkin local endpoint with error: %v", err))
+	}
+
+	tracer, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(zipkinLocalEndpoint))
+	if err != nil {
+		logger.Fatal(fmt.Sprintf("failed to create zipkin tracer with error: %v", err))
+	}
+
+	sb.Reset()
+	sb.WriteString(":")
+	sb.WriteString(os.Getenv("SIMULATION_SERVICE_PORT"))
+	simulationSvcPort := sb.String()
+
+	listener, err := net.Listen("tcp", simulationSvcPort)
+	if err != nil {
+		logger.Fatal(fmt.Sprintf("tcp failed to listen on simulation service port %v with error: %v", simulationSvcPort, err))
+	}
+
+	svr := grpc.NewServer(grpc.StatsHandler(zgrpc.NewServerHandler(tracer)))
+
+	api.RegisterSimulationServiceServer(svr, &server{})
+
+	if err := svr.Serve(listener); err != nil {
+		logger.Fatal(fmt.Sprintf("failed to serve on simulation service port %v with error: %v", simulationSvcPort, err))
+	}
+}
+
 func (s *server) AlivenessCheck(ctx context.Context, req *api.AlivenessCheckRequest) (*api.AlivenessCheckResponse, error) {
 
 	resp := new(api.AlivenessCheckResponse)
@@ -132,46 +172,6 @@ func (s *server) GetSimulationInfo(ctx context.Context, req *api.GetSimulationIn
 	resp.SimulationInfo = info
 
 	return resp, nil
-}
-
-func main() {
-	var sb strings.Builder
-
-	reporter := zhttp.NewReporter(os.Getenv("ZIPKIN_ENDPOINT_URL"))
-	defer reporter.Close()
-
-	sb.WriteString(os.Getenv("SIMULATION_SERVICE_HOST"))
-	sb.WriteString(":")
-	sb.WriteString(os.Getenv("SIMULATION_SERVICE_PORT"))
-	simulationSvcEndpoint := sb.String()
-
-	zipkinLocalEndpoint, err := zipkin.NewEndpoint("simulation-service", simulationSvcEndpoint)
-	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to create zipkin local endpoint with error: %v", err))
-	}
-
-	tracer, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(zipkinLocalEndpoint))
-	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to create zipkin tracer with error: %v", err))
-	}
-
-	sb.Reset()
-	sb.WriteString(":")
-	sb.WriteString(os.Getenv("SIMULATION_SERVICE_PORT"))
-	simulationSvcPort := sb.String()
-
-	listener, err := net.Listen("tcp", simulationSvcPort)
-	if err != nil {
-		logger.Fatal(fmt.Sprintf("tcp failed to listen on simulation service port %v with error: %v", simulationSvcPort, err))
-	}
-
-	svr := grpc.NewServer(grpc.StatsHandler(zgrpc.NewServerHandler(tracer)))
-
-	api.RegisterSimulationServiceServer(svr, &server{})
-
-	if err := svr.Serve(listener); err != nil {
-		logger.Fatal(fmt.Sprintf("failed to serve on simulation service port %v with error: %v", simulationSvcPort, err))
-	}
 }
 
 func validate(simMember models.SimulationMember) error {

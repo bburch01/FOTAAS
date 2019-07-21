@@ -282,7 +282,9 @@ func PollForSimulationComplete(simID string, simDurationInMinutes int32) api.Tes
 	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
 	// based on the size of SimulationMap.
 	// For this function, a good timeout might be ((simDurationInMinutes * 60) * 2) i.e. 2X the simulation runtime
-	clientDeadline := time.Now().Add(time.Duration(simDurationInMinutes*120) * time.Second)
+	//clientDeadline := time.Now().Add(time.Duration(simDurationInMinutes*120) * time.Second)
+	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
+
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 
 	defer cancel()
@@ -290,7 +292,12 @@ func PollForSimulationComplete(simID string, simDurationInMinutes int32) api.Tes
 	var client = api.NewSimulationServiceClient(conn)
 
 	pollCount := int32(0)
-	for pollCount < (simDurationInMinutes * 120) {
+	// TODO: this poll count is going to have to change depending on deployment.
+	// Currently, the GKE cluster's minimal CPU allotment takes 3x as long to
+	// complete the simulation as the iMac does. Probably going to need to
+	// make this pollCount configurable via an env var.
+	//  for pollCount < (simDurationInMinutes * 120) {
+	for pollCount < (600) {
 
 		resp, err = client.GetSimulationInfo(ctx, &req)
 		if err != nil {
