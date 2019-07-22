@@ -64,8 +64,6 @@ var getSimulationInfoCmd = &cobra.Command{
 
 		id, _ := cmd.Flags().GetString("id")
 
-		log.Printf("id flag value: %v", id)
-
 		if _, err := uuid.Parse(id); err != nil {
 			log.Printf("invalid simulation id: %v", err)
 			return nil
