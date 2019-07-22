@@ -64,7 +64,7 @@ func (s *server) AlivenessCheck(ctx context.Context, req *api.AlivenessCheckRequ
 		resp.Details.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
 		logger.Error(fmt.Sprintf("failed to ping database with error: %v", err))
 		// protoc generated code requires error in the return params, return nil here so that clients
-		// of this service call process this FOTAAS error differently than other system errors (e.g.
+		// of this service can process this FOTAAS error differently than other system errors (e.g.
 		// if this service is not available). Intercept this error and handle it via response code &
 		// message.
 		return resp, nil
@@ -126,7 +126,7 @@ func (s *server) TransmitTelemetry(ctx context.Context, req *api.TransmitTelemet
 
 func (s *server) GetTelemetryData(ctx context.Context, req *api.GetTelemetryDataRequest) (*api.GetTelemetryDataResponse, error) {
 
-	// TODO: need to validate the request (all search terms present and valid)
+	// TODO: validate the request.
 
 	var data *api.TelemetryData
 	var err error
@@ -139,7 +139,7 @@ func (s *server) GetTelemetryData(ctx context.Context, req *api.GetTelemetryData
 		resp.Details.Message = fmt.Sprintf("failed to retrieve simulated telemetry data with error: %v", err)
 		logger.Error(fmt.Sprintf("failed to retrieve simulated telemetry data with error: %v", err))
 		// protoc generated code requires error in the return params, return nil here so that clients
-		// of this service call process this FOTAAS error differently than other system errors (e.g.
+		// of this service can process this FOTAAS error differently than other system errors (e.g.
 		// if this service is not available). Intercept this error and handle it via response code &
 		// message.
 		return resp, nil
@@ -153,35 +153,6 @@ func (s *server) GetTelemetryData(ctx context.Context, req *api.GetTelemetryData
 	return resp, nil
 
 }
-
-/*
-func (s *server) GetSimulatedTelemetryData(ctx context.Context, req *api.GetSimulatedTelemetryDataRequest) (*api.GetSimulatedTelemetryDataResponse, error) {
-
-	// TODO: need to validate the request (all search terms present and valid)
-
-	var resp api.GetSimulatedTelemetryDataResponse
-	var data *api.TelemetryData
-	var err error
-
-	if data, err = models.RetrieveSimulatedTelemetryData(*req); err != nil {
-		resp.Details.Code = api.ResponseCode_ERROR
-		resp.Details.Message = fmt.Sprintf("failed to retrieve simulated telemetry data with error: %v", err)
-		logger.Error(fmt.Sprintf("failed to retrieve simulated telemetry data with error: %v", err))
-		// protoc generated code requires error in the return params, return nil here so that clients
-		// of this service call process this FOTAAS error differently than other system errors (e.g.
-		// if this service is not available). Intercept this error and handle it via response code &
-		// message.
-		return &resp, nil
-	}
-
-	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
-		Message: fmt.Sprintf("found %v simulated telemetry datum", len(data.TelemetryDatumMap))}
-
-	resp.TelemetryData = data
-
-	return &resp, nil
-}
-*/
 
 func validate(datum *api.TelemetryDatum) error {
 

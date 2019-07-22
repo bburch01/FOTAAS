@@ -59,56 +59,6 @@ func (sim *Simulation) Create() error {
 	return nil
 }
 
-/*
-func (sim *Simulation) Retrieve() error {
-
-	var sampleRate, granPrix, track, state string
-	var startTs, endTs time.Time
-
-	rows, err := db.Query("select * from simulation where id = ?", sim.ID)
-
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-
-		err := rows.Scan(&sim.ID, &sim.DurationInMinutes,
-			&sampleRate, &granPrix, &track, &state, &startTs, &endTs, &sim.PercentComplete,
-			&sim.FinalStatusCode, &sim.FinalStatusMessage)
-
-		if err != nil {
-			return nil, err
-		}
-
-		ordinal, ok := api.SampleRate_value[sampleRate]
-		if !ok {
-			return nil, fmt.Errorf("invalid simulation sample rate enum: %v", sampleRate)
-		}
-		sim.SampleRate = api.SampleRate(ordinal)
-
-		ordinal, ok = api.GranPrix_value[granPrix]
-		if !ok {
-			return data, fmt.Errorf("invalid simulation gran prix enum: %v", granPrix)
-		}
-		sim.GranPrix = api.GranPrix(ordinal)
-
-		ordinal, ok = api.Track_value[track]
-		if !ok {
-			return data, fmt.Errorf("invalid simulation track enum: %v", track)
-		}
-		sim.Track = api.Track(ordinal)
-
-	}
-	err = rows.Err()
-	if err != nil {
-		return nil, err
-	}
-
-}
-*/
-
 func (sim Simulation) UpdateState() error {
 
 	sqlStatement := `UPDATE simulation SET state = ? WHERE id = ?`

@@ -24,8 +24,6 @@ import (
 	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 
 	"github.com/bburch01/FOTAAS/api"
-	//"github.com/bburch01/FOTAAS/internal/app/simulation/models"
-
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
@@ -122,8 +120,7 @@ func getSimulationInfo(simID string) (*api.GetSimulationInfoResponse, error) {
 	}
 	defer conn.Close()
 
-	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
-	// based on the size of SimulationMap.
+	// TODO: determine what the appropriate deadline should be for this service call.
 	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 

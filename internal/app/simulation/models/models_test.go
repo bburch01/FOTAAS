@@ -11,11 +11,6 @@ import (
 	"github.com/bburch01/FOTAAS/api"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
-	//uid "github.com/google/uuid"
-	//tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
-	//ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-	//timestamp "github.com/golang/protobuf/ptypes/timestamp"
-	//mdl "github.com/bburch01/FOTAAS/internal/app/simulation/models"
 )
 
 func init() {
@@ -40,15 +35,7 @@ func init() {
 func TestSimulationModels(t *testing.T) {
 
 	var sim Simulation
-	//var startTime *pbts.Timestamp
 	var err error
-
-	/*
-		startTime, err = ipbts.TimestampProto(time.Now())
-		if err != nil {
-			t.Error("failed to create timestamp with error: ", err)
-		}
-	*/
 
 	simID := uuid.New().String()
 
@@ -65,11 +52,6 @@ func TestSimulationModels(t *testing.T) {
 	simMemberID = uuid.New().String()
 	simMember = SimulationMember{ID: simMemberID, SimulationID: simID, Constructor: api.Constructor_WILLIAMS, CarNumber: 3, ForceAlarm: false, NoAlarms: false}
 	simMemberMap[simMemberID] = simMember
-
-	/*
-		sim = Simulation{ID: simID, DurationInMinutes: 60, SampleRate: api.SampleRate_SR_1000_MS, GranPrix: api.GranPrix_ITALIAN, Track: api.Track_MONZA,
-			State: "IN_PROGRESS", StartTimestamp: startTime, PercentComplete: 0, SimulationMembers: simMemberMap}
-	*/
 
 	sim = Simulation{ID: simID, DurationInMinutes: 60, SampleRate: api.SampleRate_SR_1000_MS,
 		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GranPrix: api.GranPrix_ITALIAN, Track: api.Track_MONZA,
@@ -137,8 +119,8 @@ func TestRetrieveSimulationInfo(t *testing.T) {
 	fmt.Printf("\ngran prix           : %v ", info.GranPrix)
 	fmt.Printf("\ntrack               : %v ", info.Track)
 	fmt.Printf("\nstate               : %v ", info.State)
-	//fmt.Printf("\nstart timestamp     : %v ", ipbts.TimestampString(info.StartTimestamp))
-	//fmt.Printf("\nend timestamp       : %v ", ipbts.TimestampString(info.EndTimestamp))
+	fmt.Printf("\nstart timestamp     : %v ", ipbts.TimestampString(info.StartTimestamp))
+	fmt.Printf("\nend timestamp       : %v ", ipbts.TimestampString(info.EndTimestamp))
 	fmt.Printf("\nstart timestamp     : %v ", info.StartTimestamp)
 	fmt.Printf("\nend timestamp       : %v ", info.EndTimestamp)
 	fmt.Printf("\npercent complete    : %v ", info.PercentComplete)

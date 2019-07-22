@@ -95,7 +95,7 @@ func (s *server) AlivenessCheck(ctx context.Context, req *api.AlivenessCheckRequ
 		resp.Details.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
 		logger.Error(fmt.Sprintf("failed to ping database with error: %v", err))
 		// protoc generated code requires error in the return params, return nil here so that clients
-		// of this service call process this FOTAAS error differently than other system errors (e.g.
+		// of this service can process this FOTAAS error differently than other system errors (e.g.
 		// if this service is not available). Intercept this error and handle it via response code &
 		// message.
 		return resp, nil
@@ -109,15 +109,12 @@ func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationReques
 	var resp = api.RunSimulationResponse{Details: &api.ResponseDetails{
 		Code: api.ResponseCode_OK, Message: fmt.Sprintf("simulation %v successfully started", req.Simulation.Uuid)}}
 
-	//var err error
-
-	// Validate the simulation request
 	if err := validateSimulationRequest(req); err != nil {
 		resp.Details.Code = api.ResponseCode_ERROR
 		resp.Details.Message = fmt.Sprintf("RunSimulationRequest failed validation: %v", err)
 		logger.Error(fmt.Sprintf("RunSimulationRequest failed validation: %v", err))
 		// protoc generated code requires error in the return params, return nil here so that clients
-		// of this service call process this FOTAAS error differently than other system errors (e.g.
+		// of this service can process this FOTAAS error differently than other system errors (e.g.
 		// if this service is not available). Intercept this error and handle it via response code &
 		// message.
 		return &resp, nil
@@ -142,7 +139,7 @@ func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationReques
 
 func (s *server) GetSimulationInfo(ctx context.Context, req *api.GetSimulationInfoRequest) (*api.GetSimulationInfoResponse, error) {
 
-	// TODO: need to validate the request (all search terms present and valid)
+	// TODO: validate the request.
 
 	resp := new(api.GetSimulationInfoResponse)
 	resp.Details = new(api.ResponseDetails)
@@ -155,7 +152,7 @@ func (s *server) GetSimulationInfo(ctx context.Context, req *api.GetSimulationIn
 		resp.Details.Message = fmt.Sprintf("failed to retrieve simulation info with error: %v", err)
 		logger.Error(fmt.Sprintf("failed to retrieve simulation info with error: %v", err))
 		// protoc generated code requires error in the return params, return nil here so that clients
-		// of this service call process this FOTAAS error differently than other system errors (e.g.
+		// of this service can process this FOTAAS error differently than other system errors (e.g.
 		// if this service is not available). Intercept this error and handle it via response code &
 		// message.
 		return resp, nil
@@ -265,8 +262,7 @@ func validateSimulationRequest(req *api.RunSimulationRequest) error {
 		sb.WriteString(" error: SimulationMemberMap must contain at least 1 member")
 		invalidRequest = true
 	} else {
-		// Short-circuit on the first bad member but at least report all the errors
-		// found with that member.
+		// Short-circuit on the first bad member.
 		for _, v := range req.Simulation.SimulationMemberMap {
 
 			if _, err := uuid.Parse(v.Uuid); err != nil {

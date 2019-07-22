@@ -72,8 +72,7 @@ func ExtractAlarmAnalysisData(req *api.GetAlarmAnalysisRequest) (*api.AlarmAnaly
 	}
 	defer conn.Close()
 
-	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
-	// based on the size of SimulationMap.
+	// TODO: determine what the appropriate deadline should be for this service call.
 	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 
@@ -172,8 +171,7 @@ func ExtractConstructorAlarmAnalysisData(req *api.GetConstructorAlarmAnalysisReq
 	}
 	defer conn.Close()
 
-	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
-	// based on the size of SimulationMap.
+	// TODO: determine what the appropriate deadline should be for this service call.
 	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 

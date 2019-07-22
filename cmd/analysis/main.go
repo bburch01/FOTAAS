@@ -64,7 +64,7 @@ func (s *server) AlivenessCheck(ctx context.Context, req *api.AlivenessCheckRequ
 		resp.Details.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
 		logger.Error(fmt.Sprintf("failed to ping database with error: %v", err))
 		// protoc generated code requires error in the return params, return nil here so that clients
-		// of this service call process this FOTAAS error differently than other system errors (e.g.
+		// of this service can process this FOTAAS error differently than other system errors (e.g.
 		// if this service is not available). Intercept this error and handle it via response code &
 		// message.
 		return resp, nil

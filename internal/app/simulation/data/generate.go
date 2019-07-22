@@ -15,26 +15,13 @@ import (
 	pbts "github.com/golang/protobuf/ptypes/timestamp"
 
 	"github.com/bburch01/FOTAAS/api"
-
 	"github.com/bburch01/FOTAAS/internal/app/simulation/models"
 	"github.com/bburch01/FOTAAS/internal/app/telemetry"
-
-	//"github.com/bburch01/FOTAAS/internal/app/simulation"
-	//"github.com/bburch01/FOTAAS/internal/app/simulation"
 	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/google/uuid"
 	"github.com/jmcvetta/randutil"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
-	//logging "github.com/bburch01/FOTAAS/internal/pkg/logging"
-	//"github.com/joho/godotenv"
-	//"go.uber.org/zap"
-	//tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
-	//ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-	//timestamp "github.com/golang/protobuf/ptypes/timestamp"
-	//randutil "github.com/jmcvetta/randutil"
-	//uid "github.com/google/uuid"
-	//uuid "github.com/satori/go.uuid"
 )
 
 var logger *zap.Logger
@@ -98,26 +85,6 @@ const (
 	intermediate
 	final
 )
-
-/*
-type alarmMode int
-
-const (
-	high alarmMode = iota
-	low
-)
-
-func (am alarmMode) String() string {
-	return [...]string{"high", "low"}[am]
-}
-*/
-
-/*
-type alarmParams struct {
-	desc api.TelemetryDatumDescription
-	mode alarmMode
-}
-*/
 
 var alarmTypeChoices = []randutil.Choice{
 	{Weight: 35, Item: telemetry.AlarmParams{Desc: api.TelemetryDatumDescription_TIRE_PRESSURE_FL, Mode: telemetry.Low}},
@@ -399,7 +366,6 @@ func telemetryDataGenerationWorker(sim models.Simulation, simMember models.Simul
 	currentSimTime = simStartTime
 	for i := range simData.Data {
 		if i > 0 {
-			//currentSimTime = currentSimTime.Add(time.Second)
 			currentSimTime = currentSimTime.Add(time.Duration(sampleRateInMillis) * time.Millisecond)
 		}
 		if datumTimestamp, err = ipbts.TimestampProto(currentSimTime); err != nil {

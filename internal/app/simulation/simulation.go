@@ -45,9 +45,6 @@ func init() {
 
 func StartSimulation(sim *models.Simulation) {
 
-	//var startTime time.Time
-	//var elapsedTime time.Duration
-
 	sim.State = "INITIALIZING"
 	if err := sim.Create(); err != nil {
 		// Since no simulation status can be persisted, the only this to do is log
@@ -192,8 +189,7 @@ func StartSimulation(sim *models.Simulation) {
 		return
 	}
 
-	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
-	// based on the datum count.
+	// TODO: determine what the appropriate deadline should be for this service call.
 	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 	defer cancel()
@@ -423,9 +419,6 @@ func StartSimulation(sim *models.Simulation) {
 		return
 	}
 	logger.Debug(fmt.Sprintf("transmissionCount: %v", transmissionCount))
-
-	//elapsedTime = time.Since(startTime)
-	//logger.Debug(fmt.Sprintf("simulation execution time: %v", elapsedTime))
 
 	return
 }

@@ -55,7 +55,6 @@ func init() {
 	}
 }
 
-// checkServiceAlivenessCmd represents the checkServiceAliveness command
 var checkServiceAlivenessCmd = &cobra.Command{
 	Use:   "checkServiceAliveness",
 	Short: "FOTAAS services health check.",
@@ -121,10 +120,7 @@ func checkByName(svcname string) (*api.AlivenessCheckResponse, error) {
 	}
 	defer conn.Close()
 
-	//For now, use context.WithDeadline instead of context.WithTimeout
-	//ctx, cancel := context.WithTimeout(context.Background(), time.Duration(300)*time.Second)
-
-	// TODO: determine what is the appropriate deadline for health check requests
+	// TODO: determine what the appropriate deadline should be for this service call.
 	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 

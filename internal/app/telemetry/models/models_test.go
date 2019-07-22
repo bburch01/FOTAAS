@@ -10,13 +10,6 @@ import (
 
 	"github.com/bburch01/FOTAAS/api"
 	"github.com/joho/godotenv"
-	//"github.com/google/uuid"
-	//"github.com/joho/godotenv"
-	//uid "github.com/google/uuid"
-	//tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
-	//ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-	//timestamp "github.com/golang/protobuf/ptypes/timestamp"
-	//mdl "github.com/bburch01/FOTAAS/internal/app/simulation/models"
 )
 
 func init() {
@@ -40,7 +33,6 @@ func init() {
 
 func TestRetrieveSimulatedTelemetryData(t *testing.T) {
 
-	//var req api.GetSimulatedTelemetryDataRequest
 	var data *api.TelemetryData
 	var err error
 	var startTime, endTime time.Time
@@ -88,29 +80,13 @@ func TestRetrieveSimulatedTelemetryData(t *testing.T) {
 
 	logger.Debug(fmt.Sprintf("telemetry data datum count: %v", len(data.TelemetryDatumMap)))
 
-	/*
-		for _, v := range data.TelemetryDatumMap {
-			logger.Debug(fmt.Sprintf("telemetry data datum: %v", v))
-		}
-	*/
-
 }
 
 func TestRetrieveTelemetryData(t *testing.T) {
 
-	// The following are valid telemetry db queries:
-	// select * from telemetry_datum where constructor='HAAS' and simulation_transmit_sequence_number=1 and timestamp between '2019-07-09' and '2019-07-11';
-	// select * from telemetry_datum where constructor='HAAS' and simulation_transmit_sequence_number=1 and timestamp between '2019-7-10 00:00:00' and '2019-7-10 23:59:59';
-
-	//var req api.GetTelemetryDataRequest
 	var data *api.TelemetryData
 	var err error
 	var startTime, endTime time.Time
-
-	//req.Simulated = true
-	//req.Constructor = api.Constructor_MERCEDES
-	//req.CarNumber = 44
-	//req.SearchBy.DateRange = true
 
 	req := new(api.GetTelemetryDataRequest)
 	req.SearchBy = new(api.GetTelemetryDataRequest_SearchBy)
@@ -156,11 +132,5 @@ func TestRetrieveTelemetryData(t *testing.T) {
 	}
 
 	logger.Debug(fmt.Sprintf("telemetry data datum count: %v", len(data.TelemetryDatumMap)))
-
-	/*
-		for _, v := range data.TelemetryDatumMap {
-			logger.Debug(fmt.Sprintf("telemetry data datum: %v", v))
-		}
-	*/
 
 }

@@ -79,10 +79,7 @@ func CheckServiceAliveness(svcname string) api.TestResult {
 	}
 	defer conn.Close()
 
-	//For now, use context.WithDeadline instead of context.WithTimeout
-	//ctx, cancel := context.WithTimeout(context.Background(), time.Duration(300)*time.Second)
-
-	// TODO: determine what is the appropriate deadline for health check requests
+	// TODO: determine what the appropriate deadline should be for this service call.
 	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 
@@ -138,7 +135,6 @@ func StartSimulation(simID string, simDurationInMinutes int32) api.TestResult {
 	noAlarmFlag = false
 
 	simMemberMap := make(map[string]*api.SimulationMember)
-	//simID = uuid.New().String()
 
 	simMemberID := uuid.New().String()
 	simMember1 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_HAAS,
@@ -230,8 +226,7 @@ func StartSimulation(simID string, simDurationInMinutes int32) api.TestResult {
 	}
 	defer conn.Close()
 
-	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
-	// based on the size of SimulationMap.
+	// TODO: determine what the appropriate deadline should be for this service call.
 	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 
@@ -279,10 +274,7 @@ func PollForSimulationComplete(simID string, simDurationInMinutes int32) api.Tes
 	}
 	defer conn.Close()
 
-	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
-	// based on the size of SimulationMap.
-	// For this function, a good timeout might be ((simDurationInMinutes * 60) * 2) i.e. 2X the simulation runtime
-	//clientDeadline := time.Now().Add(time.Duration(simDurationInMinutes*120) * time.Second)
+	// TODO: determine what the appropriate deadline should be for this service call.
 	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
 
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
@@ -296,7 +288,6 @@ func PollForSimulationComplete(simID string, simDurationInMinutes int32) api.Tes
 	// Currently, the GKE cluster's minimal CPU allotment takes 3x as long to
 	// complete the simulation as the iMac does. Probably going to need to
 	// make this pollCount configurable via an env var.
-	//  for pollCount < (simDurationInMinutes * 120) {
 	for pollCount < (600) {
 
 		resp, err = client.GetSimulationInfo(ctx, &req)
@@ -357,8 +348,7 @@ func RetrieveSimulationData(simID string) api.TestResult {
 	}
 	defer conn.Close()
 
-	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
-	// based on the size of SimulationMap.
+	// TODO: determine what the appropriate deadline should be for this service call.
 	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 
@@ -496,8 +486,7 @@ func SimulationDataAnalysis(simID string) api.TestResult {
 	}
 	defer conn.Close()
 
-	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
-	// based on the size of SimulationMap.
+	// TODO: determine what the appropriate deadline should be for this service call.
 	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 
@@ -516,8 +505,8 @@ func SimulationDataAnalysis(simID string) api.TestResult {
 		return api.TestResult_FAIL
 	}
 
-	// TODO: this is a very minmal alarm analysis test. Add more tests on the contents of the
-	// GetAlarmAnalysisResponse. Also, add tests for the GetConstructorAlarmAnalysis service call.
+	// TODO: add more tests on the contents of the GetAlarmAnalysisResponse. Also,
+	// add tests for the GetConstructorAlarmAnalysis service call.
 	if len(resp.AlarmAnalysisData.AlarmCounts) != 12 {
 		logger.Error(fmt.Sprintf("simulation data analysis test failed with invalid alarm count: %v",
 			len(resp.AlarmAnalysisData.AlarmCounts)))

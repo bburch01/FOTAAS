@@ -23,8 +23,8 @@ import (
 	"time"
 
 	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-	"github.com/google/uuid"
 
+	"github.com/google/uuid"
 	"github.com/bburch01/FOTAAS/api"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
@@ -207,8 +207,7 @@ func getAlarmAnalysis(startDate string, endDate string, simulated bool, simID st
 	}
 	defer conn.Close()
 
-	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
-	// based on the size of SimulationMap.
+	// TODO: determine what the appropriate deadline should be for this service call.
 	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 
@@ -275,8 +274,7 @@ func getConstructorAlarmAnalysis(startDate string, endDate string, simulated boo
 	}
 	defer conn.Close()
 
-	// TODO: determine what is the appropriate deadline for transmit requests, possibly scaling
-	// based on the size of SimulationMap.
+	// TODO: determine what the appropriate deadline should be for this service call.
 	clientDeadline := time.Now().Add(time.Duration(300) * time.Second)
 	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
 

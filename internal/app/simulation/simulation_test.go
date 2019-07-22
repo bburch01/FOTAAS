@@ -1,26 +1,14 @@
 package simulation
 
 import (
-	//"fmt"
 	"fmt"
 	"log"
 	"testing"
 
-	//"time"
-
-	//ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-
 	"github.com/bburch01/FOTAAS/api"
-	//"github.com/bburch01/FOTAAS/internal/app/simulation"
 	"github.com/bburch01/FOTAAS/internal/app/simulation/models"
-
-	//"github.com/bburch01/FOTAAS/internal/app/simulation/data"
-	//"github.com/bburch01/FOTAAS/internal/app/telemetry"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
-	// 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
-	//tel "github.com/bburch01/FOTAAS/internal/app/telemetry"
-	//ts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 )
 
 func init() {
@@ -44,7 +32,6 @@ func init() {
 
 func TestStartSimulation(t *testing.T) {
 
-	//var sampleRateInMillis int32
 	var simID string
 	var simMember models.SimulationMember
 	var sim models.Simulation
