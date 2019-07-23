@@ -1,1 +1,1 @@
-FOTAAS web application.
+FOTAAS web application. Allows the user to get system status, start simulations, etc.
