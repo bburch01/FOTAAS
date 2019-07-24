@@ -386,7 +386,7 @@ spec:
     spec:
       containers:
       #START fotaasweb container
-      - name: fotaas-status
+      - name: fotaas-web
         image: us.gcr.io/kubedemo-233218/fotaas/fotaasweb
         ports:
         - containerPort: 80

@@ -62,4 +62,15 @@ services:
       - 9411
       - 50054
     ports:
-      - "50054:50054"      
+      - "50054:50054"
+
+  fotaasweb:
+    container_name: fotaasweb
+    image: us.gcr.io/kubedemo-233218/fotaas/fotaasweb
+    build:
+      context: /Users/barry/go/src/github.com/bburch01/FOTAAS/web/fotaasweb
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/web/fotaasweb/Dockerfile
+    links:
+      - telemetry
+      - analysis
+      - simulation                  
