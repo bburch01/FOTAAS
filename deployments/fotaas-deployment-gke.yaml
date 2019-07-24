@@ -344,7 +344,7 @@ spec:
       volumes:
        - name: cloudsql-instance-credentials
          secret:
-          secretName: cloudsql-instance-credentials          
+          secretName: cloudsql-instance-credentials                    
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -367,6 +367,30 @@ spec:
       - name: fotaasctl
         image: us.gcr.io/kubedemo-233218/fotaas/fotaasctl
       #END fotaasctl container
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fotaas-web
+  labels:
+    app: fotaas-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fotaas-web
+  template:
+    metadata:
+      labels:
+        app: fotaas-web
+    spec:
+      containers:
+      #START fotaasweb container
+      - name: fotaas-status
+        image: us.gcr.io/kubedemo-233218/fotaas/fotaasweb
+        ports:
+        - containerPort: 3000
+      #END fotaasweb container      
 ---
 apiVersion: v1
 kind: Service
@@ -418,4 +442,17 @@ spec:
   - port: 50054
     protocol: TCP
   selector:
-    app: fotaas-status    
+    app: fotaas-status
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: fotaas-web
+  labels:
+    app: fotaas-web
+spec:
+  ports:
+  - port: 3000
+    protocol: TCP
+  selector:
+    app: fotaas-web           
