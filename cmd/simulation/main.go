@@ -7,26 +7,17 @@ import (
 	"net"
 	"os"
 	"strings"
-	"sync"
 
-	pb "github.com/bburch01/FOTAAS/api"
-	//sim "github.com/bburch01/FOTAAS/fotaas-internal/app/simulation"
-	//tel "github.com/bburch01/FOTAAS/fotaas-internal/app/telemetry"
+	zgrpc "github.com/openzipkin/zipkin-go/middleware/grpc"
+	zhttp "github.com/openzipkin/zipkin-go/reporter/http"
 
-	mdl "github.com/bburch01/FOTAAS/fotaas-internal/app/simulation/models"
-
-	//gen "github.com/bburch01/FOTAAS/fotaas-internal/app/simulation/data"
-
-	sim "github.com/bburch01/FOTAAS/fotaas-internal/app/simulation"
-	gen "github.com/bburch01/FOTAAS/fotaas-internal/app/simulation/data"
-	tel "github.com/bburch01/FOTAAS/fotaas-internal/app/telemetry"
-	logging "github.com/bburch01/FOTAAS/fotaas-internal/pkg/logging"
-
-	uid "github.com/google/uuid"
+	"github.com/bburch01/FOTAAS/api"
+	"github.com/bburch01/FOTAAS/internal/app/simulation"
+	"github.com/bburch01/FOTAAS/internal/app/simulation/models"
+	"github.com/bburch01/FOTAAS/internal/pkg/logging"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/openzipkin/zipkin-go"
-	zipkingrpc "github.com/openzipkin/zipkin-go/middleware/grpc"
-	reporterhttp "github.com/openzipkin/zipkin-go/reporter/http"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -36,197 +27,293 @@ var logger *zap.Logger
 type server struct{}
 
 func init() {
-
 	var lm logging.LogMode
 	var err error
 
-	// Loads values from .env into the system.
-	// NOTE: the .env file must be present in execution directory which is a
-	// deployment issue that will be handled via docker/k8s in production but
-	// the .env file may need to be manually copied into the execution directory
-	// during testing.
 	if err = godotenv.Load(); err != nil {
 		log.Panicf("failed to load environment variables with error: %v", err)
 	}
-
 	if lm, err = logging.LogModeForString(os.Getenv("LOG_MODE")); err != nil {
 		log.Panicf("failed to initialize logging subsystem with error: %v", err)
 	}
-
 	if logger, err = logging.NewLogger(lm, os.Getenv("LOG_DIR"), os.Getenv("LOG_FILE_NAME")); err != nil {
 		log.Panicf("failed to initialize logging subsystem with error: %v", err)
 	}
-
-	if err = mdl.InitDB(); err != nil {
+	if err = models.InitDB(); err != nil {
 		logger.Fatal(fmt.Sprintf("failed to initialize database driver with error: %v", err))
 	}
-
-}
-
-func (s *server) HealthCheck(ctx context.Context, in *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
-
-	// Assume good health until a health check test fails.
-	var hcr = pb.HealthCheckResponse{ServerStatus: &pb.ServerStatus{Code: pb.StatusCode_OK, Message: "simulation service healthy"}}
-
-	if err := mdl.PingDB(); err != nil {
-		hcr.ServerStatus.Code = pb.StatusCode_ERROR
-		hcr.ServerStatus.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
-		return &hcr, nil
-	}
-
-	return &hcr, nil
-}
-
-// Sequential version:
-/*
-func (s *server) RunSimulation(ctx context.Context, in *pb.RunSimulationRequest) (*pb.RunSimulationResponse, error) {
-
-	var resp pb.RunSimulationResponse
-	var simmap = in.SimulationMap
-	var status pb.ServerStatus
-	var rssm = make(map[string]*pb.ServerStatus)
-
-	for i, v := range simmap {
-		err := validate(v)
-		if err != nil {
-			status.Code = pb.StatusCode_ERROR
-			status.Message = fmt.Sprintf("simulation validation failed with error: %v", err)
-		} else {
-
-			// Start the simulation worker threads here, 1 worker per car (i.e. per simmap entry)
-
-			if simData, err := gen.GenerateSimulatedTelemetryData(*v); err != nil {
-				status.Code = pb.StatusCode_ERROR
-				status.Message = fmt.Sprintf("failed to generate simulation data with error: %v", err)
-				logger.Error(fmt.Sprintf("failed to generate simulation data with error: %v", err))
-			} else {
-
-				// simData for this simulation was successfully created, eventually start
-				// a simulation worker thread here
-				if err := sim.StartSimulation(simData, *v); err != nil {
-					status.Code = pb.StatusCode_ERROR
-					status.Message = fmt.Sprintf("FOTAAS simulation service failed to start simulation with error: %v", err)
-					logger.Error(fmt.Sprintf("simulation uuid: %v failed to start with simulation service error: %v", v.Uuid, err))
-				} else {
-					status.Code = pb.StatusCode_OK
-					status.Message = fmt.Sprintf("simulation successfully started by the FOTAAS simulation service")
-					logger.Info(fmt.Sprintf("successfully started simulation uuid: %v", v.Uuid))
-				}
-
-			}
-
-		}
-		rssm[i] = &status
-	}
-
-	resp.ServerStatus = rssm
-	return &resp, nil
-
-}
-*/
-
-func (s *server) RunSimulation(ctx context.Context, in *pb.RunSimulationRequest) (*pb.RunSimulationResponse, error) {
-
-	var resp pb.RunSimulationResponse
-	var simmap = in.SimulationMap
-	var status pb.ServerStatus
-	var statusMap = make(map[string]*pb.ServerStatus)
-	var simData map[pb.TelemetryDatumDescription]tel.SimulatedTelemetryData
-
-	//errChan := make(chan error, len(simmap))
-	resultsChan := make(chan sim.SimResult, len(simmap))
-
-	var wg sync.WaitGroup
-	wg.Add(len(simmap))
-
-	// For each entry in the simmap (i.e. for each car running in the simulation), generate telemetry data
-	// and start a simulation worker.
-	for _, v := range simmap {
-
-		err := validate(v)
-		if err != nil {
-			status.Code = pb.StatusCode_ERROR
-			status.Message = fmt.Sprintf("simulation validation failed with error: %v", err)
-			statusMap[v.Uuid] = &status
-			break
-		}
-
-		if simData, err = gen.GenerateSimulatedTelemetryData(*v); err != nil {
-			status.Code = pb.StatusCode_ERROR
-			status.Message = fmt.Sprintf("failed to generate simulation data with error: %v", err)
-			statusMap[v.Uuid] = &status
-			logger.Error(fmt.Sprintf("failed to generate simulation data with error: %v", err))
-			break
-		}
-
-		go sim.StartSimulation(simData, *v, &wg, resultsChan)
-
-	}
-
-	wg.Wait()
-	close(resultsChan)
-
-	for res := range resultsChan {
-		statusMap[res.UUID] = &res.Status
-	}
-
-	resp.ServerStatus = statusMap
-	return &resp, nil
-
-}
-
-func (s *server) GetSimulationStatus(ctx context.Context, in *pb.GetSimulationStatusRequest) (*pb.GetSimulationStatusResponse, error) {
-
-	var gssr = pb.GetSimulationStatusResponse{}
-
-	return &gssr, nil
-
 }
 
 func main() {
+	var sb strings.Builder
 
-	// setup a span reporter that will support trace information in the zipkin ui
-	reporter := reporterhttp.NewReporter(os.Getenv("ZIPKIN_ENDPOINT_URL"))
+	reporter := zhttp.NewReporter(os.Getenv("ZIPKIN_ENDPOINT_URL"))
 	defer reporter.Close()
 
-	// create the local service endpoint
-	zipkinendpoint := []string{os.Getenv("SIMULATION_SERVICE_HOST"), ":", os.Getenv("SIMULATION_SERVICE_PORT")}
-	zipkinendpointstr := strings.Join(zipkinendpoint, "")
-	endpoint, err := zipkin.NewEndpoint("simulation-service", zipkinendpointstr)
+	sb.WriteString(os.Getenv("SIMULATION_SERVICE_HOST"))
+	sb.WriteString(":")
+	sb.WriteString(os.Getenv("SIMULATION_SERVICE_PORT"))
+	simulationSvcEndpoint := sb.String()
 
+	zipkinLocalEndpoint, err := zipkin.NewEndpoint("simulation-service", simulationSvcEndpoint)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to create local zipkin endpoint with error: %v", err))
+		logger.Fatal(fmt.Sprintf("failed to create zipkin local endpoint with error: %v", err))
 	}
 
-	// initialize the tracer
-	tracer, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(endpoint))
+	tracer, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(zipkinLocalEndpoint))
 	if err != nil {
 		logger.Fatal(fmt.Sprintf("failed to create zipkin tracer with error: %v", err))
 	}
 
-	zipkinendpoint = nil
-	zipkinendpoint = []string{":", os.Getenv("SIMULATION_SERVICE_PORT")}
-	zipkinendpointstr = strings.Join(zipkinendpoint, "")
+	sb.Reset()
+	sb.WriteString(":")
+	sb.WriteString(os.Getenv("SIMULATION_SERVICE_PORT"))
+	simulationSvcPort := sb.String()
 
-	listen, err := net.Listen("tcp", zipkinendpointstr)
-
+	listener, err := net.Listen("tcp", simulationSvcPort)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to listen on tcp port with error: %v", err))
+		logger.Fatal(fmt.Sprintf("tcp failed to listen on simulation service port %v with error: %v", simulationSvcPort, err))
 	}
 
-	svr := grpc.NewServer(grpc.StatsHandler(zipkingrpc.NewServerHandler(tracer)))
+	svr := grpc.NewServer(grpc.StatsHandler(zgrpc.NewServerHandler(tracer)))
 
-	pb.RegisterSimulationServiceServer(svr, &server{})
-	if err := svr.Serve(listen); err != nil {
-		logger.Fatal(fmt.Sprintf("failed to serve on tcp port with error: %v", err))
+	api.RegisterSimulationServiceServer(svr, &server{})
+
+	if err := svr.Serve(listener); err != nil {
+		logger.Fatal(fmt.Sprintf("failed to serve on simulation service port %v with error: %v", simulationSvcPort, err))
 	}
 }
 
-func validate(sim *pb.Simulation) error {
+func (s *server) AlivenessCheck(ctx context.Context, req *api.AlivenessCheckRequest) (*api.AlivenessCheckResponse, error) {
 
-	// Check the uuid for valid format
-	if _, err := uid.Parse(sim.Uuid); err != nil {
+	resp := new(api.AlivenessCheckResponse)
+	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
+		Message: "simulation service alive"}
+
+	if err := models.PingDB(); err != nil {
+		resp.Details.Code = api.ResponseCode_ERROR
+		resp.Details.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
+		logger.Error(fmt.Sprintf("failed to ping database with error: %v", err))
+		// protoc generated code requires error in the return params, return nil here so that clients
+		// of this service can process this FOTAAS error differently than other system errors (e.g.
+		// if this service is not available). Intercept this error and handle it via response code &
+		// message.
+		return resp, nil
+	}
+
+	return resp, nil
+}
+
+func (s *server) RunSimulation(ctx context.Context, req *api.RunSimulationRequest) (*api.RunSimulationResponse, error) {
+
+	var resp = api.RunSimulationResponse{Details: &api.ResponseDetails{
+		Code: api.ResponseCode_OK, Message: fmt.Sprintf("simulation %v successfully started", req.Simulation.Uuid)}}
+
+	if err := validateSimulationRequest(req); err != nil {
+		resp.Details.Code = api.ResponseCode_ERROR
+		resp.Details.Message = fmt.Sprintf("RunSimulationRequest failed validation: %v", err)
+		logger.Error(fmt.Sprintf("RunSimulationRequest failed validation: %v", err))
+		// protoc generated code requires error in the return params, return nil here so that clients
+		// of this service can process this FOTAAS error differently than other system errors (e.g.
+		// if this service is not available). Intercept this error and handle it via response code &
+		// message.
+		return &resp, nil
+	}
+
+	//REFACTOR OPPORTUNITY
+	// This is really ugly but until a clever refactor, convert the proto objects
+	// contained in req into FOTAAS domain model objects in order to gain db CRUD behaviors.
+	// This is necessary because the protobuf code cannot be modified. One of the big
+	// problems with this is that all the useful enums in the protobuf objects get lost
+	// in translation. A possible refactor would be to have the FOTAAS domain model
+	// object wrap the protobuf object and redeclare all of the enums.
+	var sim *models.Simulation = models.NewFromRunSimulationRequest(*req)
+
+	// Start the simulation asynchronously (i.e. don't wait on a response from the goroutine).
+	// Simulation progress/status is persisted to the FOTAAS simulation db.
+	go simulation.StartSimulation(sim)
+
+	return &resp, nil
+
+}
+
+func (s *server) GetSimulationInfo(ctx context.Context, req *api.GetSimulationInfoRequest) (*api.GetSimulationInfoResponse, error) {
+
+	// TODO: validate the request.
+
+	resp := new(api.GetSimulationInfoResponse)
+	resp.Details = new(api.ResponseDetails)
+
+	var info *api.SimulationInfo
+	var err error
+
+	if info, err = models.RetrieveSimulationInfo(*req); err != nil {
+		resp.Details.Code = api.ResponseCode_ERROR
+		resp.Details.Message = fmt.Sprintf("failed to retrieve simulation info with error: %v", err)
+		logger.Error(fmt.Sprintf("failed to retrieve simulation info with error: %v", err))
+		// protoc generated code requires error in the return params, return nil here so that clients
+		// of this service can process this FOTAAS error differently than other system errors (e.g.
+		// if this service is not available). Intercept this error and handle it via response code &
+		// message.
+		return resp, nil
+	}
+
+	if info == nil {
+		resp.Details = &api.ResponseDetails{Code: api.ResponseCode_WARN,
+			Message: fmt.Sprintf("no info found for simulation id: %v", req.SimulationUuid)}
+		return resp, nil
+	}
+
+	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
+		Message: fmt.Sprintf("found info for simulation id: %v", req.SimulationUuid)}
+	resp.SimulationInfo = info
+
+	return resp, nil
+}
+
+func validate(simMember models.SimulationMember) error {
+	if _, err := uuid.Parse(simMember.ID); err != nil {
 		return err
+	}
+	return nil
+}
+
+func validateSimulationRequest(req *api.RunSimulationRequest) error {
+
+	var sb strings.Builder
+	var invalidRequest = false
+
+	sb.WriteString("invalid RunSimulationRequest: ")
+
+	if _, err := uuid.Parse(req.Simulation.Uuid); err != nil {
+		sb.WriteString("error: invalid uuid")
+		invalidRequest = true
+	}
+
+	if req.Simulation.DurationInMinutes <= 0 {
+		sb.WriteString(" error: DurationInMinutes must be > 0")
+		invalidRequest = true
+	}
+
+	switch req.Simulation.SampleRate {
+	case api.SampleRate_SR_1_MS:
+		break
+	case api.SampleRate_SR_10_MS:
+		break
+	case api.SampleRate_SR_100_MS:
+		break
+	case api.SampleRate_SR_1000_MS:
+		break
+	default:
+		sb.WriteString(" error: invalid SampleRate")
+		invalidRequest = true
+	}
+
+	switch req.Simulation.SimulationRateMultiplier {
+	case api.SimulationRateMultiplier_X1:
+		break
+	case api.SimulationRateMultiplier_X2:
+		break
+	case api.SimulationRateMultiplier_X4:
+		break
+	case api.SimulationRateMultiplier_X8:
+		break
+	case api.SimulationRateMultiplier_X10:
+		break
+	case api.SimulationRateMultiplier_X20:
+		break
+	default:
+		sb.WriteString(" error: invalid SimulationRateMultiplier")
+		invalidRequest = true
+	}
+
+	switch req.Simulation.GranPrix {
+	case api.GranPrix_ABU_DHABI, api.GranPrix_AUSTRALIAN, api.GranPrix_AUSTRIAN, api.GranPrix_AZERBAIJAN,
+		api.GranPrix_BAHRAIN, api.GranPrix_BELGIAN, api.GranPrix_BRAZILIAN, api.GranPrix_BRITISH,
+		api.GranPrix_CANADIAN, api.GranPrix_CHINESE, api.GranPrix_FRENCH, api.GranPrix_GERMAN,
+		api.GranPrix_HUNGARIAN, api.GranPrix_ITALIAN, api.GranPrix_JAPANESE, api.GranPrix_MEXICAN,
+		api.GranPrix_MONACO, api.GranPrix_RUSSIAN, api.GranPrix_SINGAPORE, api.GranPrix_SPANISH,
+		api.GranPrix_UNITED_STATES:
+		break
+	default:
+		sb.WriteString(" error: invalid GranPrix")
+		invalidRequest = true
+	}
+
+	switch req.Simulation.Track {
+	case api.Track_AUSTIN, api.Track_BAKU, api.Track_CATALUNYA_BARCELONA, api.Track_HOCKENHEIM,
+		api.Track_HUNGARORING, api.Track_INTERLAGOS_SAU_PAULO, api.Track_MARINA_BAY,
+		api.Track_MELBOURNE, api.Track_MEXICO_CITY, api.Track_MONTE_CARLO, api.Track_MONTREAL,
+		api.Track_MONZA, api.Track_PAUL_RICARD_LE_CASTELLET, api.Track_SAKHIR,
+		api.Track_SHANGHAI, api.Track_SILVERSTONE, api.Track_SOCHI, api.Track_SPA_FRANCORCHAMPS,
+		api.Track_SPIELBERG_RED_BULL_RING, api.Track_SUZUKA, api.Track_YAS_MARINA:
+		break
+	default:
+		sb.WriteString(" error: invalid GranPrix")
+		invalidRequest = true
+	}
+
+	if req.Simulation.SimulationMemberMap == nil {
+		sb.WriteString(" error: SimulationMemberMap must not be nil")
+		invalidRequest = true
+	}
+
+	if len(req.Simulation.SimulationMemberMap) == 0 {
+		sb.WriteString(" error: SimulationMemberMap must contain at least 1 member")
+		invalidRequest = true
+	} else {
+		// Short-circuit on the first bad member.
+		for _, v := range req.Simulation.SimulationMemberMap {
+
+			if _, err := uuid.Parse(v.Uuid); err != nil {
+				sb.WriteString(" simulation member ")
+				sb.WriteString(v.Uuid)
+				sb.WriteString(" error: invalid uuid")
+				invalidRequest = true
+			}
+
+			if _, err := uuid.Parse(v.SimulationUuid); err != nil {
+				sb.WriteString(" simulation member ")
+				sb.WriteString(v.Uuid)
+				sb.WriteString(" error: invalid simulation uuid")
+				invalidRequest = true
+			}
+
+			switch v.Constructor {
+			case api.Constructor_ALPHA_ROMEO, api.Constructor_FERRARI, api.Constructor_HAAS, api.Constructor_MCLAREN,
+				api.Constructor_MERCEDES, api.Constructor_RACING_POINT, api.Constructor_RED_BULL_RACING,
+				api.Constructor_SCUDERIA_TORO_ROSO, api.Constructor_WILLIAMS:
+				break
+			default:
+				sb.WriteString(" simulation member ")
+				sb.WriteString(v.Uuid)
+				sb.WriteString(" error: invalid constructor")
+				invalidRequest = true
+			}
+
+			if v.CarNumber < 0 {
+				sb.WriteString(" simulation member ")
+				sb.WriteString(v.Uuid)
+				sb.WriteString(" error: CarNumber must be > 0")
+				invalidRequest = true
+			}
+
+			if v.ForceAlarm && v.NoAlarms {
+				sb.WriteString(" simulation member ")
+				sb.WriteString(v.Uuid)
+				sb.WriteString(" error: ForceAlarms & NoAlarms must not both be true")
+				invalidRequest = true
+			}
+
+			if invalidRequest {
+				break
+			}
+
+		}
+	}
+
+	if invalidRequest {
+		return fmt.Errorf("%v", sb.String())
 	}
 
 	return nil

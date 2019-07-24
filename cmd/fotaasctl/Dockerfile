@@ -1,75 +1,42 @@
 # fotaasctl/Dockerfile
 
-# We use the official golang image, which contains all the 
-# correct build tools and libraries. Notice `as builder`,
-# this gives this container a name that we can reference later on. 
 FROM golang:1.12
 FROM golang:alpine as builder
 
 RUN apk --no-cache add --update git gcc libc-dev net-tools
 
-# Set our workdir to our current service in the gopath
 WORKDIR /app/go/src/github.com/bburch01/FOTAAS
 COPY . .
-#RUN pwd;ls -al
 
 ENV GOPATH /app/go
 ENV GO111MODULE=auto
 
-WORKDIR /app/go/src/github.com/bburch01/FOTAAS/cmd/fotaasctl
-#RUN pwd;ls -al
-
-
-RUN git config --global url.https://b88e1d7b0c34e88ad51a6641041bd55890d9f1fc@github.com/.insteadOf https://github.com/
 RUN go get github.com/spf13/cobra/
 RUN go get github.com/mitchellh/go-homedir/
 RUN go get github.com/spf13/viper/
 RUN go get github.com/joho/godotenv/
 RUN go get github.com/google/uuid
 RUN go get google.golang.org/grpc/
+RUN go get github.com/briandowns/spinner
 
 RUN go mod download
 
+WORKDIR /app/go/src/github.com/bburch01/FOTAAS/cmd/fotaasctl
+
 RUN GOOS=linux go build -a -o fotaasctl
 
-#RUN pwd;ls -al
-
-# Here we're using a second FROM statement, which is strange,
-# but this tells Docker to start a new build process with this
-# image.
 FROM alpine:latest
 
-# Security related package, good to have.
 RUN apk --no-cache add ca-certificates procps
 
-# Same as before, create a directory for our app.
-#RUN mkdir /app
-#COPY . /app
 WORKDIR /app/go/src/github.com/bburch01/FOTAAS/cmd/fotaasctl
-#RUN pwd;ls -a
 
 RUN addgroup fotaas && adduser -H -D -G fotaas fotaas
 RUN mkdir -p /var/log/fotaas
 RUN touch /var/log/fotaas/fotaas.log
 RUN chown fotaas /var/log/fotaas/fotaas.log
 
-# Here, instead of copying the binary from our host machine,
-# we pull the binary from the container named `builder`, within
-# this build context. This reaches into our previous image, finds
-# the binary we built, and pulls it into this container. Amazing!
-
-#RUN pwd;ls -al
 COPY --from=builder /app/go/src/github.com/bburch01/FOTAAS/cmd/fotaasctl/fotaasctl .
 COPY --from=builder /app/go/src/github.com/bburch01/FOTAAS/cmd/fotaasctl/.env .
 
-#RUN pwd;ls -al
-
-#RUN mkdir -p /src/github.com/bburch01/FOTAAS/
-#COPY --from=builder /app/go/src/github.com/bburch01/FOTAAS/cmd/fotaasctl/.env /src/github.com/bburch01/FOTAAS/
-#RUN ls -la /src/github.com/bburch01/FOTAAS/
-
-# Run the binary as per usual! This time with a binary build in a
-# separate container, with all of the correct dependencies and
-# run time libraries.
-# Using this command to keep the container running
 CMD tail -f /dev/null

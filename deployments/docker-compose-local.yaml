@@ -1,0 +1,66 @@
+# FOTAAS docker-compose-local.yml
+# Used to create the FOTAAS docker images which will be deployed to the workstation
+# (localhost) Kubernetes instance (Mac Docker For The Desktop, MinkKube, etc)
+
+version: '3.1'
+
+services:
+
+  fotaasctl:
+    container_name: fotaasctl
+    image: localhost:5000/fotaas/fotaasctl
+    build:
+      context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/fotaasctl/Dockerfile
+    links:
+      - telemetry
+      - analysis
+      - simulation
+
+  telemetry:
+    container_name: telemetry
+    image: localhost:5000/fotaas/telemetry
+    build:
+      context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/telemetry/Dockerfile    
+    expose:
+      - 9411
+      - 50051
+    ports:
+      - "50051:50051"
+
+  analysis:
+    container_name: analysis
+    image: localhost:5000/fotaas/analysis
+    build:
+      context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/analysis/Dockerfile    
+    expose:
+      - 9411
+      - 50052
+    ports:
+      - "50052:50052"
+
+  simulation:
+    container_name: simulation
+    image: localhost:5000/fotaas/simulation
+    build:
+      context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/simulation/Dockerfile
+    expose:
+      - 9411
+      - 50053
+    ports:
+      - "50053:50053"
+
+  status:
+    container_name: status
+    image: localhost:5000/fotaas/status
+    build:
+      context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/status/Dockerfile
+    expose:
+      - 9411
+      - 50054
+    ports:
+      - "50054:50054"      

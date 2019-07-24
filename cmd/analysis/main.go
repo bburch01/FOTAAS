@@ -8,13 +8,15 @@ import (
 	"os"
 	"strings"
 
-	pb "github.com/bburch01/FOTAAS/api"
-	mdl "github.com/bburch01/FOTAAS/fotaas-internal/app/analysis/models"
-	logging "github.com/bburch01/FOTAAS/fotaas-internal/pkg/logging"
+	zgrpc "github.com/openzipkin/zipkin-go/middleware/grpc"
+	zhttp "github.com/openzipkin/zipkin-go/reporter/http"
+
+	"github.com/bburch01/FOTAAS/api"
+	"github.com/bburch01/FOTAAS/internal/app/analysis"
+	"github.com/bburch01/FOTAAS/internal/app/analysis/models"
+	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/joho/godotenv"
 	"github.com/openzipkin/zipkin-go"
-	zipkingrpc "github.com/openzipkin/zipkin-go/middleware/grpc"
-	reporterhttp "github.com/openzipkin/zipkin-go/reporter/http"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -28,7 +30,7 @@ func init() {
 	var lm logging.LogMode
 	var err error
 
-	// Loads values from .env into the system. 
+	// Loads values from .env into the system.
 	// NOTE: the .env file must be present in execution directory which is a
 	// deployment issue that will be handled via docker/k8s in production but
 	// the .env file may need to be manually copied into the execution directory
@@ -45,61 +47,116 @@ func init() {
 		log.Panicf("failed to initialize logging subsystem with error: %v", err)
 	}
 
-	if err = mdl.InitDB(); err != nil {
+	if err = models.InitDB(); err != nil {
 		logger.Fatal(fmt.Sprintf("failed to initialize database driver with error: %v", err))
 	}
 
 }
 
-func (s *server) HealthCheck(ctx context.Context, in *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
+func (s *server) AlivenessCheck(ctx context.Context, req *api.AlivenessCheckRequest) (*api.AlivenessCheckResponse, error) {
 
-	// Assume good health until a health check test fails.
-	var hcr = pb.HealthCheckResponse{ServerStatus: &pb.ServerStatus{Code: pb.StatusCode_OK, Message: "analysis service healthy"}}
+	resp := new(api.AlivenessCheckResponse)
+	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
+		Message: "analysis service alive"}
 
-	err := mdl.PingDB()
-	if err != nil {
-		hcr.ServerStatus.Code = pb.StatusCode_ERROR
-		hcr.ServerStatus.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
-		return &hcr, nil
+	if err := models.PingDB(); err != nil {
+		resp.Details.Code = api.ResponseCode_ERROR
+		resp.Details.Message = fmt.Sprintf("failed to ping database with error: %v", err.Error())
+		logger.Error(fmt.Sprintf("failed to ping database with error: %v", err))
+		// protoc generated code requires error in the return params, return nil here so that clients
+		// of this service can process this FOTAAS error differently than other system errors (e.g.
+		// if this service is not available). Intercept this error and handle it via response code &
+		// message.
+		return resp, nil
 	}
 
-	return &hcr, nil
+	return resp, nil
+}
 
+func (s *server) GetAlarmAnalysis(ctx context.Context, req *api.GetAlarmAnalysisRequest) (*api.GetAlarmAnalysisResponse, error) {
+
+	resp := new(api.GetAlarmAnalysisResponse)
+
+	data, err := analysis.ExtractAlarmAnalysisData(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if data == nil {
+		resp.Details = &api.ResponseDetails{Code: api.ResponseCode_INFO,
+			Message: "no alarm analysis data found"}
+		return resp, nil
+	}
+
+	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
+		Message: "alarm analysis data found"}
+
+	resp.AlarmAnalysisData = data
+
+	return resp, nil
+}
+
+func (s *server) GetConstructorAlarmAnalysis(ctx context.Context,
+	req *api.GetConstructorAlarmAnalysisRequest) (*api.GetConstructorAlarmAnalysisResponse, error) {
+
+	resp := new(api.GetConstructorAlarmAnalysisResponse)
+
+	data, err := analysis.ExtractConstructorAlarmAnalysisData(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if data == nil {
+		resp.Details = &api.ResponseDetails{Code: api.ResponseCode_INFO,
+			Message: "no constructor alarm analysis data found"}
+		return resp, nil
+	}
+
+	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
+		Message: "constructor alarm analysis data found"}
+
+	resp.ConstructorAlarmAnalysisData = data
+
+	return resp, nil
 }
 
 func main() {
 
-	// setup a span reporter that will support trace information in the zipkin ui
-	reporter := reporterhttp.NewReporter(os.Getenv("ZIPKIN_ENDPOINT_URL"))
+	var sb strings.Builder
+
+	reporter := zhttp.NewReporter(os.Getenv("ZIPKIN_ENDPOINT_URL"))
 	defer reporter.Close()
 
-	// create the local service endpoint
-	zipkinendpoint := []string {os.Getenv("ANALYSIS_SERVICE_HOST"), ":", os.Getenv("ANALYSIS_SERVICE_PORT")}
-	zipkinendpointstr := strings.Join(zipkinendpoint,"")
-	endpoint, err := zipkin.NewEndpoint("analysis-service", zipkinendpointstr)
+	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_HOST"))
+	sb.WriteString(":")
+	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_PORT"))
+	analysisSvcEndpoint := sb.String()
+
+	zipkinLocalEndpoint, err := zipkin.NewEndpoint("analysis-service", analysisSvcEndpoint)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to create local zipkin endpoint with error: %v", err))
+		logger.Fatal(fmt.Sprintf("failed to create zipkin local endpoint with error: %v", err))
 	}
 
-	// initialize the tracer
-	tracer, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(endpoint))
+	tracer, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(zipkinLocalEndpoint))
 	if err != nil {
 		logger.Fatal(fmt.Sprintf("failed to create zipkin tracer with error: %v", err))
 	}
 
-	zipkinendpoint = nil
-	zipkinendpoint = []string {":", os.Getenv("ANALYSIS_SERVICE_PORT")}
-	zipkinendpointstr = strings.Join(zipkinendpoint,"")
+	sb.Reset()
+	sb.WriteString(":")
+	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_PORT"))
+	analysisSvcPort := sb.String()
 
-	listen, err := net.Listen("tcp", zipkinendpointstr)
+	listener, err := net.Listen("tcp", analysisSvcPort)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("failed to listen on tcp port with error: %v", err))
+		logger.Fatal(fmt.Sprintf("tcp failed to listen on analysis service port %v with error: %v", analysisSvcPort, err))
 	}
 
-	svr := grpc.NewServer(grpc.StatsHandler(zipkingrpc.NewServerHandler(tracer)))
+	svr := grpc.NewServer(grpc.StatsHandler(zgrpc.NewServerHandler(tracer)))
 
-	pb.RegisterAnalysisServiceServer(svr, &server{})
-	if err := svr.Serve(listen); err != nil {
-		logger.Fatal(fmt.Sprintf("failed to serve on tcp port with error: %v", err))
+	api.RegisterAnalysisServiceServer(svr, &server{})
+
+	if err := svr.Serve(listener); err != nil {
+		logger.Fatal(fmt.Sprintf("failed to serve on analysis service port %v with error: %v", analysisSvcPort, err))
 	}
 }

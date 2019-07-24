@@ -1,0 +1,421 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fotaas-telemetry
+  labels:
+    app: fotaas-telemetry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fotaas-telemetry
+  template:
+    metadata:
+      labels:
+        app: fotaas-telemetry
+    spec:
+      containers:
+      #START telemetry service container
+      - name: fotaas-telemetry
+        image: us.gcr.io/kubedemo-233218/fotaas/telemetry
+        ports:
+        - containerPort: 50051
+        readinessProbe:
+          tcpSocket:
+            port: 50051
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 50051
+          initialDelaySeconds: 15
+          periodSeconds: 20        
+        env:
+         - name: DB_HOST
+           value: 127.0.0.1:3306
+         - name: DB_USER
+           valueFrom:
+            secretKeyRef:
+             name: cloudsql-db-credentials
+             key: username
+         - name: DB_PASSWORD
+           valueFrom:
+            secretKeyRef:
+             name: cloudsql-db-credentials
+             key: password
+      #END telemetry service container
+      #START zipkin container
+      - name: zipkin
+        image: docker.io/openzipkin/zipkin:latest
+        ports:
+        - containerPort: 9411
+        livenessProbe:
+          exec:
+            command:
+            - nc
+            - -v
+            - -z
+            - 127.0.0.1:9411
+          initialDelaySeconds: 15
+          periodSeconds: 20           
+      #END zipkin container
+      #Start cloudsql-proxy container
+      - name: cloudsql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.11
+        command: ["/cloud_sql_proxy","-instances=kubedemo-233218:us-central1:kubedemodb=tcp:3306","-credential_file=/secrets/cloudsql/credentials.json"]
+        securityContext:
+         runAsUser: 2  # non-root user
+         allowPrivilegeEscalation: false
+        volumeMounts:
+         - name: cloudsql-instance-credentials
+           mountPath: /secrets/cloudsql
+           readOnly: true
+        livenessProbe:
+          exec:
+            command:
+            - nc
+            - -v
+            - -z
+            - 127.0.0.1:3306
+          initialDelaySeconds: 15
+          periodSeconds: 20           
+      #END cloudsql-proxy container
+      volumes:
+       - name: cloudsql-instance-credentials
+         secret:
+          secretName: cloudsql-instance-credentials
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fotaas-analysis
+  labels:
+    app: fotaas-analysis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fotaas-analysis
+  template:
+    metadata:
+      labels:
+        app: fotaas-analysis
+    spec:
+      containers:
+      #START analysis service container
+      - name: fotaas-analysis
+        image: us.gcr.io/kubedemo-233218/fotaas/analysis
+        ports:
+        - containerPort: 50052
+        readinessProbe:
+          tcpSocket:
+            port: 50052
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 50052
+          initialDelaySeconds: 15
+          periodSeconds: 20                
+        env:
+         - name: DB_HOST
+           value: 127.0.0.1:3306
+         - name: DB_USER
+           valueFrom:
+            secretKeyRef:
+             name: cloudsql-db-credentials
+             key: username
+         - name: DB_PASSWORD
+           valueFrom:
+            secretKeyRef:
+             name: cloudsql-db-credentials
+             key: password 
+      #END analysis service container
+      #START zipkin container
+      - name: zipkin
+        image: docker.io/openzipkin/zipkin:latest
+        ports:
+        - containerPort: 9411
+        livenessProbe:
+          exec:
+            command:
+            - nc
+            - -v
+            - -z
+            - 127.0.0.1:9411
+          initialDelaySeconds: 15
+          periodSeconds: 20                
+      #END zipkin container
+      #Start cloudsql-proxy container
+      - name: cloudsql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.11
+        command: ["/cloud_sql_proxy","-instances=kubedemo-233218:us-central1:kubedemodb=tcp:3306","-credential_file=/secrets/cloudsql/credentials.json"]
+        securityContext:
+         runAsUser: 2  # non-root user
+         allowPrivilegeEscalation: false
+        volumeMounts:
+         - name: cloudsql-instance-credentials
+           mountPath: /secrets/cloudsql
+           readOnly: true
+        livenessProbe:
+          exec:
+            command:
+            - nc
+            - -v
+            - -z
+            - 127.0.0.1:3306
+          initialDelaySeconds: 15
+          periodSeconds: 20                               
+      #END cloudsql-proxy container
+      volumes:
+       - name: cloudsql-instance-credentials
+         secret:
+          secretName: cloudsql-instance-credentials
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fotaas-simulation
+  labels:
+    app: fotaas-simulation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fotaas-simulation
+  template:
+    metadata:
+      labels:
+        app: fotaas-simulation
+    spec:
+      containers:
+      #START simulation service container
+      - name: fotaas-simulation
+        image: us.gcr.io/kubedemo-233218/fotaas/simulation
+        ports:
+        - containerPort: 50053
+        readinessProbe:
+          tcpSocket:
+            port: 50053
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 50053
+          initialDelaySeconds: 15
+          periodSeconds: 20                
+        env:
+         - name: DB_HOST
+           value: 127.0.0.1:3306
+         - name: DB_USER
+           valueFrom:
+            secretKeyRef:
+             name: cloudsql-db-credentials
+             key: username
+         - name: DB_PASSWORD
+           valueFrom:
+            secretKeyRef:
+             name: cloudsql-db-credentials
+             key: password
+      #END simulation service container
+      #START zipkin container
+      - name: zipkin
+        image: docker.io/openzipkin/zipkin:latest
+        ports:
+        - containerPort: 9411
+        livenessProbe:
+          exec:
+            command:
+            - nc
+            - -v
+            - -z
+            - 127.0.0.1:9411
+          initialDelaySeconds: 15
+          periodSeconds: 20           
+      #END zipkin container
+      #Start cloudsql-proxy container
+      - name: cloudsql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.11
+        command: ["/cloud_sql_proxy","-instances=kubedemo-233218:us-central1:kubedemodb=tcp:3306","-credential_file=/secrets/cloudsql/credentials.json"]
+        securityContext:
+         runAsUser: 2  # non-root user
+         allowPrivilegeEscalation: false
+        volumeMounts:
+         - name: cloudsql-instance-credentials
+           mountPath: /secrets/cloudsql
+           readOnly: true
+        livenessProbe:
+          exec:
+            command:
+            - nc
+            - -v
+            - -z
+            - 127.0.0.1:3306
+          initialDelaySeconds: 15
+          periodSeconds: 20           
+      #END cloudsql-proxy container
+      volumes:
+       - name: cloudsql-instance-credentials
+         secret:
+          secretName: cloudsql-instance-credentials
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fotaas-status
+  labels:
+    app: fotaas-status
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fotaas-status
+  template:
+    metadata:
+      labels:
+        app: fotaas-status
+    spec:
+      containers:
+      #START status service container
+      - name: fotaas-status
+        image: us.gcr.io/kubedemo-233218/fotaas/status
+        ports:
+        - containerPort: 50054
+        readinessProbe:
+          tcpSocket:
+            port: 50054
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 50054
+          initialDelaySeconds: 15
+          periodSeconds: 20                
+        env:
+         - name: DB_HOST
+           value: 127.0.0.1:3306
+         - name: DB_USER
+           valueFrom:
+            secretKeyRef:
+             name: cloudsql-db-credentials
+             key: username
+         - name: DB_PASSWORD
+           valueFrom:
+            secretKeyRef:
+             name: cloudsql-db-credentials
+             key: password
+      #END status service container
+      #START zipkin container
+      - name: zipkin
+        image: docker.io/openzipkin/zipkin:latest
+        ports:
+        - containerPort: 9411
+        livenessProbe:
+          exec:
+            command:
+            - nc
+            - -v
+            - -z
+            - 127.0.0.1:9411
+          initialDelaySeconds: 15
+          periodSeconds: 20           
+      #END zipkin container
+      #Start cloudsql-proxy container
+      - name: cloudsql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.11
+        command: ["/cloud_sql_proxy","-instances=kubedemo-233218:us-central1:kubedemodb=tcp:3306","-credential_file=/secrets/cloudsql/credentials.json"]
+        securityContext:
+         runAsUser: 2  # non-root user
+         allowPrivilegeEscalation: false
+        volumeMounts:
+         - name: cloudsql-instance-credentials
+           mountPath: /secrets/cloudsql
+           readOnly: true
+        livenessProbe:
+          exec:
+            command:
+            - nc
+            - -v
+            - -z
+            - 127.0.0.1:3306
+          initialDelaySeconds: 15
+          periodSeconds: 20           
+      #END cloudsql-proxy container
+      volumes:
+       - name: cloudsql-instance-credentials
+         secret:
+          secretName: cloudsql-instance-credentials          
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fotaas-fotaasctl
+  labels:
+    app: fotaas-fotaasctl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fotaas-fotaasctl
+  template:
+    metadata:
+      labels:
+        app: fotaas-fotaasctl
+    spec:
+      containers:
+      #START fotaasctl container
+      - name: fotaasctl
+        image: us.gcr.io/kubedemo-233218/fotaas/fotaasctl
+      #END fotaasctl container
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fotaas-telemetry
+  labels:
+    app: fotaas-telemetry
+spec:
+  ports:
+  - port: 50051
+    protocol: TCP
+  selector:
+    app: fotaas-telemetry              
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fotaas-analysis
+  labels:
+    app: fotaas-analysis
+spec:
+  ports:
+  - port: 50052
+    protocol: TCP
+  selector:
+    app: fotaas-analysis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fotaas-simulation
+  labels:
+    app: fotaas-simulation
+spec:
+  ports:
+  - port: 50053
+    protocol: TCP
+  selector:
+    app: fotaas-simulation
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fotaas-status
+  labels:
+    app: fotaas-status
+spec:
+  ports:
+  - port: 50054
+    protocol: TCP
+  selector:
+    app: fotaas-status    
