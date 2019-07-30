@@ -11,5 +11,7 @@
   translation: "Simulation Page (EN)"
 - id: analysis_page
   translation: "Analysis Page (EN)"
+- id: telemetry_page
+  translation: "Telemetry Page (EN)"  
 - id: routes_page
   translation: "Routes Page (EN)"         

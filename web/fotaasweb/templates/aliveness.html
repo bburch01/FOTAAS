@@ -2,7 +2,25 @@
     <div>
       <h1><%= t("aliveness_page") %></h1>
     </div>
-    <%= for (resp) in respMap { %>
-      <h1><%= resp.Details.Message %></h1>
-    <% } %>
+    <div>
+      <tbody>
+
+          <table border = "1">
+              <tr>
+                <th>Service Name</th>
+                <th>Response Code</th>
+                <th>Response Message</th>
+              </tr>
+              <%= for (key, resp) in respMap { %>
+                <tr>
+                  <td><%= key %></td>
+                  <td><%= resp.Details.Code %></td>
+                  <td><%= resp.Details.Message %></td>
+                </tr>
+              <% } %>        
+            </table>
+
+      </tbody>
+
+    </div>
 </section>

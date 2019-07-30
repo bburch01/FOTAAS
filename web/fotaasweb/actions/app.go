@@ -57,6 +57,7 @@ func App() *buffalo.App {
 		app.GET("/status", StatusHandler)
 		app.GET("/simulation", SimulationHandler)
 		app.GET("/analysis", AnalysisHandler)
+		app.GET("/telemetry", TelemetryHandler)
 		app.GET("/routes", RoutesHandler)
 
 		app.ServeFiles("/", assetsBox) // serve files from the public directory
