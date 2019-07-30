@@ -49,7 +49,7 @@ func AlivenessHandler(c buffalo.Context) error {
 
 	resp, err := checkByName("telemetry")
 	if err != nil {
-		return c.Render(200, r.HTML("404space.html"))
+		return c.Render(200, r.HTML("500space.html"))
 		//c.Flash().Add("error", fmt.Sprintf("an internal server error has occurred: %v", err))
 		//return c.Redirect(500, "/")
 	}
@@ -57,7 +57,7 @@ func AlivenessHandler(c buffalo.Context) error {
 
 	resp, err = checkByName("analysis")
 	if err != nil {
-		return c.Render(200, r.HTML("404space.html"))
+		return c.Render(200, r.HTML("500space.html"))
 		//c.Flash().Add("error", fmt.Sprintf("an internal server error has occurred: %v", err))
 		//return c.Redirect(500, "/")
 	}
@@ -65,7 +65,7 @@ func AlivenessHandler(c buffalo.Context) error {
 
 	resp, err = checkByName("simulation")
 	if err != nil {
-		return c.Render(200, r.HTML("404space.html"))
+		return c.Render(200, r.HTML("500space.html"))
 		//c.Flash().Add("error", fmt.Sprintf("an internal server error has occurred: %v", err))
 		//return c.Redirect(500, "/")
 	}
@@ -73,7 +73,7 @@ func AlivenessHandler(c buffalo.Context) error {
 
 	resp, err = checkByName("status")
 	if err != nil {
-		return c.Render(200, r.HTML("404space.html"))
+		return c.Render(200, r.HTML("500space.html"))
 		//c.Flash().Add("error", fmt.Sprintf("an internal server error has occurred: %v", err))
 		//return c.Redirect(500, "/")
 	}

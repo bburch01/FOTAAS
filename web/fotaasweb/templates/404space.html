@@ -117,7 +117,7 @@ li a:hover {
     position: relative;
     transform: translateX(-100px);
     pointer-events: none;
-    animation: rocket-movement 10s linear infinite both running;
+    animation: rocket-movement 100s linear infinite both running;
 }
 
 .object_earth{
@@ -148,7 +148,7 @@ li a:hover {
     animation: move-astronaut 50s infinite linear both alternate;
 }
 
-.image-404{
+.message_text{
     position: relative;
     z-index: 100;
     pointer-events: none;
@@ -212,7 +212,9 @@ li a:hover {
 
         <div class="stars">
             <div class="central-body">
-                <img class="image-404" src="<%= rootPath() %>assets/images/404.svg" width="300px">
+                <h1 class="message_text" style="font-family: Verdana; font-size: 800%; color:ivory">404</h1>
+                <h1 class="message_text" style="font-family: Verdana; font-size: 200%; color:ivory">Looks like you are lost in space...</h1>
+                <h1 class="message_text" style="font-family: Verdana; font-size: 100%; color:ivory">(page not found)</h1>
             </div>
             <div class="objects">
                 <img class="object_rocket" src="<%= rootPath() %>assets/images/rocket.svg" width="40px">
