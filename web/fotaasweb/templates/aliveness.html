@@ -2,4 +2,7 @@
     <div>
       <h1><%= t("aliveness_page") %></h1>
     </div>
+    <%= for (resp) in respMap { %>
+      <h1><%= resp.Details.Message %></h1>
+    <% } %>
 </section>

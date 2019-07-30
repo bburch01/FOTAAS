@@ -61,7 +61,7 @@ func AlivenessHandler(c buffalo.Context) error {
 		//c.Flash().Add("error", fmt.Sprintf("an internal server error has occurred: %v", err))
 		//return c.Redirect(500, "/")
 	}
-	respMap["telemetry"] = *resp
+	respMap["analysis"] = *resp
 
 	resp, err = checkByName("simulation")
 	if err != nil {
@@ -69,7 +69,7 @@ func AlivenessHandler(c buffalo.Context) error {
 		//c.Flash().Add("error", fmt.Sprintf("an internal server error has occurred: %v", err))
 		//return c.Redirect(500, "/")
 	}
-	respMap["telemetry"] = *resp
+	respMap["simulation"] = *resp
 
 	resp, err = checkByName("status")
 	if err != nil {
@@ -77,7 +77,9 @@ func AlivenessHandler(c buffalo.Context) error {
 		//c.Flash().Add("error", fmt.Sprintf("an internal server error has occurred: %v", err))
 		//return c.Redirect(500, "/")
 	}
-	respMap["telemetry"] = *resp
+	respMap["status"] = *resp
+
+	c.Set("respMap", respMap)
 
 	return c.Render(200, r.HTML("aliveness.html"))
 }
