@@ -24,8 +24,8 @@ import (
 
 	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
 
-	"github.com/google/uuid"
 	"github.com/bburch01/FOTAAS/api"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
@@ -164,10 +164,7 @@ var getAlarmAnalysisCmd = &cobra.Command{
 
 func getAlarmAnalysis(startDate string, endDate string, simulated bool, simID string) (*api.GetAlarmAnalysisResponse, error) {
 
-	var analysisSvcEndpoint string
 	var startTime, endTime time.Time
-	var sb strings.Builder
-	var resp *api.GetAlarmAnalysisResponse
 	var err error
 
 	req := new(api.GetAlarmAnalysisRequest)
@@ -193,13 +190,13 @@ func getAlarmAnalysis(startDate string, endDate string, simulated bool, simID st
 	}
 
 	req.Simulated = simulated
-
 	req.SimulationUuid = simID
 
+	var sb strings.Builder
 	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_HOST"))
 	sb.WriteString(":")
 	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_PORT"))
-	analysisSvcEndpoint = sb.String()
+	analysisSvcEndpoint := sb.String()
 
 	conn, err := grpc.Dial(analysisSvcEndpoint, grpc.WithInsecure())
 	if err != nil {
@@ -215,6 +212,7 @@ func getAlarmAnalysis(startDate string, endDate string, simulated bool, simID st
 
 	var client = api.NewAnalysisServiceClient(conn)
 
+	var resp *api.GetAlarmAnalysisResponse
 	resp, err = client.GetAlarmAnalysis(ctx, req)
 	if err != nil {
 		return nil, err
@@ -227,10 +225,7 @@ func getAlarmAnalysis(startDate string, endDate string, simulated bool, simID st
 func getConstructorAlarmAnalysis(startDate string, endDate string, simulated bool, simID string,
 	constructorOrdinal int32, carNumber int32) (*api.GetConstructorAlarmAnalysisResponse, error) {
 
-	var analysisSvcEndpoint string
 	var startTime, endTime time.Time
-	var sb strings.Builder
-	var resp *api.GetConstructorAlarmAnalysisResponse
 	var err error
 
 	req := new(api.GetConstructorAlarmAnalysisRequest)
@@ -256,17 +251,15 @@ func getConstructorAlarmAnalysis(startDate string, endDate string, simulated boo
 	}
 
 	req.Simulated = simulated
-
 	req.SimulationUuid = simID
-
 	req.Constructor = api.Constructor(constructorOrdinal)
-
 	req.CarNumber = carNumber
 
+	var sb strings.Builder
 	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_HOST"))
 	sb.WriteString(":")
 	sb.WriteString(os.Getenv("ANALYSIS_SERVICE_PORT"))
-	analysisSvcEndpoint = sb.String()
+	analysisSvcEndpoint := sb.String()
 
 	conn, err := grpc.Dial(analysisSvcEndpoint, grpc.WithInsecure())
 	if err != nil {
@@ -282,6 +275,7 @@ func getConstructorAlarmAnalysis(startDate string, endDate string, simulated boo
 
 	var client = api.NewAnalysisServiceClient(conn)
 
+	var resp *api.GetConstructorAlarmAnalysisResponse
 	resp, err = client.GetConstructorAlarmAnalysis(ctx, req)
 	if err != nil {
 		return nil, err

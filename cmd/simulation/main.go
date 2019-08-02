@@ -45,11 +45,11 @@ func init() {
 }
 
 func main() {
-	var sb strings.Builder
 
 	reporter := zhttp.NewReporter(os.Getenv("ZIPKIN_ENDPOINT_URL"))
 	defer reporter.Close()
 
+	var sb strings.Builder
 	sb.WriteString(os.Getenv("SIMULATION_SERVICE_HOST"))
 	sb.WriteString(":")
 	sb.WriteString(os.Getenv("SIMULATION_SERVICE_PORT"))

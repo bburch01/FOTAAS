@@ -100,17 +100,14 @@ var getSimulationInfoCmd = &cobra.Command{
 
 func getSimulationInfo(simID string) (*api.GetSimulationInfoResponse, error) {
 
-	var simulationSvcEndpoint string
-	var sb strings.Builder
-	var req api.GetSimulationInfoRequest
-	var resp *api.GetSimulationInfoResponse
-
+	req := new(api.GetSimulationInfoRequest)
 	req.SimulationUuid = simID
 
+	var sb strings.Builder
 	sb.WriteString(os.Getenv("SIMULATION_SERVICE_HOST"))
 	sb.WriteString(":")
 	sb.WriteString(os.Getenv("SIMULATION_SERVICE_PORT"))
-	simulationSvcEndpoint = sb.String()
+	simulationSvcEndpoint := sb.String()
 
 	conn, err := grpc.Dial(simulationSvcEndpoint, grpc.WithInsecure())
 	if err != nil {
@@ -126,7 +123,8 @@ func getSimulationInfo(simID string) (*api.GetSimulationInfoResponse, error) {
 
 	var client = api.NewSimulationServiceClient(conn)
 
-	resp, err = client.GetSimulationInfo(ctx, &req)
+	var resp *api.GetSimulationInfoResponse
+	resp, err = client.GetSimulationInfo(ctx, req)
 	if err != nil {
 		return nil, err
 	}

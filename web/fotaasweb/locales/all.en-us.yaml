@@ -1,0 +1,17 @@
+# For more information on using i18n see: https://github.com/nicksnyder/go-i18n
+- id: fotaas_acronym
+  translation: "FOTASS (Formula One Telemetry Aggregation and Analysis System)"
+- id: about_page
+  translation: "About Page (EN)"
+- id: aliveness_page
+  translation: "Aliveness Page (EN)"
+- id: status_page
+  translation: "Status Page (EN)"
+- id: simulation_page
+  translation: "Simulation Page (EN)"
+- id: analysis_page
+  translation: "Analysis Page (EN)"
+- id: telemetry_page
+  translation: "Telemetry Page (EN)"  
+- id: routes_page
+  translation: "Routes Page (EN)"         

@@ -375,7 +375,7 @@ metadata:
   labels:
     app: fotaas-web
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: fotaas-web
@@ -386,10 +386,10 @@ spec:
     spec:
       containers:
       #START fotaasweb container
-      - name: fotaas-status
+      - name: fotaas-web
         image: us.gcr.io/kubedemo-233218/fotaas/fotaasweb
         ports:
-        - containerPort: 3000
+        - containerPort: 80
       #END fotaasweb container      
 ---
 apiVersion: v1
@@ -452,7 +452,10 @@ metadata:
     app: fotaas-web
 spec:
   ports:
-  - port: 3000
+  - port: 80
+    targetPort: 3000
     protocol: TCP
+    name: http
   selector:
-    app: fotaas-web           
+    app: fotaas-web
+  type: LoadBalancer          
