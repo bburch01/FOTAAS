@@ -19,6 +19,7 @@ require (
 	github.com/gobuffalo/suite v2.8.1+incompatible
 	github.com/golang/protobuf v1.3.1
 	github.com/google/uuid v1.1.1
+	github.com/gorilla/websocket v1.4.0
 	github.com/jackc/pgx v3.3.0+incompatible // indirect
 	github.com/jmcvetta/randutil v0.0.0-20150817122601-2bb1b664bcff
 	github.com/joho/godotenv v1.3.0

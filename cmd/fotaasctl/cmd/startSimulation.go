@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/bburch01/FOTAAS/api"
+	"github.com/bburch01/FOTAAS/internal/app/simulation/models"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
@@ -75,106 +76,79 @@ var startSimulationCmd = &cobra.Command{
 
 func startSimulation(forceAlarm bool) (*api.RunSimulationResponse, error) {
 
-	var simulationSvcEndpoint string
-	var sb strings.Builder
-	var resp *api.RunSimulationResponse
-	var req api.RunSimulationRequest
-	var simID string
-	var forceAlarmFlag, noAlarmFlag bool
-
+	var forceAlarmFlag, noAlarmsFlag bool
 	if forceAlarm {
 		forceAlarmFlag = true
-		noAlarmFlag = false
+		noAlarmsFlag = false
 	} else {
 		forceAlarmFlag = false
-		noAlarmFlag = true
+		noAlarmsFlag = true
 	}
 
 	simMemberMap := make(map[string]*api.SimulationMember)
-	simID = uuid.New().String()
+	simID := uuid.New().String()
 
 	simMemberID := uuid.New().String()
-	simMember1 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_HAAS,
-		CarNumber: 8, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
-	}
-	simMemberMap[simMemberID] = &simMember1
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_HAAS, 8,
+		forceAlarmFlag, noAlarmsFlag)
 
 	simMemberID = uuid.New().String()
-	simMember2 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_HAAS,
-		CarNumber: 20, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
-	}
-	simMemberMap[simMemberID] = &simMember2
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_HAAS, 20,
+		forceAlarmFlag, noAlarmsFlag)
 
 	simMemberID = uuid.New().String()
-	simMember3 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_MERCEDES,
-		CarNumber: 44, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
-	}
-	simMemberMap[simMemberID] = &simMember3
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MERCEDES, 44,
+		forceAlarmFlag, noAlarmsFlag)
 
 	simMemberID = uuid.New().String()
-	simMember4 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_MERCEDES,
-		CarNumber: 77, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
-	}
-	simMemberMap[simMemberID] = &simMember4
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MERCEDES, 77,
+		forceAlarmFlag, noAlarmsFlag)
 
 	simMemberID = uuid.New().String()
-	simMember5 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_FERRARI,
-		CarNumber: 5, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
-	}
-	simMemberMap[simMemberID] = &simMember5
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_FERRARI, 5,
+		forceAlarmFlag, noAlarmsFlag)
 
 	simMemberID = uuid.New().String()
-	simMember6 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_FERRARI,
-		CarNumber: 16, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
-	}
-	simMemberMap[simMemberID] = &simMember6
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_FERRARI, 16,
+		forceAlarmFlag, noAlarmsFlag)
 
 	simMemberID = uuid.New().String()
-	simMember7 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_RED_BULL_RACING,
-		CarNumber: 33, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
-	}
-	simMemberMap[simMemberID] = &simMember7
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_RED_BULL_RACING, 33,
+		forceAlarmFlag, noAlarmsFlag)
 
 	simMemberID = uuid.New().String()
-	simMember8 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_RED_BULL_RACING,
-		CarNumber: 10, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
-	}
-	simMemberMap[simMemberID] = &simMember8
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_RED_BULL_RACING, 10,
+		forceAlarmFlag, noAlarmsFlag)
 
 	simMemberID = uuid.New().String()
-	simMember9 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_MCLAREN,
-		CarNumber: 55, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
-	}
-	simMemberMap[simMemberID] = &simMember9
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MCLAREN, 55,
+		forceAlarmFlag, noAlarmsFlag)
 
 	simMemberID = uuid.New().String()
-	simMember10 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_MCLAREN,
-		CarNumber: 4, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
-	}
-	simMemberMap[simMemberID] = &simMember10
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MCLAREN, 4,
+		forceAlarmFlag, noAlarmsFlag)
 
 	simMemberID = uuid.New().String()
-	simMember11 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_WILLIAMS,
-		CarNumber: 88, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
-	}
-	simMemberMap[simMemberID] = &simMember11
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_WILLIAMS, 88,
+		forceAlarmFlag, noAlarmsFlag)
 
 	simMemberID = uuid.New().String()
-	simMember12 := api.SimulationMember{Uuid: simMemberID, SimulationUuid: simID, Constructor: api.Constructor_WILLIAMS,
-		CarNumber: 63, ForceAlarm: forceAlarmFlag, NoAlarms: noAlarmFlag,
-	}
-	simMemberMap[simMemberID] = &simMember12
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_WILLIAMS, 63,
+		forceAlarmFlag, noAlarmsFlag)
 
 	sim := api.Simulation{Uuid: simID, DurationInMinutes: int32(1), SampleRate: api.SampleRate_SR_1000_MS,
 		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GranPrix: api.GranPrix_UNITED_STATES,
 		Track: api.Track_AUSTIN, SimulationMemberMap: simMemberMap}
 
+	req := new(api.RunSimulationRequest)
 	req.Simulation = &sim
+
+	var sb strings.Builder
 
 	sb.WriteString(os.Getenv("SIMULATION_SERVICE_HOST"))
 	sb.WriteString(":")
 	sb.WriteString(os.Getenv("SIMULATION_SERVICE_PORT"))
-	simulationSvcEndpoint = sb.String()
+	simulationSvcEndpoint := sb.String()
 
 	conn, err := grpc.Dial(simulationSvcEndpoint, grpc.WithInsecure())
 	if err != nil {
@@ -190,10 +164,13 @@ func startSimulation(forceAlarm bool) (*api.RunSimulationResponse, error) {
 
 	var client = api.NewSimulationServiceClient(conn)
 
-	resp, err = client.RunSimulation(ctx, &req)
+	var resp *api.RunSimulationResponse
+
+	resp, err = client.RunSimulation(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
 	return resp, nil
+
 }

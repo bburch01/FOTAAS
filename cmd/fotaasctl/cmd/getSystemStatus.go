@@ -80,16 +80,15 @@ var getSystemStatusCmd = &cobra.Command{
 
 func getSystemStatus() (*api.GetSystemStatusResponse, error) {
 
-	var statusSvcEndpoint string
+	//var resp *api.GetSystemStatusResponse
+
+	//req := api.GetSystemStatusRequest{}
+
 	var sb strings.Builder
-	var resp *api.GetSystemStatusResponse
-
-	req := api.GetSystemStatusRequest{}
-
 	sb.WriteString(os.Getenv("STATUS_SERVICE_HOST"))
 	sb.WriteString(":")
 	sb.WriteString(os.Getenv("STATUS_SERVICE_PORT"))
-	statusSvcEndpoint = sb.String()
+	statusSvcEndpoint := sb.String()
 
 	conn, err := grpc.Dial(statusSvcEndpoint, grpc.WithInsecure())
 	if err != nil {
@@ -103,13 +102,15 @@ func getSystemStatus() (*api.GetSystemStatusResponse, error) {
 
 	defer cancel()
 
-	var client = api.NewSystemStatusServiceClient(conn)
+	client := api.NewSystemStatusServiceClient(conn)
 
 	s := spinner.New(spinner.CharSets[7], 100*time.Millisecond)
 	s.Prefix = "system status test in progress, this could take a few minutes... "
 	s.Start()
 
-	resp, err = client.GetSystemStatus(ctx, &req)
+	req := new(api.GetSystemStatusRequest)
+	var resp *api.GetSystemStatusResponse
+	resp, err = client.GetSystemStatus(ctx, req)
 	if err != nil {
 		return nil, err
 	}

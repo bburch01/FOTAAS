@@ -3,13 +3,7 @@ package models
 import (
 	"fmt"
 	"log"
-	"testing"
-	"time"
 
-	ipbts "github.com/bburch01/FOTAAS/internal/pkg/protobuf/timestamp"
-
-	"github.com/bburch01/FOTAAS/api"
-	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 )
 
@@ -32,6 +26,7 @@ func init() {
 
 }
 
+/*
 func TestSimulationModels(t *testing.T) {
 
 	var sim Simulation
@@ -129,3 +124,4 @@ func TestRetrieveSimulationInfo(t *testing.T) {
 	fmt.Print("\n")
 
 }
+*/

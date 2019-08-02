@@ -56,11 +56,10 @@ func init() {
 
 func main() {
 
-	var sb strings.Builder
-
 	reporter := zhttp.NewReporter(os.Getenv("ZIPKIN_ENDPOINT_URL"))
 	defer reporter.Close()
 
+	var sb strings.Builder
 	sb.WriteString(os.Getenv("STATUS_SERVICE_HOST"))
 	sb.WriteString(":")
 	sb.WriteString(os.Getenv("STATUS_SERVICE_PORT"))
@@ -118,8 +117,7 @@ func (s *server) AlivenessCheck(ctx context.Context, req *api.AlivenessCheckRequ
 
 func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRequest) (*api.GetSystemStatusResponse, error) {
 
-	var statusReport api.SystemStatusReport
-
+	statusReport := new(api.SystemStatusReport)
 	statusReport.TelemetryServiceAliveness = status.CheckServiceAliveness("telemetry")
 	statusReport.AnalysisServiceAliveness = status.CheckServiceAliveness("analysis")
 	statusReport.SimulationServiceAliveness = status.CheckServiceAliveness("simulation")
@@ -134,7 +132,7 @@ func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRe
 
 		resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
 			Code: api.ResponseCode_INFO, Message: "one or more prerequisite system status tests have failed, test sequence aborted"},
-			SystemStatusReport: &statusReport}
+			SystemStatusReport: statusReport}
 
 		return &resp, nil
 
@@ -148,7 +146,7 @@ func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRe
 	if statusReport.StartSimulation == api.TestResult_FAIL {
 		resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
 			Code: api.ResponseCode_INFO, Message: "one or more prerequisite system status tests have failed, test sequence aborted"},
-			SystemStatusReport: &statusReport}
+			SystemStatusReport: statusReport}
 
 		return &resp, nil
 	}
@@ -158,7 +156,7 @@ func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRe
 	if statusReport.PollForSimulationComplete == api.TestResult_FAIL {
 		resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
 			Code: api.ResponseCode_INFO, Message: "one or more prerequisite system status tests have failed, test sequence aborted"},
-			SystemStatusReport: &statusReport}
+			SystemStatusReport: statusReport}
 
 		return &resp, nil
 	}
@@ -168,7 +166,7 @@ func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRe
 	if statusReport.RetrieveSimulationData == api.TestResult_FAIL {
 		resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
 			Code: api.ResponseCode_INFO, Message: "one or more prerequisite system status tests have failed, test sequence aborted"},
-			SystemStatusReport: &statusReport}
+			SystemStatusReport: statusReport}
 
 		return &resp, nil
 	}
@@ -178,14 +176,14 @@ func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRe
 	if statusReport.SimulationDataAnalysis == api.TestResult_FAIL {
 		resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
 			Code: api.ResponseCode_WARN, Message: "test sequence complete, one or more system status tests failed"},
-			SystemStatusReport: &statusReport}
+			SystemStatusReport: statusReport}
 
 		return &resp, nil
 	}
 
 	resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
 		Code: api.ResponseCode_OK, Message: "system status test sequence complete, all system status tests passed"},
-		SystemStatusReport: &statusReport}
+		SystemStatusReport: statusReport}
 
 	return &resp, nil
 }

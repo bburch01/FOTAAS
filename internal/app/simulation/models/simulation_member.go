@@ -60,3 +60,18 @@ func (simMember SimulationMember) UpdateAlarmInfo() error {
 	return nil
 
 }
+
+func NewSimulationMember(id string, simID string, constructor api.Constructor, carNumber int32,
+	forceAlarm bool, noAlarms bool) *api.SimulationMember {
+
+	sm := new(api.SimulationMember)
+	sm.Uuid = id
+	sm.SimulationUuid = simID
+	sm.Constructor = constructor
+	sm.CarNumber = carNumber
+	sm.ForceAlarm = forceAlarm
+	sm.NoAlarms = noAlarms
+
+	return sm
+
+}
