@@ -1,0 +1,15 @@
+# FOTAAS docker-compose-gke.yml
+# Used to create the FOTAAS docker images which will be deployed to Google GKE
+
+version: '3.1'
+
+services:
+
+  fotaasweb:
+    container_name: fotaasweb
+    image: us.gcr.io/kubedemo-233218/fotaas/fotaasweb
+    build:
+      context: /Users/barry/go/src/github.com/bburch01/FOTAAS/web/fotaasweb
+      #context: ../
+      dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/web/fotaasweb/Dockerfile
+             

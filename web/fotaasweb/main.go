@@ -1,38 +1,62 @@
 package main
 
 import (
-	"log"
+	"html/template"
+	"net/http"
 
-	"github.com/bburch01/FOTAAS/web/fotaasweb/actions"
+	"github.com/gorilla/mux"
 )
 
-// main is the starting point for your Buffalo application.
-// You can feel free and add to this `main` method, change
-// what it does, etc...
-// All we ask is that, at some point, you make sure to
-// call `app.Serve()`, unless you don't want to start your
-// application that is. :)
 func main() {
-	app := actions.App()
-	if err := app.Serve(); err != nil {
-		log.Fatal(err)
-	}
+	r := mux.NewRouter()
+
+	r.PathPrefix("/assets/images/").Handler(http.StripPrefix("/assets/images/", http.FileServer(http.Dir("./assets/images/"))))
+	r.PathPrefix("/assets/css/").Handler(http.StripPrefix("/assets/css/", http.FileServer(http.Dir("./assets/css/"))))
+
+	r.HandleFunc("/", aboutHandler).Methods("GET")
+	r.HandleFunc("/about", aboutHandler).Methods("GET")
+	r.HandleFunc("/aliveness", alivenessHandler).Methods("GET")
+	r.HandleFunc("/status", statusHandler).Methods("GET")
+	r.HandleFunc("/simulation", simulationHandler).Methods("GET")
+	r.HandleFunc("/analysis", analysisHandler).Methods("GET")
+	r.HandleFunc("/telemetry", telemetryHandler).Methods("GET")
+
+	r.NotFoundHandler = http.HandlerFunc(notFoundHandler)
+	http.ListenAndServe(":8080", r)
 }
 
-/*
-# Notes about `main.go`
+func aboutHandler(w http.ResponseWriter, r *http.Request) {
+	t := template.Must(template.ParseFiles("./templates/about.html"))
+	t.Execute(w, nil)
+}
 
-## SSL Support
+func alivenessHandler(w http.ResponseWriter, r *http.Request) {
+	t := template.Must(template.ParseFiles("./templates/aliveness.html"))
+	t.Execute(w, nil)
+}
 
-We recommend placing your application behind a proxy, such as
-Apache or Nginx and letting them do the SSL heavy lifting
-for you. https://gobuffalo.io/en/docs/proxy
+func statusHandler(w http.ResponseWriter, r *http.Request) {
+	t := template.Must(template.ParseFiles("./templates/status.html"))
+	t.Execute(w, nil)
+}
 
-## Buffalo Build
+func simulationHandler(w http.ResponseWriter, r *http.Request) {
+	t := template.Must(template.ParseFiles("./templates/simulation.html"))
+	t.Execute(w, nil)
+}
 
-When `buffalo build` is run to compile your binary, this `main`
-function will be at the heart of that binary. It is expected
-that your `main` function will start your application using
-the `app.Serve()` method.
+func analysisHandler(w http.ResponseWriter, r *http.Request) {
+	t := template.Must(template.ParseFiles("./templates/analysis.html"))
+	t.Execute(w, nil)
+}
 
-*/
+func telemetryHandler(w http.ResponseWriter, r *http.Request) {
+	t := template.Must(template.ParseFiles("./templates/telemetry.html"))
+	t.Execute(w, nil)
+}
+
+func notFoundHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./templates/404space.html")
+	//t := template.Must(template.ParseFiles("./templates/404space.html"))
+	//t.Execute(w, nil)
+}
