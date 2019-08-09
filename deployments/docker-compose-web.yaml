@@ -9,5 +9,7 @@ services:
     container_name: fotaasweb
     image: us.gcr.io/kubedemo-233218/fotaas/fotaasweb
     build:
-      context: /Users/barry/go/src/github.com/bburch01/FOTAAS/web/fotaasweb
+      context: ../
       dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/web/fotaasweb/Dockerfile
+    ports:
+      - "8080:8080"
