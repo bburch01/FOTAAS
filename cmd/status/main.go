@@ -99,7 +99,7 @@ func (s *server) AlivenessCheck(ctx context.Context, req *api.AlivenessCheckRequ
 
 	resp := new(api.AlivenessCheckResponse)
 	resp.Details = &api.ResponseDetails{Code: api.ResponseCode_OK,
-		Message: "status service alive"}
+		Message: "status service is alive!"}
 
 	if err := models.PingDB(); err != nil {
 		resp.Details.Code = api.ResponseCode_ERROR

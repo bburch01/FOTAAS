@@ -35,10 +35,29 @@
     <section>
         <div>
           <h1>Aliveness Page</h1>
-        </div>
+        </div>       
         <div>
-            <img src="/assets/images/coming-soon-1.jpeg" height="400px" width="800px">
-        </div>    
+          <tbody>
+              <table border = "1">
+                  <tr>
+                    <th>Service Name</th>
+                    <th>Response Code</th>
+                    <th>Response Message</th>
+                  </tr>
+
+                  {{ range $key, $value := .RespMap }}
+
+                  <tr>
+                    <td>{{ $key }}</td>
+                    <td>{{ $value.Details.Code }}</td>
+                    <td>{{ $value.Details.Message }}</td>
+                  </tr>
+
+                  {{ end }}
+                 
+                </table>
+          </tbody>
+        </div>        
     </section>
   </body>  
 </html>
