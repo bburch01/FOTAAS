@@ -22,9 +22,6 @@ import (
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-
-	//"github.com/bburch01/FOTAAS/api"
-	//"google.golang.org/grpc"
 	"github.com/gorilla/mux"
 )
 
@@ -66,12 +63,25 @@ func main() {
 
 func aboutHandler(w http.ResponseWriter, r *http.Request) {
 
+
+	/*
 	type Person struct {
 		UserName string
 	}
 
 	p := Person{UserName: "Barry"}
 
+	now use p in t.Execute(w, p)
+
+	p is then available in about.html e.g.:
+
+        <div>
+          <h1>About Page</h1>
+          <h1>Hello {{.UserName}}!</h1>
+		</div>
+			
+	*/
+	
 	file, err := templates.Templates.Open("/about.html")
 	if err != nil {
 		log.Panicf("failed to open template with error: %v", err)
@@ -81,7 +91,7 @@ func aboutHandler(w http.ResponseWriter, r *http.Request) {
 	templateBytes, _ := ioutil.ReadAll(file)
 
 	t, _ := template.New("about").Parse(string(templateBytes))
-	t.Execute(w, p)
+	t.Execute(w, nil)
 }
 
 func alivenessHandler(w http.ResponseWriter, r *http.Request) {

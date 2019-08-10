@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"time"
 
 	logging "github.com/bburch01/FOTAAS/internal/pkg/logging"
 
@@ -52,6 +53,10 @@ func InitDB() error {
 	if err != nil {
 		return err
 	}
+
+	db.SetConnMaxLifetime(time.Duration(86400))
+	db.SetMaxIdleConns(8)
+
 	if err = PingDB(); err != nil {
 		return err
 	}
