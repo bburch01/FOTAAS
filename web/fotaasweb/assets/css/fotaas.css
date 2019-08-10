@@ -145,19 +145,19 @@ table.table tbody tr td {
 	color: white;
 }
 
-/* Create two unequal columns that floats next to each other */
+
 .column {
 	float: left;
 	padding: 10px;
-	/*height: 300px;  Should be removed. Only for demonstration */
+	/*height: 150px;*/
   }
   
   .left {
-	width: 25%;
+	width: 10%;	
   }
   
   .right {
-	width: 75%;
+	width: 50%;
   }
   
   /* Clear floats after the columns */
@@ -166,3 +166,4 @@ table.table tbody tr td {
 	display: table;
 	clear: both;
   }
+

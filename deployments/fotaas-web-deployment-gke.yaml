@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fotaas-web
+  labels:
+    app: fotaas-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fotaas-web
+  template:
+    metadata:
+      labels:
+        app: fotaas-web
+    spec:
+      containers:
+      #START fotaasweb container
+      - name: fotaas-web
+        image: us.gcr.io/kubedemo-233218/fotaas/fotaasweb
+        ports:
+        - containerPort: 8080
+      #END fotaasweb container      
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: fotaas-web
+  labels:
+    app: fotaas-web
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: fotaas-web
+  type: LoadBalancer          

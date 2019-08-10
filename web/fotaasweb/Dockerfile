@@ -1,33 +1,41 @@
-# This is a multi-stage Dockerfile and requires >= Docker 17.05
-# https://docs.docker.com/engine/userguide/eng-image/multistage-build/
-FROM gobuffalo/buffalo:v0.14.3 as builder
+# fotaasweb/Dockerfile
 
-RUN mkdir -p $GOPATH/src/github.com/bburch01/FOTAAS/web/fotaasweb
-WORKDIR $GOPATH/src/github.com/bburch01/FOTAAS/web/fotaasweb
+FROM golang:1.12
+FROM golang:alpine as builder
 
-# this will cache the npm install step, unless package.json changes
-ADD package.json .
-RUN npm install --no-progress
-ADD . .
-RUN go get $(go list ./... | grep -v /vendor/)
-RUN buffalo build --static -o /bin/app
+RUN apk --no-cache add --update git gcc libc-dev net-tools
 
-FROM alpine
+WORKDIR /app/go/src/github.com/bburch01/FOTAAS
+COPY . .
+
+ENV GOPATH /app/go
+ENV GO111MODULE=auto
+
+RUN go get github.com/gorilla/mux
+RUN go get github.com/joho/godotenv/
+RUN go get google.golang.org/grpc/
+RUN go get github.com/google/uuid
+RUN go get go.uber.org/zap
+
+RUN go mod download
+
+WORKDIR /app/go/src/github.com/bburch01/FOTAAS/web/fotaasweb
+
+RUN GOOS=linux go build -i -a -o fotaasweb
+
+FROM alpine:latest
+
 RUN apk add --no-cache bash
 RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache curl
 
-WORKDIR /bin/
+RUN addgroup fotaas && adduser -H -D -G fotaas fotaas
+RUN mkdir -p /var/log/fotaas
+RUN touch /var/log/fotaas/fotaas.log
+RUN chown fotaas /var/log/fotaas/fotaas.log
 
-COPY --from=builder /bin/app .
+COPY --from=builder /app/go/src/github.com/bburch01/FOTAAS/web/fotaasweb/fotaasweb .
+COPY --from=builder /app/go/src/github.com/bburch01/FOTAAS/web/fotaasweb/.env .
 
-# Uncomment to run the binary in "production" mode:
-# ENV GO_ENV=production
 
-# Bind the app to 0.0.0.0 so it can be seen from outside the container
-ENV ADDR=0.0.0.0
-
-EXPOSE 3000
-
-# Uncomment to run the migrations before running the binary:
-# CMD /bin/app migrate; /bin/app
-CMD exec /bin/app
+ENTRYPOINT ./fotaasweb --port 8080

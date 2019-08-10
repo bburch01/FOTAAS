@@ -1,23 +1,68 @@
-<section>
-    <div>
-      <h1><%= t("aliveness_page") %></h1>
-    </div>
-    <div>
-      <tbody>
-          <table border = "1">
-              <tr>
-                <th>Service Name</th>
-                <th>Response Code</th>
-                <th>Response Message</th>
-              </tr>
-              <%= for (key, resp) in respMap { %>
-                <tr>
-                  <td><%= key %></td>
-                  <td><%= resp.Details.Code %></td>
-                  <td><%= resp.Details.Message %></td>
-                </tr>
-              <% } %>        
-            </table>
-      </tbody>
-    </div>
-</section>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="/assets/css/fotaas.css">
+    <title>FOTAAS</title>
+  </head>
+  <body> 
+      <header>
+          <div class="container">
+            <div class="row">
+                <div class="column left logo">
+                    <img src="/assets/images/f1-logo-4.jpeg" alt="">
+                </div>
+                <div class="column right titles">
+                    <hgroup>
+                        <h1>FOTAAS</h1>
+                        <h2>Formula One Telemetry Aggregation and Analysis System</h1>
+                    </hgroup>
+                </div>
+              </div>
+          </div>        
+      </header>
+    <nav>
+      <div class="topnav">
+          <a class="active" href="/about">About</a>
+          <a href="/aliveness">Aliveness</a>
+          <a href="/status">Status</a>
+          <a href="/simulation">Simulation</a>
+          <a href="/analysis">Analysis</a>
+          <a href="/telemetry">Telemetry</a>
+      </div> 
+    </nav>
+    <section>
+        <div>
+          <h1>Aliveness Page</h1>
+        </div>       
+        <div>
+          <tbody>
+              <table border = "1">
+                  <tr>
+                    <th>Service Name</th>
+                    <th>Response Code</th>
+                    <th>Response Message</th>
+                  </tr>
+
+                  {{ range $key, $value := .RespMap }}
+
+                  <tr>
+                    <td>{{ $key }}</td>
+                    <td>{{ $value.Details.Code }}</td>
+                    <td>{{ $value.Details.Message }}</td>
+                  </tr>
+
+                  {{ end }}
+                 
+                </table>
+          </tbody>
+        </div>        
+    </section>
+  </body>  
+</html>
+
+
+
+
+

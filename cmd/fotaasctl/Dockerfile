@@ -11,11 +11,13 @@ COPY . .
 ENV GOPATH /app/go
 ENV GO111MODULE=auto
 
+RUN go get github.com/go-sql-driver/mysql/
 RUN go get github.com/spf13/cobra/
 RUN go get github.com/mitchellh/go-homedir/
 RUN go get github.com/spf13/viper/
 RUN go get github.com/joho/godotenv/
 RUN go get github.com/google/uuid
+RUN go get go.uber.org/zap
 RUN go get google.golang.org/grpc/
 RUN go get github.com/briandowns/spinner
 

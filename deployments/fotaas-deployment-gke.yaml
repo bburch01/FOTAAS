@@ -6,6 +6,11 @@ metadata:
     app: fotaas-telemetry
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: fotaas-telemetry
@@ -93,6 +98,11 @@ metadata:
     app: fotaas-analysis
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1  
   selector:
     matchLabels:
       app: fotaas-analysis
@@ -180,6 +190,11 @@ metadata:
     app: fotaas-simulation
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1    
   selector:
     matchLabels:
       app: fotaas-simulation
@@ -267,6 +282,11 @@ metadata:
     app: fotaas-status
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1    
   selector:
     matchLabels:
       app: fotaas-status
@@ -354,6 +374,11 @@ metadata:
     app: fotaas-fotaasctl
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1    
   selector:
     matchLabels:
       app: fotaas-fotaasctl
@@ -375,7 +400,12 @@ metadata:
   labels:
     app: fotaas-web
 spec:
-  replicas: 2
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1      
   selector:
     matchLabels:
       app: fotaas-web
@@ -389,7 +419,7 @@ spec:
       - name: fotaas-web
         image: us.gcr.io/kubedemo-233218/fotaas/fotaasweb
         ports:
-        - containerPort: 80
+        - containerPort: 8080
       #END fotaasweb container      
 ---
 apiVersion: v1
@@ -453,7 +483,7 @@ metadata:
 spec:
   ports:
   - port: 80
-    targetPort: 3000
+    targetPort: 8080
     protocol: TCP
     name: http
   selector:

@@ -1,229 +1,53 @@
-<section class="bg-purple">
-
-    <style>
-
-@import url('https://fonts.googleapis.com/css?family=Dosis:300,400,500');
-
-@-moz-keyframes rocket-movement { 100% {-moz-transform: translate(1200px,-600px);} }
-@-webkit-keyframes rocket-movement {100% {-webkit-transform: translate(1200px,-600px); } }
-@keyframes rocket-movement { 100% {transform: translate(1200px,-600px);} }
-@-moz-keyframes spin-earth { 100% { -moz-transform: rotate(-360deg); transition: transform 20s;  } }
-@-webkit-keyframes spin-earth { 100% { -webkit-transform: rotate(-360deg); transition: transform 20s;  } }
-@keyframes spin-earth{ 100% { -webkit-transform: rotate(-360deg); transform:rotate(-360deg); transition: transform 20s; } }
-
-@-moz-keyframes move-astronaut {
-    100% { -moz-transform: translate(-160px, -160px);}
-}
-@-webkit-keyframes move-astronaut {
-    100% { -webkit-transform: translate(-160px, -160px);}
-}
-@keyframes move-astronaut{
-    100% { -webkit-transform: translate(-160px, -160px); transform:translate(-160px, -160px); }
-}
-@-moz-keyframes rotate-astronaut {
-    100% { -moz-transform: rotate(-720deg);}
-}
-@-webkit-keyframes rotate-astronaut {
-    100% { -webkit-transform: rotate(-720deg);}
-}
-@keyframes rotate-astronaut{
-    100% { -webkit-transform: rotate(-720deg); transform:rotate(-720deg); }
-}
-
-@-moz-keyframes glow-star {
-    40% { -moz-opacity: 0.3;}
-    90%,100% { -moz-opacity: 1; -moz-transform: scale(1.2);}
-}
-@-webkit-keyframes glow-star {
-    40% { -webkit-opacity: 0.3;}
-    90%,100% { -webkit-opacity: 1; -webkit-transform: scale(1.2);}
-}
-@keyframes glow-star{
-    40% { -webkit-opacity: 0.3; opacity: 0.3;  }
-    90%,100% { -webkit-opacity: 1; opacity: 1; -webkit-transform: scale(1.2); transform: scale(1.2); border-radius: 999999px;}
-}
-
-.spin-earth-on-hover{  
-    transition: ease 200s !important;
-    transform: rotate(-3600deg) !important;
-}
-
-.bg-purple{
-    background: url("<%= rootPath() %>assets/images/bg_purple.png");
-    background-repeat: repeat-x;
-    background-size: cover;
-    background-position: left top;
-    height: 100%;
-    overflow: hidden;  
-}
-
-ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-/*    overflow: hidden;*/
-    display: flex; 
-    align-items: center; 
-}
-
-li {
-    float: left;
-    padding: 0px 15px;
-}
-
-li a {
-    display: block;
-    color: white;
-    text-align: center;
-    text-decoration: none;
-    letter-spacing : 2px;
-    font-size: 12px;
-    
-    -webkit-transition: all 0.3s ease-in;
-    -moz-transition: all 0.3s ease-in;
-    -ms-transition: all 0.3s ease-in;
-    -o-transition: all 0.3s ease-in;
-    transition: all 0.3s ease-in;
-}
-
-li a:hover {
-    color: #ffcb39;
-}
-
-.central-body{
-   
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    
-    font-family: 'Dosis', sans-serif;
-    font-weight: 300;
-    -webkit-user-select: none; /* Safari 3.1+ */
-    -moz-user-select: none; /* Firefox 2+ */
-    -ms-user-select: none; /* IE 10+ */
-    user-select: none; /* Standard syntax */
-
-    padding: 17% 5% 10% 5%;
-    text-align: center;
-}
-
-.objects img{
-    z-index: 90;
-    pointer-events: none;
-}
-
-.object_rocket{
-    z-index: 95;
-    position: relative;
-    transform: translateX(-100px);
-    pointer-events: none;
-    animation: rocket-movement 100s linear infinite both running;
-}
-
-.object_earth{
-    position: absolute;
-    top: 40%;
-    right: 72%;
-    z-index: 95;
-    animation: spin-earth 100s infinite linear both;
-}
-
-.object_moon{
-    position: absolute;
-    top: 30%;
-    right: 80%;
-    z-index: 95;
-}
-
-.object_astronaut{
-    animation: rotate-astronaut 200s infinite linear both alternate;
-}
-
-.box_astronaut{
-    z-index: 110 !important;
-    position: absolute;
-    top: 60%;
-    right: 20%;
-    will-change: transform;
-    animation: move-astronaut 50s infinite linear both alternate;
-}
-
-.message_text{
-    position: relative;
-    z-index: 100;
-    pointer-events: none;
-}
-
-.stars{
-    background: url("<%= rootPath() %>assets/images/overlay_stars.svg");
-    background-repeat: repeat;
-    background-size: contain;
-    background-position: left top;
-}
-
-.glowing_stars .star{
-    position: absolute;
-    border-radius: 100%;
-    background-color: #fff;
-    width: 3px;
-    height: 3px;
-    opacity: 0.3;
-    will-change: opacity;
-}
-
-.glowing_stars .star:nth-child(1){
-    top: 80%;
-    left: 25%;
-    animation: glow-star 2s infinite ease-in-out alternate 1s;
-}
-.glowing_stars .star:nth-child(2){
-    top: 20%;
-    left: 40%;
-    animation: glow-star 2s infinite ease-in-out alternate 3s;
-}
-.glowing_stars .star:nth-child(3){
-    top: 25%;
-    left: 25%;
-    animation: glow-star 2s infinite ease-in-out alternate 5s;
-}
-.glowing_stars .star:nth-child(4){
-    top: 75%;
-    left: 80%;
-    animation: glow-star 2s infinite ease-in-out alternate 7s;
-}
-.glowing_stars .star:nth-child(5){
-    top: 90%;
-    left: 50%;
-    animation: glow-star 2s infinite ease-in-out alternate 9s;
-}
-
-@media only screen and (max-width: 600px){
-   
-    .box_astronaut{
-        top: 70%;
-    }
-    
-    .central-body{
-        padding-top: 50%;
-    }
-}
-
-    </style>
-
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="/assets/css/fotaas.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/notFoundPage.css">
+    <title>FOTAAS</title>
+  </head>
+  <body> 
+        <header>
+                <div class="container">
+                  <div class="row">
+                      <div class="column left logo">
+                          <img src="/assets/images/f1-logo-4.jpeg" alt="">
+                      </div>
+                      <div class="column right titles">
+                          <hgroup>
+                              <h1>FOTAAS</h1>
+                              <h2>Formula One Telemetry Aggregation and Analysis System</h1>
+                          </hgroup>
+                      </div>
+                    </div>
+                </div>        
+            </header>
+    <nav>
+      <div class="topnav">
+          <a class="active" href="/about">About</a>
+          <a href="/aliveness">Aliveness</a>
+          <a href="/status">Status</a>
+          <a href="/simulation">Simulation</a>
+          <a href="/analysis">Analysis</a>
+          <a href="/telemetry">Telemetry</a>
+      </div> 
+    </nav>
+    <section class="bg-purple">        
         <div class="stars">
             <div class="central-body">
-                <h1 class="message_text" style="font-family: Verdana; font-size: 800%; color:ivory">404</h1>
-                <h1 class="message_text" style="font-family: Verdana; font-size: 200%; color:ivory">Looks like you are lost in space...</h1>
-                <h1 class="message_text" style="font-family: Verdana; font-size: 100%; color:ivory">(page not found)</h1>
+                <h1 class="message_text" style="font-family: Verdana; font-size: 500%; color:ivory">404</h1>
+                <h1 class="message_text" style="font-family: Verdana; font-size: 100%; color:ivory">Looks like you are lost in space...</h1>
+                <h1 class="message_text" style="font-family: Verdana; font-size: 80%; color:ivory">(page not found)</h1>
             </div>
             <div class="objects">
-                <img class="object_rocket" src="<%= rootPath() %>assets/images/rocket.svg" width="40px">
+                <img class="object_rocket" src="/assets/images/rocket.svg" width="40px">
                 <div class="earth-moon">
-                    <img class="object_earth" src="<%= rootPath() %>assets/images/earth.svg" width="100px">
-                    <img class="object_moon" src="<%= rootPath() %>assets/images/moon.svg" width="80px">
+                    <img class="object_earth" src="/assets/images/earth.svg" width="100px">
+                    <img class="object_moon" src="/assets/images/moon.svg" width="80px">
                 </div>
                 <div class="box_astronaut">
-                    <img class="object_astronaut" src="<%= rootPath() %>assets/images/astronaut.svg" width="140px">
+                    <img class="object_astronaut" src="/assets/images/astronaut.svg" width="140px">
                 </div>
             </div>
             <div class="glowing_stars">
@@ -231,9 +55,9 @@ li a:hover {
                 <div class="star"></div>
                 <div class="star"></div>
                 <div class="star"></div>
-                <div class="star"></div>
-
+                <div class="star"></div>       
             </div>
-        </div>
-
-</section>
+        </div>        
+    </section>
+  </body>  
+</html>

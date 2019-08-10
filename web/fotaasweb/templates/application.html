@@ -3,45 +3,26 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
-    <title>Buffalo - Coke</title>
-    <%= stylesheetTag("application.css") %>
-    <meta name="csrf-param" content="authenticity_token" />
-    <meta name="csrf-token" content="<%= authenticity_token %>" />
-    <link rel="icon" href="<%= assetPath("images/favicon.ico") %>">
+    <link rel="stylesheet" type="text/css" href="/assets/css/fotaas.css">
+    <title>FOTAAS</title>
   </head>
   <body> 
       <header>
           <div class="container">
             <div class="row">
                 <div class="column left logo">
-                    <a href="<%= rootPath() %>"><img src="<%= rootPath() %>assets/images/f1-logo-4.jpeg" alt=""></a>
+                    <img src="/assets/images/f1-logo-4.jpeg" alt="">
                 </div>
                 <div class="column right titles">
                     <hgroup>
-                        <h1><%= t("FOTAAS") %></h1>
-                        <h2><%= t("Formula One Telemetry Aggregation and Analysis System") %></h1>
+                        <h1>FOTAAS</h1>
+                        <h2>Formula One Telemetry Aggregation and Analysis System</h1>
                     </hgroup>
                 </div>
               </div>
           </div>        
-        </header>
-    <nav>
-      <div class="topnav">
-          <a class="active" href="/about">About</a>
-          <a href="/aliveness">Aliveness</a>
-          <a href="/status">Status</a>
-          <a href="/simulation">Simulation</a>
-          <a href="/analysis">Analysis</a>
-          <a href="/telemetry">Telemetry</a>
-      </div> 
+      </header>
+
     </nav>
-    <div class="container">
-      <%= partial("flash.html") %>
-      <%= yield %>
-    </div>
-    <footer>
-        <div class="foot"> <span> Powered by <a href="http://gobuffalo.io/">gobuffalo.io</a></span> </div>
-    </footer> 
-    <%= javascriptTag("application.js") %>
   </body>  
 </html>
