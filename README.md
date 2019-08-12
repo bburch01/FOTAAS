@@ -5,7 +5,8 @@ FOTAAS is a portfolio project designed to demonstrate to prospective employers t
 
 > Golang (including concurrency).
 > Micro-Services architecure.
-> Protobuf & GRPC.
+> Protobuf & gRPC.
+> Golang Web Application Development.
 > Docker.
 > Kubernetes.
 > Cloud Deployments to GKE (Google Kubernetes Environment).
@@ -18,7 +19,7 @@ FOTASS includes both a Cobra based CLI (fotaasctl) and a Buffalo powered web app
 to exercise the system.
 
 While you an easily enough clone the FOTASS repo for code review, deploying it with Kubernetes will not be
-trival (e.g. the Cloud SQL databases need to created and migrated and this process is not currently documented).
+trival (e.g. the Cloud SQL databases would need to created and migrated and this process is not currently documented).
 
 If you want to see the FOTAAS Cloud depolyment in action, you will need to contact me (barry@sbcglobal.net). We
 can schedule a Google Meet/Hangout and I can demonstrate the GKE deployment for you.
