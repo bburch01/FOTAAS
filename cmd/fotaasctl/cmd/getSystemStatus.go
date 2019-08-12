@@ -23,6 +23,7 @@ import (
 
 	"github.com/bburch01/FOTAAS/api"
 	"github.com/briandowns/spinner"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
@@ -80,10 +81,6 @@ var getSystemStatusCmd = &cobra.Command{
 
 func getSystemStatus() (*api.GetSystemStatusResponse, error) {
 
-	//var resp *api.GetSystemStatusResponse
-
-	//req := api.GetSystemStatusRequest{}
-
 	var sb strings.Builder
 	sb.WriteString(os.Getenv("STATUS_SERVICE_HOST"))
 	sb.WriteString(":")
@@ -109,6 +106,7 @@ func getSystemStatus() (*api.GetSystemStatusResponse, error) {
 	s.Start()
 
 	req := new(api.GetSystemStatusRequest)
+	req.ClientUuid = uuid.New().String()
 	var resp *api.GetSystemStatusResponse
 	resp, err = client.GetSystemStatus(ctx, req)
 	if err != nil {

@@ -19,13 +19,23 @@ import (
 	"github.com/bburch01/FOTAAS/internal/pkg/logging"
 	"github.com/bburch01/FOTAAS/web/fotaasweb/generated/assets"
 	"github.com/bburch01/FOTAAS/web/fotaasweb/generated/templates"
+	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"github.com/gorilla/mux"
 )
 
 var logger *zap.Logger
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
+type msg struct {
+	Num int
+}
 
 func init() {
 	var lm logging.LogMode
@@ -56,32 +66,84 @@ func main() {
 	r.HandleFunc("/simulation", simulationHandler).Methods("GET")
 	r.HandleFunc("/analysis", analysisHandler).Methods("GET")
 	r.HandleFunc("/telemetry", telemetryHandler).Methods("GET")
+	r.HandleFunc("/echo", echoHandler).Methods("GET")
+	r.HandleFunc("/echo_ws", echoWebSocketHandler).Methods("GET")
 
 	r.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 	http.ListenAndServe(":8080", r)
 }
 
-func aboutHandler(w http.ResponseWriter, r *http.Request) {
+func echoHandler(w http.ResponseWriter, r *http.Request) {
 
+	file, err := templates.Templates.Open("/echo.html")
+	if err != nil {
+		log.Panicf("failed to open template with error: %v", err)
+	}
+	defer file.Close()
 
-	/*
-	type Person struct {
-		UserName string
+	templateBytes, _ := ioutil.ReadAll(file)
+
+	t, _ := template.New("echo").Parse(string(templateBytes))
+	t.Execute(w, nil)
+
+}
+
+func echoWebSocketHandler(w http.ResponseWriter, r *http.Request) {
+
+	if r.Header.Get("Origin") != "http://"+r.Host {
+		http.Error(w, "Origin not allowed", 403)
+		return
+	}
+	conn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
+	if err != nil {
+		http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
 	}
 
-	p := Person{UserName: "Barry"}
+	go echo(conn)
 
-	now use p in t.Execute(w, p)
+}
 
-	p is then available in about.html e.g.:
+func echo(conn *websocket.Conn) {
+	for {
+		m := msg{}
 
-        <div>
-          <h1>About Page</h1>
-          <h1>Hello {{.UserName}}!</h1>
-		</div>
-			
+		err := conn.ReadJSON(&m)
+		if err != nil {
+			//fmt.Println("Error reading json.", err)
+			if strings.Contains(err.Error(), "close 1001") {
+				fmt.Print("got close on websocket")
+				return
+			}
+		}
+
+		fmt.Printf("Got message: %#v\n", m)
+
+		if err = conn.WriteJSON(m); err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+func aboutHandler(w http.ResponseWriter, r *http.Request) {
+
+	/*
+			type Person struct {
+				UserName string
+			}
+
+			p := Person{UserName: "Barry"}
+
+			now use p in t.Execute(w, p)
+
+			p is then available in about.html e.g.:
+
+		        <div>
+		          <h1>About Page</h1>
+		          <h1>Hello {{.UserName}}!</h1>
+				</div>
+
 	*/
-	
+
 	file, err := templates.Templates.Open("/about.html")
 	if err != nil {
 		log.Panicf("failed to open template with error: %v", err)

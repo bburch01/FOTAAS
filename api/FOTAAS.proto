@@ -328,6 +328,7 @@ message GetConstructorAlarmAnalysisResponse {
 }
 
 message GetSystemStatusRequest {
+    string client_uuid = 1;
 }
 
 message GetSystemStatusResponse {
