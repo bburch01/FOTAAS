@@ -3,12 +3,18 @@
     <img src="./assets/images/fotass-logo.png">
 </p>
 
+**
 <p align="center">
+
     Formula One Telemetry And Analysis System: A Golang micro-services based system simulates the collection, persistence, and analyis of F1 race telemetry.
+
 </p>
+**
 
 <p align="center">
-    **Powered By:**
+
+    Powered By:
+    
 </p>
 
 <p align="middle">
