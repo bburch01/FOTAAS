@@ -1,5 +1,4 @@
 # FOTAAS
-<h1 align="center"> fotaas </h1> <br>
 <p align="center">
     <img src="./assets/images/fotass-logo.png">
 </p>
@@ -63,6 +62,14 @@ trival (e.g. the Cloud SQL databases would need to created and migrated and this
 
 If you want to see the FOTAAS Cloud depolyment in action, you will need to contact me (barry@sbcglobal.net). We
 can schedule a Google Meet/Hangout and I can demonstrate the GKE deployment for you.
+
+## Installation
+
+## Usage
+
+## UnitTest
+
+## Deficiencies
 
 
 
