@@ -1,5 +1,45 @@
 # FOTAAS
-Formula One Telemetry Aggregation/Analysis Service
+<h1 align="center"> fotaas </h1> <br>
+<p align="center">
+    <img src="./assets/images/fotass-logo.png">
+</p>
+
+<p align="center">
+    Formula One Telemetry And Analysis System: A micro-services based system written in Golang that simulates
+    the collection, persistence, and analyis of F1 race telemetry.
+</p>
+
+<p align="center">
+    <img src="./assets/images/go-logo.png" height="100" width="100">
+</p>
+
+## Table of Contents
+
+- [Author](#author)
+- [About](#about)
+- [Installation](#installation)
+- [Usage](#usage)
+- [UnitTest](#unittest)
+- [Deficiencies](#deficiencies)
+
+## Author
+Barry T. Burch<br>
+
+Barry is a digital native with over 20 years of experience in software (and hardware) design and engineering at:
+
+<p align="middle">
+    <img src="./assets/images/ti-logo-2.png" align="center" hspace="10">
+    <img src="./assets/images/nec-logo-2.png" align="center" hspace="10">
+    <img src="./assets/images/att-logo-2.jpeg" align="center" hspace="20">
+    <img src="./assets/images/avaya-logo-2.png" width="100" align="center" hspace="10">
+    <img src="./assets/images/sxm-logo.jpeg" width="100" align="center" hspace="10">
+    <img src="./assets/images/gf-logo.jpeg" width="100" align="center" hspace="10">
+</p>
+
+barry@sbcglobal.net<br>
+www.linkedin.com/in/barry-burch-digital-native<br>
+
+## About
 
 FOTAAS is a portfolio project designed to demonstrate to prospective employers the following proficiencies:
 
@@ -15,7 +55,7 @@ The FOTAAS system consists of 4 micro-services: telemetry, simulation, analysis,
 are completely de-coupled from each other via GRPC APIs and each service encapsulates a private datastore
 that can only be accessed via API calls to the service (i.e. this is a true micro-services based architecture).
 
-FOTASS includes both a Cobra based CLI (fotaasctl) and a Buffalo powered web application. Both can be used
+FOTASS includes both a Cobra based CLI (fotaasctl) and a console web application. Both can be used
 to exercise the system.
 
 While you an easily enough clone the FOTASS repo for code review, deploying it with Kubernetes will not be
@@ -24,12 +64,6 @@ trival (e.g. the Cloud SQL databases would need to created and migrated and this
 If you want to see the FOTAAS Cloud depolyment in action, you will need to contact me (barry@sbcglobal.net). We
 can schedule a Google Meet/Hangout and I can demonstrate the GKE deployment for you.
 
-I'm making FOTAAS public (8/2/19) but there is still clean-up work to do:
-
-> Document exported functions.
-> Fix broken unit tests.
-> Refactor model unit tests to use sqlmock to allow unit tests to run in a CI/CD pipeline.
-> Add additional functionality to the FOTAAS web application.
 
 
 
