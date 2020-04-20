@@ -3,6 +3,9 @@
     <img src="./assets/images/fotass-logo.png">
 </p>
 
+    **Formula One Telemetry And Analysis System: A Golang micro-services based system that
+     simulates the collection and analyis of F1 race telemetry.**
+
 
 <p align="center">
 
@@ -31,8 +34,6 @@
 - [About](#about)
 - [Installation](#installation)
 - [Usage](#usage)
-- [UnitTest](#unittest)
-- [Deficiencies](#deficiencies)
 
 ## Author
 Barry T. Burch<br>
@@ -83,7 +84,3 @@ trival (e.g. the Cloud SQL databases would need to created and migrated and this
 
 If you want to see the FOTAAS Cloud depolyment in action, you will need to contact me (barry@sbcglobal.net). We
 can schedule a Google Meet/Hangout and I can demonstrate the GCP GKE deployment, FOTAAS CLI, & FOTASS Web in action.
-
-## Unit Test
-
-## Deficiencies
