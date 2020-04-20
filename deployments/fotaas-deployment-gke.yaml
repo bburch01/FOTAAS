@@ -22,7 +22,7 @@ spec:
       containers:
       #START telemetry service container
       - name: fotaas-telemetry
-        image: us.gcr.io/kubedemo-233218/fotaas/telemetry
+        image: us.gcr.io/acoustic-skein-273916/fotaas/telemetry
         ports:
         - containerPort: 50051
         readinessProbe:
@@ -41,12 +41,12 @@ spec:
          - name: DB_USER
            valueFrom:
             secretKeyRef:
-             name: cloudsql-db-credentials
+             name: fotaas-gcp-cloudsql-db-credentials
              key: username
          - name: DB_PASSWORD
            valueFrom:
             secretKeyRef:
-             name: cloudsql-db-credentials
+             name: fotaas-gcp-cloudsql-db-credentials
              key: password
       #END telemetry service container
       #START zipkin container
@@ -67,12 +67,12 @@ spec:
       #Start cloudsql-proxy container
       - name: cloudsql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.11
-        command: ["/cloud_sql_proxy","-instances=kubedemo-233218:us-central1:kubedemodb=tcp:3306","-credential_file=/secrets/cloudsql/credentials.json"]
+        command: ["/cloud_sql_proxy","-instances=acoustic-skein-273916:us-central1:fotaasdb=tcp:3306","-credential_file=/secrets/cloudsql/credentials.json"]
         securityContext:
          runAsUser: 2  # non-root user
          allowPrivilegeEscalation: false
         volumeMounts:
-         - name: cloudsql-instance-credentials
+         - name: fotaas-gcp-service-acct-credentials
            mountPath: /secrets/cloudsql
            readOnly: true
         livenessProbe:
@@ -86,9 +86,9 @@ spec:
           periodSeconds: 20           
       #END cloudsql-proxy container
       volumes:
-       - name: cloudsql-instance-credentials
+       - name: fotaas-gcp-service-acct-credentials
          secret:
-          secretName: cloudsql-instance-credentials
+          secretName: fotaas-gcp-service-acct-credentials
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -114,7 +114,7 @@ spec:
       containers:
       #START analysis service container
       - name: fotaas-analysis
-        image: us.gcr.io/kubedemo-233218/fotaas/analysis
+        image: us.gcr.io/acoustic-skein-273916/fotaas/analysis
         ports:
         - containerPort: 50052
         readinessProbe:
@@ -133,12 +133,12 @@ spec:
          - name: DB_USER
            valueFrom:
             secretKeyRef:
-             name: cloudsql-db-credentials
+             name: fotaas-gcp-cloudsql-db-credentials
              key: username
          - name: DB_PASSWORD
            valueFrom:
             secretKeyRef:
-             name: cloudsql-db-credentials
+             name: fotaas-gcp-cloudsql-db-credentials
              key: password 
       #END analysis service container
       #START zipkin container
@@ -159,12 +159,12 @@ spec:
       #Start cloudsql-proxy container
       - name: cloudsql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.11
-        command: ["/cloud_sql_proxy","-instances=kubedemo-233218:us-central1:kubedemodb=tcp:3306","-credential_file=/secrets/cloudsql/credentials.json"]
+        command: ["/cloud_sql_proxy","-instances=acoustic-skein-273916:us-central1:fotaasdb=tcp:3306","-credential_file=/secrets/cloudsql/credentials.json"]
         securityContext:
          runAsUser: 2  # non-root user
          allowPrivilegeEscalation: false
         volumeMounts:
-         - name: cloudsql-instance-credentials
+         - name: fotaas-gcp-service-acct-credentials
            mountPath: /secrets/cloudsql
            readOnly: true
         livenessProbe:
@@ -178,9 +178,9 @@ spec:
           periodSeconds: 20                               
       #END cloudsql-proxy container
       volumes:
-       - name: cloudsql-instance-credentials
+       - name: fotaas-gcp-service-acct-credentials
          secret:
-          secretName: cloudsql-instance-credentials
+          secretName: fotaas-gcp-service-acct-credentials
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -206,7 +206,7 @@ spec:
       containers:
       #START simulation service container
       - name: fotaas-simulation
-        image: us.gcr.io/kubedemo-233218/fotaas/simulation
+        image: us.gcr.io/acoustic-skein-273916/fotaas/simulation
         ports:
         - containerPort: 50053
         readinessProbe:
@@ -225,12 +225,12 @@ spec:
          - name: DB_USER
            valueFrom:
             secretKeyRef:
-             name: cloudsql-db-credentials
+             name: fotaas-gcp-cloudsql-db-credentials
              key: username
          - name: DB_PASSWORD
            valueFrom:
             secretKeyRef:
-             name: cloudsql-db-credentials
+             name: fotaas-gcp-cloudsql-db-credentials
              key: password
       #END simulation service container
       #START zipkin container
@@ -251,12 +251,12 @@ spec:
       #Start cloudsql-proxy container
       - name: cloudsql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.11
-        command: ["/cloud_sql_proxy","-instances=kubedemo-233218:us-central1:kubedemodb=tcp:3306","-credential_file=/secrets/cloudsql/credentials.json"]
+        command: ["/cloud_sql_proxy","-instances=acoustic-skein-273916:us-central1:fotaasdb=tcp:3306","-credential_file=/secrets/cloudsql/credentials.json"]
         securityContext:
          runAsUser: 2  # non-root user
          allowPrivilegeEscalation: false
         volumeMounts:
-         - name: cloudsql-instance-credentials
+         - name: fotaas-gcp-service-acct-credentials
            mountPath: /secrets/cloudsql
            readOnly: true
         livenessProbe:
@@ -270,9 +270,9 @@ spec:
           periodSeconds: 20           
       #END cloudsql-proxy container
       volumes:
-       - name: cloudsql-instance-credentials
+       - name: fotaas-gcp-service-acct-credentials
          secret:
-          secretName: cloudsql-instance-credentials
+          secretName: fotaas-gcp-service-acct-credentials
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -298,7 +298,7 @@ spec:
       containers:
       #START status service container
       - name: fotaas-status
-        image: us.gcr.io/kubedemo-233218/fotaas/status
+        image: us.gcr.io/acoustic-skein-273916/fotaas/status
         ports:
         - containerPort: 50054
         readinessProbe:
@@ -317,12 +317,12 @@ spec:
          - name: DB_USER
            valueFrom:
             secretKeyRef:
-             name: cloudsql-db-credentials
+             name: fotaas-gcp-cloudsql-db-credentials
              key: username
          - name: DB_PASSWORD
            valueFrom:
             secretKeyRef:
-             name: cloudsql-db-credentials
+             name: fotaas-gcp-cloudsql-db-credentials
              key: password
       #END status service container
       #START zipkin container
@@ -343,12 +343,12 @@ spec:
       #Start cloudsql-proxy container
       - name: cloudsql-proxy
         image: gcr.io/cloudsql-docker/gce-proxy:1.11
-        command: ["/cloud_sql_proxy","-instances=kubedemo-233218:us-central1:kubedemodb=tcp:3306","-credential_file=/secrets/cloudsql/credentials.json"]
+        command: ["/cloud_sql_proxy","-instances=acoustic-skein-273916:us-central1:fotaasdb=tcp:3306","-credential_file=/secrets/cloudsql/credentials.json"]
         securityContext:
          runAsUser: 2  # non-root user
          allowPrivilegeEscalation: false
         volumeMounts:
-         - name: cloudsql-instance-credentials
+         - name: fotaas-gcp-service-acct-credentials
            mountPath: /secrets/cloudsql
            readOnly: true
         livenessProbe:
@@ -362,9 +362,9 @@ spec:
           periodSeconds: 20           
       #END cloudsql-proxy container
       volumes:
-       - name: cloudsql-instance-credentials
+       - name: fotaas-gcp-service-acct-credentials
          secret:
-          secretName: cloudsql-instance-credentials                    
+          secretName: fotaas-gcp-service-acct-credentials                    
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -390,7 +390,7 @@ spec:
       containers:
       #START fotaasctl container
       - name: fotaasctl
-        image: us.gcr.io/kubedemo-233218/fotaas/fotaasctl
+        image: us.gcr.io/acoustic-skein-273916/fotaas/fotaasctl
       #END fotaasctl container
 ---
 apiVersion: apps/v1
@@ -417,7 +417,10 @@ spec:
       containers:
       #START fotaasweb container
       - name: fotaas-web
-        image: us.gcr.io/kubedemo-233218/fotaas/fotaasweb
+        image: us.gcr.io/acoustic-skein-273916/fotaas/fotaasweb
+        #resources:
+          #requests:
+            #cpu: 1
         ports:
         - containerPort: 8080
       #END fotaasweb container      

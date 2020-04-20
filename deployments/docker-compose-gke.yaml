@@ -7,7 +7,7 @@ services:
 
   fotaasctl:
     container_name: fotaasctl
-    image: us.gcr.io/kubedemo-233218/fotaas/fotaasctl
+    image: us.gcr.io/acoustic-skein-273916/fotaas/fotaasctl
     build:
       context: ../
       dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/fotaasctl/Dockerfile
@@ -18,7 +18,7 @@ services:
 
   telemetry:
     container_name: telemetry
-    image: us.gcr.io/kubedemo-233218/fotaas/telemetry
+    image: us.gcr.io/acoustic-skein-273916/fotaas/telemetry
     build:
       context: ../
       dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/telemetry/Dockerfile    
@@ -30,7 +30,7 @@ services:
 
   analysis:
     container_name: analysis
-    image: us.gcr.io/kubedemo-233218/fotaas/analysis
+    image: us.gcr.io/acoustic-skein-273916/fotaas/analysis
     build:
       context: ../
       dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/analysis/Dockerfile    
@@ -42,7 +42,7 @@ services:
 
   simulation:
     container_name: simulation
-    image: us.gcr.io/kubedemo-233218/fotaas/simulation
+    image: us.gcr.io/acoustic-skein-273916/fotaas/simulation
     build:
       context: ../
       dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/simulation/Dockerfile
@@ -54,7 +54,7 @@ services:
 
   status:
     container_name: status
-    image: us.gcr.io/kubedemo-233218/fotaas/status
+    image: us.gcr.io/acoustic-skein-273916/fotaas/status
     build:
       context: ../
       dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/cmd/status/Dockerfile
@@ -66,7 +66,7 @@ services:
 
   fotaasweb:
     container_name: fotaasweb
-    image: us.gcr.io/kubedemo-233218/fotaas/fotaasweb
+    image: us.gcr.io/acoustic-skein-273916/fotaas/fotaasweb
     build:
       context: ../
       dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/web/fotaasweb/Dockerfile

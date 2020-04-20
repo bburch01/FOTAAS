@@ -49,7 +49,56 @@
             <form>
                 <label for="numberfield">Number</label>
                 <input type="text" id="numberfield" placeholder="12"/><br />
-                <button type="button" id="sendBtn">Send</button>
+                <button type="button" id="sendBtn">Start Test Sequence</button>
+                <label id="fromServer">Update this label with server response.</label>
+
+
+                <tbody>
+                    <table border = "1">
+                        <tr>
+                          <th>Test Name</th>
+                          <th>Test State</th>
+                          <th>Test Result</th>
+                        </tr>      
+                        <tr>
+                            <td>Telemetry Service Alivenessness</td>
+                            <td><label id=telemetryServiceAlivenessTestState>Not Run</label></td>
+                            <td><label id=telemetryServiceAlivenessTestResult>Not Run</label></td>
+                        </tr>
+                        <tr>
+                            <td>Analysis Service Alivenessness</td>
+                            <td><label id=analysisServiceAlivenessTestState>Not Run</label></td>
+                            <td><label id=analysisServiceAlivenessTestResult>Not Run</label></td>
+                        </tr> 
+                          <tr>
+                            <td>Simulation Service Alivenessness</td>
+                            <td><label id=simulationServiceAlivenessTestState>Not Run</label></td>
+                            <td><label id=simulationServiceAlivenessTestResult>Not Run</label></td>
+                        </tr> 
+                        <tr>
+                            <td>Start Simulation</td>
+                            <td><label id=startSimulationTestState>Not Run</label></td>
+                            <td><label id=startSimulationTestResult>Not Run</label></td>
+                        </tr>                         
+                        <tr>
+                            <td>Poll For Simulation Complete</td>
+                            <td><label id=pollForSimulationCompleteTestState>Not Run</label></td>
+                            <td><label id=pollForSimulationCompleteTestResult>Not Run</label></td>
+                        </tr>                         
+                        <tr>
+                            <td>Retrieve Simulation Data</td>
+                            <td><label id=retrieveSimulationDataTestState>Not Run</label></td>
+                            <td><label id=retrieveSimulationDataTestResult>Not Run</label></td>
+                        </tr> 
+                        <tr>
+                            <td>Simulation Data Analysis</td>
+                            <td><label id=simulationDataAnalysisTestState>Not Run</label></td>
+                            <td><label id=simulationDataAnalysisTestResult>Not Run</label></td>
+                        </tr> 
+
+                      </table>
+                </tbody>
+
             </form>
         </div>
         <div id="container"></div>
@@ -71,7 +120,32 @@
                         container.append("<p>Socket is open</p>");
                     };
                     socket.onmessage = function (e) {
-                        container.append("<p> Data from server:" + e.data + "</p>");
+
+                        var obj = JSON.parse(e.data)
+
+                        container.append("<p> Data from server:" + obj.statusTests[0].name + "</p>");
+                        container.append("<p> Data from server:" + obj.statusTests[0].state + "</p>");
+                        container.append("<p> Data from server:" + obj.statusTests[0].result + "</p>");
+
+
+                        container.append("<p> Data from server:" + obj.statusTests[1].name + "</p>");
+                        container.append("<p> Data from server:" + obj.statusTests[1].state + "</p>");
+                        container.append("<p> Data from server:" + obj.statusTests[1].result + "</p>");
+
+                        container.append("<p> Data from server:" + obj.statusTests[2].name + "</p>");
+                        container.append("<p> Data from server:" + obj.statusTests[2].state + "</p>");
+                        container.append("<p> Data from server:" + obj.statusTests[2].result + "</p>");
+
+                        document.getElementById('telemetryServiceAlivenessTestState').innerText = obj.statusTests[0].state
+                        document.getElementById('telemetryServiceAlivenessTestResult').innerText = obj.statusTests[0].result
+
+                        document.getElementById('analysisServiceAlivenessTestState').innerText = obj.statusTests[1].state
+                        document.getElementById('analysisServiceAlivenessTestResult').innerText = obj.statusTests[1].result 
+
+                        document.getElementById('simulationServiceAlivenessTestState').innerText = obj.statusTests[2].state
+                        document.getElementById('simulationServiceAlivenessTestResult').innerText = obj.statusTests[2].result                                               
+
+
                     }
                     socket.onclose = function () {
                         container.append("<p>Socket closed</p>");
