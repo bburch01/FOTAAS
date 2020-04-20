@@ -12,7 +12,7 @@
 </p>
 
 <p align="middle">
-    <img src="./assets/images/go-logo.png" align="center" hspace="10">
+    <img src="./assets/images/go-logo.png" align="center" width="100" hspace="10">
     <img src="./assets/images/docker-logo.png" align="center" hspace="10">
     <img src="./assets/images/kubernetes-logo.png" align="center" hspace="20">
     <img src="./assets/images/gcp-logo.png" width="100" align="center" hspace="10">
