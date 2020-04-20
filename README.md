@@ -42,16 +42,16 @@ www.linkedin.com/in/barry-burch-digital-native<br>
 
 FOTAAS is a Golang portfolio project designed to demonstrate the following proficiencies:
 
-> Golang
-> Golang Concurrency/Parallelism
-> True Micro-Services Architecure
-> Protobuf & gRPC
-> Golang Web Application Development
-> Docker
-> Kubernetes
-> Cloud Deployment To GCP (Google Cloud Platform) GKE (Google Kubernetes Environment)
-> GIT
-> MOD
+* Golang
+* Golang Concurrency/Parallelism
+* True Micro-Services Architecure
+* Protobuf & gRPC
+* Golang Web Application Development
+* Docker
+* Kubernetes
+* Cloud Deployment To GCP (Google Cloud Platform) GKE (Google Kubernetes Environment)
+* GIT
+* MOD
 
 The FOTAAS system consists of 4 micro-services: telemetry, simulation, analysis, and status. The 4 services
 are completely de-coupled from each other via GRPC APIs and each service encapsulates a private datastore
