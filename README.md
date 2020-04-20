@@ -4,12 +4,18 @@
 </p>
 
 <p align="center">
-    Formula One Telemetry And Analysis System: A Golang micro-services based system simulates
-     the collection, persistence, and analyis of F1 race telemetry.
+    Formula One Telemetry And Analysis System: A Golang micro-services based system simulates the collection, persistence, and analyis of F1 race telemetry.
 </p>
 
 <p align="center">
-    <img src="./assets/images/go-logo.png" height="100" width="100">
+    **Powered By:**
+</p>
+
+<p align="middle">
+    <img src="./assets/images/go-logo.png" align="center" hspace="10">
+    <img src="./assets/images/docker-logo.png" align="center" hspace="10">
+    <img src="./assets/images/kubernetes-logo.png" align="center" hspace="20">
+    <img src="./assets/images/gcp-logo.png" width="100" align="center" hspace="10">
 </p>
 
 ## Table of Contents
