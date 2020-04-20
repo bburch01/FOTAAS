@@ -4,7 +4,8 @@
 </p>
 
 <p align="center">
-    Formula One Telemetry And Analysis System: A Golang micro-services based system simulates the collection, persistence, and analyis of F1 race telemetry.
+    Formula One Telemetry And Analysis System: A Golang micro-services based system simulates
+     the collection, persistence, and analyis of F1 race telemetry.
 </p>
 
 <p align="center">
@@ -64,16 +65,3 @@ trival (e.g. the Cloud SQL databases would need to created and migrated and this
 
 If you want to see the FOTAAS Cloud depolyment in action, you will need to contact me (barry@sbcglobal.net). We
 can schedule a Google Meet/Hangout and I can demonstrate the GKE deployment for you.
-
-## Installation
-
-## Usage
-
-## UnitTest
-
-## Deficiencies
-
-
-
-
-
