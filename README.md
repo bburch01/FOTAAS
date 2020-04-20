@@ -4,8 +4,7 @@
 </p>
 
 <p align="center">
-    Formula One Telemetry And Analysis System: A micro-services based system written in Golang that simulates
-    the collection, persistence, and analyis of F1 race telemetry.
+    Formula One Telemetry And Analysis System: A Golang micro-services based system simulates the collection, persistence, and analyis of F1 race telemetry.
 </p>
 
 <p align="center">
@@ -40,15 +39,18 @@ www.linkedin.com/in/barry-burch-digital-native<br>
 
 ## About
 
-FOTAAS is a portfolio project designed to demonstrate to prospective employers the following proficiencies:
+FOTAAS is a Golang portfolio project designed to demonstrate the following proficiencies:
 
-> Golang (including concurrency).
-> Micro-Services architecure.
-> Protobuf & gRPC.
-> Golang Web Application Development.
-> Docker.
-> Kubernetes.
-> Cloud Deployments to GKE (Google Kubernetes Environment).
+> Golang
+> Golang Concurrency/Parallelism
+> True Micro-Services Architecure
+> Protobuf & gRPC
+> Golang Web Application Development
+> Docker
+> Kubernetes
+> Cloud Deployment To GCP (Google Cloud Platform) GKE (Google Kubernetes Environment)
+> GIT
+> MOD
 
 The FOTAAS system consists of 4 micro-services: telemetry, simulation, analysis, and status. The 4 services
 are completely de-coupled from each other via GRPC APIs and each service encapsulates a private datastore
