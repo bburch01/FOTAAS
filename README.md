@@ -1,4 +1,12 @@
 # FOTAAS
+
+![logo](./assets/images/fotass-logo.png)
+
+Pulsar is a distributed pub-sub messaging platform with a very
+flexible messaging model and an intuitive client API.
+
+
+
 <p align="center">
     <img src="./assets/images/fotass-logo.png">
 </p>
@@ -13,6 +21,12 @@
     <img src="./assets/images/kubernetes-logo.png" align="center" hspace="10">
     <img src="./assets/images/gcp-logo.png" align="center" hspace="10">
 </p>
+
+
+
+
+
+
 
 ## Table of Contents
 
