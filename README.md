@@ -6,8 +6,8 @@
 ## Powered By
 
 <p align="middle">
-    <img src="./assets/images/go-logo-2.jpg" width="50" align="center" hspace="10">
-    <img src="./assets/images/docker-logo.png" align="center" hspace="10">
+    <img src="./assets/images/go-logo-2.jpg" width="75" align="center" hspace="10">
+    <img src="./assets/images/docker-logo.png" width="75" align="center" hspace="10">
     <img src="./assets/images/kubernetes-logo.png" align="center" hspace="10">
     <img src="./assets/images/gcp-logo.png" align="center" hspace="10">
 </p>
