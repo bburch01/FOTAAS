@@ -16,6 +16,16 @@
     Junk Junk Junk
 </p>
 
+
+```css
+font-family: 'IBM Plex Mono', 'Menlo', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', Courier, monospace;
+font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+font-family: 'IBM Plex Sans Condensed', 'Helvetica Neue', Arial, sans-serif;
+font-family: 'IBM Plex Serif', 'Georgia', Times, serif;
+```
+
+
+
 ## Table of Contents
 
 - [Author](#author)
