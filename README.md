@@ -1,7 +1,7 @@
 
 ![logo](./assets/images/fotass-logo.png)
 
-## Formula One Telemetry And Analysis System
+###     Formula One Telemetry And Analysis System
 
 ## Powered By
 
@@ -11,20 +11,6 @@
     <img src="./assets/images/kubernetes-logo.png" width="150" align="center" hspace="10">
     <img src="./assets/images/gcp-logo.png" width="150" align="center" hspace="10">
 </p>
-
-<p align="middle" style="font-family: times, serif; font-size:16pt; font-style:italic; color:red">
-    Junk Junk Junk
-</p>
-
-
-```css
-font-family: 'IBM Plex Mono', 'Menlo', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', Courier, monospace;
-font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
-font-family: 'IBM Plex Sans Condensed', 'Helvetica Neue', Arial, sans-serif;
-font-family: 'IBM Plex Serif', 'Georgia', Times, serif;
-```
-
-
 
 ## Table of Contents
 
