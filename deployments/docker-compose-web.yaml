@@ -7,7 +7,7 @@ services:
 
   fotaasweb:
     container_name: fotaasweb
-    image: us.gcr.io/kubedemo-233218/fotaas/fotaasweb
+    image: us.gcr.io/acoustic-skein-273916/fotaas/fotaasweb
     build:
       context: ../
       dockerfile: /Users/barry/go/src/github.com/bburch01/FOTAAS/web/fotaasweb/Dockerfile

@@ -5,6 +5,7 @@ package main
 
 import (
 	"context"
+	//	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -20,7 +21,8 @@ import (
 	"github.com/bburch01/FOTAAS/web/fotaasweb/generated/assets"
 	"github.com/bburch01/FOTAAS/web/fotaasweb/generated/templates"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
+
+	//	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -28,13 +30,26 @@ import (
 
 var logger *zap.Logger
 
+/*
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 }
+*/
 
 type msg struct {
 	Num int
+}
+
+type statusTest struct {
+	Name   string `json:"name"`
+	State  string `json:"state"`
+	Result string `json:"result"`
+}
+
+type statusTestSequence struct {
+	IsComplete  string       `json:"isComplete"`
+	StatusTests []statusTest `json:"statusTests"`
 }
 
 func init() {
@@ -67,7 +82,7 @@ func main() {
 	r.HandleFunc("/analysis", analysisHandler).Methods("GET")
 	r.HandleFunc("/telemetry", telemetryHandler).Methods("GET")
 	r.HandleFunc("/echo", echoHandler).Methods("GET")
-	r.HandleFunc("/echo_ws", echoWebSocketHandler).Methods("GET")
+	//r.HandleFunc("/echo_ws", echoWebSocketHandler).Methods("GET")
 
 	r.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 	http.ListenAndServe(":8080", r)
@@ -88,6 +103,7 @@ func echoHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+/*
 func echoWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Header.Get("Origin") != "http://"+r.Host {
@@ -102,8 +118,22 @@ func echoWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	go echo(conn)
 
 }
-
+*/
+/*
 func echo(conn *websocket.Conn) {
+
+	st := make([]statusTest, 7, 7)
+
+	st[0] = statusTest{Name: "Telemetry Service Aliveness", State: "Complete", Result: "PASS"}
+	st[1] = statusTest{Name: "Analysis Service Aliveness", State: "Complete", Result: "FAIL"}
+	st[2] = statusTest{Name: "Simulation Service Aliveness", State: "Complete", Result: "PASS"}
+	st[3] = statusTest{Name: "Start Simulation", State: "Complete", Result: "PASS"}
+	st[4] = statusTest{Name: "Poll For Simulation Complete", State: "Complete", Result: "FAIL"}
+	st[5] = statusTest{Name: "Retrieve Simulation Data", State: "Complete", Result: "PASS"}
+	st[6] = statusTest{Name: "Simulation Data Analysis", State: "In Progress", Result: "UNKNOWN"}
+
+	sts := statusTestSequence{IsComplete: "false", StatusTests: st}
+
 	for {
 		m := msg{}
 
@@ -118,11 +148,20 @@ func echo(conn *websocket.Conn) {
 
 		fmt.Printf("Got message: %#v\n", m)
 
-		if err = conn.WriteJSON(m); err != nil {
+		stsJSON, err := json.Marshal(sts)
+		if err != nil {
+			fmt.Printf("Error: %s", err)
+			return
+		}
+
+		fmt.Printf("stsJSON: %v", string(stsJSON))
+
+		if err = conn.WriteJSON(sts); err != nil {
 			fmt.Println(err)
 		}
 	}
 }
+*/
 
 func aboutHandler(w http.ResponseWriter, r *http.Request) {
 
