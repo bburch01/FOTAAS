@@ -13,8 +13,10 @@
 </p>
 
 
-<p align="middle">
-    <font size="16">Font Size 24?</font>
+
+
+<p align="middle" style="font-family: times, serif; font-size:16pt; font-style:italic; color:red">
+    Powered By
 </p>
 
 
@@ -56,7 +58,6 @@ FOTAAS is a Golang portfolio project designed to demonstrate the following profi
 * **Kubernetes**
 * **Cloud Deployment To GCP (Google Cloud Platform) GKE (Google Kubernetes Environment)**
 * **GIT**
-* **mod**
 
 The FOTAAS system consists of 4 micro-services: telemetry, simulation, analysis, and status. The 4 services
 are completely de-coupled from each other via GRPC APIs and each service encapsulates a private datastore
