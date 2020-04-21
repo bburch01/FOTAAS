@@ -2,34 +2,16 @@
 
 ![logo](./assets/images/fotass-logo.png)
 
-
-I am in <span style="color:red; font-family:Papyrus; font-size:4em;">DEEP POO NOW!</span>
-
-
-Pulsar is a distributed pub-sub messaging platform with a very
-flexible messaging model and an intuitive client API.
-
-
-
-<p align="center">
-    <img src="./assets/images/fotass-logo.png">
-</p>
-
-## Formula One Telemetry And Analysis System: A Golang micro-services based system that simulates the collection and analyis of F1 race telemetry.
+## Formula One Telemetry And Analysis System
 
 ## Powered By
 
 <p align="middle">
-    <img src="./assets/images/go-logo.png" align="center" width="100" hspace="10">
+    <img src="./assets/images/go-logo.png" align="center" width="80" hspace="10">
     <img src="./assets/images/docker-logo.png" align="center" hspace="10">
     <img src="./assets/images/kubernetes-logo.png" align="center" hspace="10">
     <img src="./assets/images/gcp-logo.png" align="center" hspace="10">
 </p>
-
-
-
-
-
 
 
 ## Table of Contents
