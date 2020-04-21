@@ -1,9 +1,9 @@
 
 ![logo](./assets/images/fotass-logo.png)
 
-###     Formula One Telemetry And Analysis System
+# Formula One Telemetry And Analysis System
 
-## Powered By
+### Powered By
 
 <p align="middle">
     <img src="./assets/images/go-logo-2.jpg" width="75" align="center" hspace="10">
