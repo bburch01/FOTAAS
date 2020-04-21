@@ -12,7 +12,7 @@
     <img src="./assets/images/gcp-logo.png" width="150" align="center" hspace="10">
 </p>
 
-## Table of Contents
+## ->Table of Contents<-
 
 - [Author](#author)
 - [About](#about)
