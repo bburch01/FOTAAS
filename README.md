@@ -3,7 +3,7 @@
 
 ## Formula One Telemetry And Analysis System
 
-## Powered By
+##                    Powered By
 
 <p align="middle">
     <img src="./assets/images/go-logo-2.jpg" width="75" align="center" hspace="10">
@@ -12,7 +12,7 @@
     <img src="./assets/images/gcp-logo.png" width="150" align="center" hspace="10">
 </p>
 
-## ->Table of Contents<-
+## Table of Contents
 
 - [Author](#author)
 - [About](#about)
