@@ -2,7 +2,9 @@
 
 ![logo](./assets/images/fotass-logo.png)
 
-I am in <span style=“color:red; font-family:Papyrus; font-size:10em”>DEEP POO NOW!</span>
+
+I am in <span style="color:red; font-family:Papyrus; font-size:4em;">DEEP POO NOW!</span>
+
 
 Pulsar is a distributed pub-sub messaging platform with a very
 flexible messaging model and an intuitive client API.
