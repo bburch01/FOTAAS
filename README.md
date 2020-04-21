@@ -12,13 +12,9 @@
     <img src="./assets/images/gcp-logo.png" width="150" align="center" hspace="10">
 </p>
 
-
-
-
 <p align="middle" style="font-family: times, serif; font-size:16pt; font-style:italic; color:red">
-    Powered By
+    Junk Junk Junk
 </p>
-
 
 ## Table of Contents
 
