@@ -42,18 +42,17 @@ FOTAAS is a Golang portfolio project designed to demonstrate the following profi
 
 * **Golang**
 * **Golang Concurrency/Parallelism**
-* **Micro-Services Architecure**
+* **Micro-Service Architecure**
 * **Protobuf & gRPC**
 * **Cobra**
 * **Golang Web Application Development**
 * **Docker**
 * **Kubernetes**
 * **Cloud Deployment To GCP (Google Cloud Platform) GKE (Google Kubernetes Environment)**
-* **GIT**
 
 The FOTAAS system consists of 4 micro-services: telemetry, simulation, analysis, and status. The 4 services
 are completely de-coupled from each other via GRPC APIs and each service encapsulates a private datastore
-that can only be accessed via API calls to the service (i.e. this is a true micro-services based architecture).
+that can only be accessed via API calls to the service (i.e. this is a true micro-service based architecture).
 
 FOTASS includes both a Cobra based CLI (fotaasctl) and a console web application. Both can be used
 to exercise the system.
