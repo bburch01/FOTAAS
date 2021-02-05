@@ -92,49 +92,51 @@ func startSimulation(forceAlarm bool) (*api.RunSimulationResponse, error) {
 	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_HAAS, 8,
 		forceAlarmFlag, noAlarmsFlag)
 
-	simMemberID = uuid.New().String()
-	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_HAAS, 20,
-		forceAlarmFlag, noAlarmsFlag)
+	/*
+		simMemberID = uuid.New().String()
+		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_HAAS, 20,
+			forceAlarmFlag, noAlarmsFlag)
 
-	simMemberID = uuid.New().String()
-	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MERCEDES, 44,
-		forceAlarmFlag, noAlarmsFlag)
+		simMemberID = uuid.New().String()
+		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MERCEDES, 44,
+			forceAlarmFlag, noAlarmsFlag)
 
-	simMemberID = uuid.New().String()
-	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MERCEDES, 77,
-		forceAlarmFlag, noAlarmsFlag)
+		simMemberID = uuid.New().String()
+		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MERCEDES, 77,
+			forceAlarmFlag, noAlarmsFlag)
 
-	simMemberID = uuid.New().String()
-	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_FERRARI, 5,
-		forceAlarmFlag, noAlarmsFlag)
+		simMemberID = uuid.New().String()
+		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_FERRARI, 5,
+			forceAlarmFlag, noAlarmsFlag)
 
-	simMemberID = uuid.New().String()
-	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_FERRARI, 16,
-		forceAlarmFlag, noAlarmsFlag)
+		simMemberID = uuid.New().String()
+		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_FERRARI, 16,
+			forceAlarmFlag, noAlarmsFlag)
 
-	simMemberID = uuid.New().String()
-	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_RED_BULL_RACING, 33,
-		forceAlarmFlag, noAlarmsFlag)
+		simMemberID = uuid.New().String()
+		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_RED_BULL_RACING, 33,
+			forceAlarmFlag, noAlarmsFlag)
 
-	simMemberID = uuid.New().String()
-	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_RED_BULL_RACING, 10,
-		forceAlarmFlag, noAlarmsFlag)
+		simMemberID = uuid.New().String()
+		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_RED_BULL_RACING, 10,
+			forceAlarmFlag, noAlarmsFlag)
 
-	simMemberID = uuid.New().String()
-	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MCLAREN, 55,
-		forceAlarmFlag, noAlarmsFlag)
+		simMemberID = uuid.New().String()
+		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MCLAREN, 55,
+			forceAlarmFlag, noAlarmsFlag)
 
-	simMemberID = uuid.New().String()
-	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MCLAREN, 4,
-		forceAlarmFlag, noAlarmsFlag)
+		simMemberID = uuid.New().String()
+		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MCLAREN, 4,
+			forceAlarmFlag, noAlarmsFlag)
 
-	simMemberID = uuid.New().String()
-	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_WILLIAMS, 88,
-		forceAlarmFlag, noAlarmsFlag)
+		simMemberID = uuid.New().String()
+		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_WILLIAMS, 88,
+			forceAlarmFlag, noAlarmsFlag)
 
-	simMemberID = uuid.New().String()
-	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_WILLIAMS, 63,
-		forceAlarmFlag, noAlarmsFlag)
+		simMemberID = uuid.New().String()
+		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_WILLIAMS, 63,
+			forceAlarmFlag, noAlarmsFlag)
+	*/
 
 	sim := api.Simulation{Uuid: simID, DurationInMinutes: int32(1), SampleRate: api.SampleRate_SR_1000_MS,
 		SimulationRateMultiplier: api.SimulationRateMultiplier_X1, GranPrix: api.GranPrix_UNITED_STATES,

@@ -61,8 +61,8 @@ to exercise the system.
 
 ## Installation
 
-While you an easily enough clone the FOTASS repo for code review, deploying it with Kubernetes will not be
-trival (e.g. the Cloud SQL databases would need to created and migrated and this process is not currently documented).
+While you can easily enough clone the FOTASS repo for code review, deploying it to a GKE (Google Kubernetes Environment) cluster
+will not be trivial (e.g. the GCP Cloud SQL databases would need to created and migrated and this process is not currently documented).
 
 ## Usage
 
