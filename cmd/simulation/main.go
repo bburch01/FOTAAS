@@ -147,6 +147,8 @@ func (s *server) GetSimulationInfo(ctx context.Context, req *api.GetSimulationIn
 	var info *api.SimulationInfo
 	var err error
 
+	logger.Info(fmt.Sprintf("simulation info requested for simulation id: %v", req.SimulationUuid))
+
 	if info, err = models.RetrieveSimulationInfo(*req); err != nil {
 		resp.Details.Code = api.ResponseCode_ERROR
 		resp.Details.Message = fmt.Sprintf("failed to retrieve simulation info with error: %v", err)

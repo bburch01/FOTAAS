@@ -5,6 +5,7 @@ package main
 
 import (
 	"context"
+
 	//	"encoding/json"
 	"errors"
 	"fmt"
@@ -22,7 +23,7 @@ import (
 	"github.com/bburch01/FOTAAS/web/fotaasweb/generated/templates"
 	"github.com/gorilla/mux"
 
-	//	"github.com/gorilla/websocket"
+	//"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -34,6 +35,9 @@ var logger *zap.Logger
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 */
 
@@ -82,7 +86,7 @@ func main() {
 	r.HandleFunc("/analysis", analysisHandler).Methods("GET")
 	r.HandleFunc("/telemetry", telemetryHandler).Methods("GET")
 	r.HandleFunc("/echo", echoHandler).Methods("GET")
-	//r.HandleFunc("/echo_ws", echoWebSocketHandler).Methods("GET")
+	//r.HandleFunc("/echo", echoWebSocketHandler).Methods("GET")
 
 	r.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 	http.ListenAndServe(":8080", r)
@@ -106,10 +110,22 @@ func echoHandler(w http.ResponseWriter, r *http.Request) {
 /*
 func echoWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
-	if r.Header.Get("Origin") != "http://"+r.Host {
-		http.Error(w, "Origin not allowed", 403)
-		return
-	}
+	var sb strings.Builder
+	sb.WriteString("Origin: ")
+	sb.WriteString(r.Header.Get("Origin"))
+	sb.WriteString(" not allowed.")
+	sb.WriteString(" Host was: ")
+	sb.WriteString(r.Host)
+
+
+		if r.Header.Get("Origin") != "http://"+r.Host {
+
+			//http.Error(w, "Origin not allowed", 403)
+			http.Error(w, sb.String(), 403)
+			return
+		}
+
+
 	conn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
 	if err != nil {
 		http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
@@ -117,49 +133,77 @@ func echoWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	go echo(conn)
 
+
+		if r.Header.Get("Origin") != "http://"+r.Host {
+			http.Error(w, "Origin not allowed", 403)
+			return
+		}
+		conn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
+		if err != nil {
+			http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
+		}
+
+		go echo(conn)
+
 }
-*/
-/*
+
 func echo(conn *websocket.Conn) {
-
-	st := make([]statusTest, 7, 7)
-
-	st[0] = statusTest{Name: "Telemetry Service Aliveness", State: "Complete", Result: "PASS"}
-	st[1] = statusTest{Name: "Analysis Service Aliveness", State: "Complete", Result: "FAIL"}
-	st[2] = statusTest{Name: "Simulation Service Aliveness", State: "Complete", Result: "PASS"}
-	st[3] = statusTest{Name: "Start Simulation", State: "Complete", Result: "PASS"}
-	st[4] = statusTest{Name: "Poll For Simulation Complete", State: "Complete", Result: "FAIL"}
-	st[5] = statusTest{Name: "Retrieve Simulation Data", State: "Complete", Result: "PASS"}
-	st[6] = statusTest{Name: "Simulation Data Analysis", State: "In Progress", Result: "UNKNOWN"}
-
-	sts := statusTestSequence{IsComplete: "false", StatusTests: st}
 
 	for {
 		m := msg{}
 
 		err := conn.ReadJSON(&m)
 		if err != nil {
-			//fmt.Println("Error reading json.", err)
-			if strings.Contains(err.Error(), "close 1001") {
-				fmt.Print("got close on websocket")
-				return
-			}
+			fmt.Println("Error reading json.", err)
 		}
 
 		fmt.Printf("Got message: %#v\n", m)
 
-		stsJSON, err := json.Marshal(sts)
-		if err != nil {
-			fmt.Printf("Error: %s", err)
-			return
-		}
-
-		fmt.Printf("stsJSON: %v", string(stsJSON))
-
-		if err = conn.WriteJSON(sts); err != nil {
+		if err = conn.WriteJSON(m); err != nil {
 			fmt.Println(err)
 		}
 	}
+
+
+		st := make([]statusTest, 7, 7)
+
+		st[0] = statusTest{Name: "Telemetry Service Aliveness", State: "Complete", Result: "PASS"}
+		st[1] = statusTest{Name: "Analysis Service Aliveness", State: "Complete", Result: "FAIL"}
+		st[2] = statusTest{Name: "Simulation Service Aliveness", State: "Complete", Result: "PASS"}
+		st[3] = statusTest{Name: "Start Simulation", State: "Complete", Result: "PASS"}
+		st[4] = statusTest{Name: "Poll For Simulation Complete", State: "Complete", Result: "FAIL"}
+		st[5] = statusTest{Name: "Retrieve Simulation Data", State: "Complete", Result: "PASS"}
+		st[6] = statusTest{Name: "Simulation Data Analysis", State: "In Progress", Result: "UNKNOWN"}
+
+		sts := statusTestSequence{IsComplete: "false", StatusTests: st}
+
+		for {
+			m := msg{}
+
+			err := conn.ReadJSON(&m)
+			if err != nil {
+				//fmt.Println("Error reading json.", err)
+				if strings.Contains(err.Error(), "close 1001") {
+					fmt.Print("got close on websocket")
+					return
+				}
+			}
+
+			fmt.Printf("Got message: %#v\n", m)
+
+			stsJSON, err := json.Marshal(sts)
+			if err != nil {
+				fmt.Printf("Error: %s", err)
+				return
+			}
+
+			fmt.Printf("stsJSON: %v", string(stsJSON))
+
+			if err = conn.WriteJSON(sts); err != nil {
+				fmt.Println(err)
+			}
+		}
+
 }
 */
 

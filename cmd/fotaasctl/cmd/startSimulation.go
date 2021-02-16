@@ -92,18 +92,19 @@ func startSimulation(forceAlarm bool) (*api.RunSimulationResponse, error) {
 	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_HAAS, 8,
 		forceAlarmFlag, noAlarmsFlag)
 
+	simMemberID = uuid.New().String()
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_HAAS, 20,
+		forceAlarmFlag, noAlarmsFlag)
+
+	simMemberID = uuid.New().String()
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MERCEDES, 44,
+		forceAlarmFlag, noAlarmsFlag)
+
+	simMemberID = uuid.New().String()
+	simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MERCEDES, 77,
+		forceAlarmFlag, noAlarmsFlag)
+
 	/*
-		simMemberID = uuid.New().String()
-		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_HAAS, 20,
-			forceAlarmFlag, noAlarmsFlag)
-
-		simMemberID = uuid.New().String()
-		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MERCEDES, 44,
-			forceAlarmFlag, noAlarmsFlag)
-
-		simMemberID = uuid.New().String()
-		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_MERCEDES, 77,
-			forceAlarmFlag, noAlarmsFlag)
 
 		simMemberID = uuid.New().String()
 		simMemberMap[simMemberID] = models.NewSimulationMember(simMemberID, simID, api.Constructor_FERRARI, 5,
