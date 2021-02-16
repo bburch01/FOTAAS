@@ -85,13 +85,14 @@ func main() {
 	r.HandleFunc("/simulation", simulationHandler).Methods("GET")
 	r.HandleFunc("/analysis", analysisHandler).Methods("GET")
 	r.HandleFunc("/telemetry", telemetryHandler).Methods("GET")
-	r.HandleFunc("/echo", echoHandler).Methods("GET")
+	//r.HandleFunc("/echo", echoHandler).Methods("GET")
 	//r.HandleFunc("/echo", echoWebSocketHandler).Methods("GET")
 
 	r.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 	http.ListenAndServe(":8080", r)
 }
 
+/*
 func echoHandler(w http.ResponseWriter, r *http.Request) {
 
 	file, err := templates.Templates.Open("/echo.html")
@@ -106,6 +107,7 @@ func echoHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, nil)
 
 }
+*/
 
 /*
 func echoWebSocketHandler(w http.ResponseWriter, r *http.Request) {
