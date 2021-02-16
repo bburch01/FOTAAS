@@ -64,6 +64,8 @@ via kubectl and a non-trivial (i.e. production quality) orchestration yaml.
 FOTASS includes both a Cobra based CLI (fotaasctl) and a console web application. Both can be used
 to exercise the system.
 
+Remove this.
+
 ## Installation
 
 While you can easily enough clone the FOTASS repo for code review, deploying it to a GKE (Google Kubernetes Environment) cluster
