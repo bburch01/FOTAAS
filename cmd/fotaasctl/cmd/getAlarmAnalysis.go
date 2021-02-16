@@ -46,7 +46,7 @@ func init() {
 	rootCmd.AddCommand(getAlarmAnalysisCmd)
 	getAlarmAnalysisCmd.Flags().StringP("start-date", "s", "", "alarm analysis start date (yyyy-mm-dd)")
 	getAlarmAnalysisCmd.Flags().StringP("end-date", "e", "", "alarm analysis end date (yyyy-mm-dd)")
-	getAlarmAnalysisCmd.Flags().StringP("constructor", "c", "", "constructor (e.g. MERCEDES")
+	getAlarmAnalysisCmd.Flags().StringP("constructor", "c", "", "constructor (e.g. MERCEDES)")
 	getAlarmAnalysisCmd.Flags().Int32P("car-number", "n", -1, "car number (e.g. 44)")
 	getAlarmAnalysisCmd.Flags().BoolP("simulated", "i", false, "get alarm analysis for simulated data")
 	getAlarmAnalysisCmd.Flags().StringP("simulation-id", "d", "", "get alarm analysis for a specific simulation uuid")

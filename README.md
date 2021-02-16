@@ -24,7 +24,7 @@
 ## Author
 Barry T. Burch<br>
 
-Barry is a digital native with over 20 years of experience in software (and hardware) design and engineering at:
+Barry is a digital native with over 20 years of experience in software/hardware design and engineering at:
 
 <p align="middle">
     <img src="./assets/images/ti-logo-2.png" align="center" hspace="10">
@@ -44,6 +44,7 @@ FOTAAS is a Golang portfolio project designed to demonstrate the following profi
 
 * **Golang**
 * **Golang Concurrency/Parallelism**
+* **Golang Code Generation**
 * **Micro-Service Architecure**
 * **Protobuf & gRPC**
 * **Cobra**
@@ -53,18 +54,24 @@ FOTAAS is a Golang portfolio project designed to demonstrate the following profi
 * **Cloud Deployment To GCP (Google Cloud Platform) GKE (Google Kubernetes Environment)**
 
 The FOTAAS system consists of 4 micro-services: telemetry, simulation, analysis, and status. The 4 services
-are completely de-coupled from each other via GRPC APIs and each service encapsulates a private datastore
+are completely de-coupled from each other via gRPC APIs and each service encapsulates a private datastore
 that can only be accessed via API calls to the service (i.e. this is a true micro-service based architecture).
+
+The 4 FOTAAS services, and the FOTAAS web application, are built with docker compose. The resulting docker images
+are pushed to GCR (Google Container Registry) and the system is deployed to a GKE (Google Kubernetes Environment) cluster
+via kubectl and a non-trivial (i.e. production quality) orchestration yaml.
 
 FOTASS includes both a Cobra based CLI (fotaasctl) and a console web application. Both can be used
 to exercise the system.
 
+Remove this.
+
 ## Installation
 
-While you an easily enough clone the FOTASS repo for code review, deploying it with Kubernetes will not be
-trival (e.g. the Cloud SQL databases would need to created and migrated and this process is not currently documented).
+While you can easily enough clone the FOTASS repo for code review, deploying it to a GKE (Google Kubernetes Environment) cluster
+will not be trivial (e.g. the GCP Cloud SQL databases would need to created and migrated and this process is not currently documented).
 
 ## Usage
 
-If you want to see the FOTAAS Cloud depolyment in action, you will need to contact me (barry@sbcglobal.net). We
-can schedule a Google Meet/Hangout and I can demonstrate the GCP GKE deployment, FOTAAS CLI, & FOTASS Web in action.
+If you want to see the FOTAAS Cloud deployment in action, you will need to contact me (barry@sbcglobal.net). We
+can schedule a Google Meet or Hangout and I can demonstrate the GCP GKE deployment, FOTAAS CLI, & FOTASS Web in action.

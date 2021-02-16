@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"strings"
+	"time"
 
 	zgrpc "github.com/openzipkin/zipkin-go/middleware/grpc"
 	zhttp "github.com/openzipkin/zipkin-go/reporter/http"
@@ -145,17 +146,21 @@ func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRe
 
 	if statusReport.StartSimulation == api.TestResult_FAIL {
 		resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
-			Code: api.ResponseCode_INFO, Message: "one or more prerequisite system status tests have failed, test sequence aborted"},
+			Code: api.ResponseCode_INFO, Message: "[StartSimulation] one or more prerequisite system status tests have failed, test sequence aborted"},
 			SystemStatusReport: statusReport}
 
 		return &resp, nil
 	}
 
+	time.Sleep(time.Duration(5 * time.Second))
+
+	logger.Info(fmt.Sprintf("starting poll for simulation id: %v", simID))
+
 	statusReport.PollForSimulationComplete = status.PollForSimulationComplete(simID, simDurationInMinutes)
 
 	if statusReport.PollForSimulationComplete == api.TestResult_FAIL {
 		resp := api.GetSystemStatusResponse{Details: &api.ResponseDetails{
-			Code: api.ResponseCode_INFO, Message: "one or more prerequisite system status tests have failed, test sequence aborted"},
+			Code: api.ResponseCode_INFO, Message: "[PollForSimulationComplete] one or more prerequisite system status tests have failed, test sequence aborted"},
 			SystemStatusReport: statusReport}
 
 		return &resp, nil

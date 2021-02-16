@@ -23,6 +23,13 @@ spec:
       #START telemetry service container
       - name: fotaas-telemetry
         image: us.gcr.io/acoustic-skein-273916/fotaas/telemetry
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "250m"
+          limits:
+            memory: "750Mi"
+            cpu: "500m"
         ports:
         - containerPort: 50051
         readinessProbe:
@@ -115,6 +122,13 @@ spec:
       #START analysis service container
       - name: fotaas-analysis
         image: us.gcr.io/acoustic-skein-273916/fotaas/analysis
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "250m"
+          limits:
+            memory: "750Mi"
+            cpu: "500m"        
         ports:
         - containerPort: 50052
         readinessProbe:
@@ -207,6 +221,13 @@ spec:
       #START simulation service container
       - name: fotaas-simulation
         image: us.gcr.io/acoustic-skein-273916/fotaas/simulation
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "250m"
+          limits:
+            memory: "750Mi"
+            cpu: "500m"        
         ports:
         - containerPort: 50053
         readinessProbe:
@@ -299,6 +320,13 @@ spec:
       #START status service container
       - name: fotaas-status
         image: us.gcr.io/acoustic-skein-273916/fotaas/status
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"        
         ports:
         - containerPort: 50054
         readinessProbe:
@@ -391,6 +419,13 @@ spec:
       #START fotaasctl container
       - name: fotaasctl
         image: us.gcr.io/acoustic-skein-273916/fotaas/fotaasctl
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"        
       #END fotaasctl container
 ---
 apiVersion: apps/v1
@@ -418,6 +453,13 @@ spec:
       #START fotaasweb container
       - name: fotaas-web
         image: us.gcr.io/acoustic-skein-273916/fotaas/fotaasweb
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"        
         #resources:
           #requests:
             #cpu: 1
