@@ -1,1 +1,1 @@
-FOTASS libraries for public consumption.
+FOTAAS libraries for public consumption.
