@@ -3,7 +3,7 @@
 
 # Formula One Telemetry And Analysis System
 
-### FOTAAS IS Powered By
+## FOTAAS IS Powered By
 
 <p align="middle">
     <img src="./assets/images/go-logo-2.jpg" width="115" align="center" hspace="10">
