@@ -1,5 +1,5 @@
 
-![logo](./assets/images/fotass-logo.png)
+![logo](./assets/images/fotaas-logo.png)
 
 # Formula One Telemetry And Analysis System
 
