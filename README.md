@@ -17,15 +17,9 @@
     <img src="./assets/images/gcsql-logo.png" width="150" align="center" hspace="10">
 </p>
 
-## Table of Contents
-
-- [Author](#author)
-- [About](#about)
-- [Installation](#installation)
-- [Usage](#usage)
-
 ## About The Author
 Barry T. Burch<br>
+barry@sbcglobal.net<br>
 
 Barry is a digital native with over 30 years of experience in software/hardware design and engineering at:
 
