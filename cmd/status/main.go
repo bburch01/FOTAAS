@@ -154,7 +154,7 @@ func (s *server) GetSystemStatus(ctx context.Context, req *api.GetSystemStatusRe
 
 	time.Sleep(time.Duration(5 * time.Second))
 
-	logger.Info(fmt.Sprintf("starting poll for simulation id: %v", simID))
+	logger.Debug(fmt.Sprintf("starting poll for simulation id: %v", simID))
 
 	statusReport.PollForSimulationComplete = status.PollForSimulationComplete(simID, simDurationInMinutes)
 
