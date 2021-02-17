@@ -70,5 +70,5 @@ While you can easily enough clone the FOTASS repo for code review, deploying it 
 
 ## Usage
 
-To see the FOTAAS system in action, contact me (barry@sbcglobal.net). We can schedule a Google Meet
-(or Hangout) and I can demonstrate the FOTASS GCP deployment, FOTAAS CLI usage, and the FOTAAS Console Web Application.
+To see the FOTAAS system in action please contact me (barry@sbcglobal.net). We can schedule a Google Meet
+(or Hangout) and I can demonstrate the FOTASS GCP deployment, CLI usage, and Console Web Application.
