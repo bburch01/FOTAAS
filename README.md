@@ -3,7 +3,7 @@
 
 # Formula One Telemetry And Analysis System
 
-### Powered By
+### FOTAAS IS Powered By
 
 <p align="middle">
     <img src="./assets/images/go-logo-2.jpg" width="115" align="center" hspace="10">
@@ -22,10 +22,10 @@
 - [Installation](#installation)
 - [Usage](#usage)
 
-## Author
+## About The Author
 Barry T. Burch<br>
 
-Barry is a digital native with over 20 years of experience in software/hardware design and engineering at:
+Barry is a digital native with over 20 years of experience in software/hardware design and engineering at
 
 <p align="middle">
     <img src="./assets/images/ti-logo-2.png" align="center" hspace="10">
@@ -39,7 +39,7 @@ Barry is a digital native with over 20 years of experience in software/hardware 
 barry@sbcglobal.net<br>
 www.linkedin.com/in/barry-burch-digital-native<br>
 
-## About
+## About The FOTAAS Project
 
 FOTAAS is a Golang portfolio project designed to demonstrate the following proficiencies:
 
@@ -59,16 +59,16 @@ application, and a Console Web application. The 4 micro-services are completely 
 and each service encapsulates a private datastore that can only be accessed via API calls to the service (i.e. this is a
 true micro-services based architecture).
 
-## Build & Deployment
+## FOTAAS Build And Cloud Deployment
 
 The 4 FOTAAS services, console web application, and CLI application are built with docker compose. The resulting docker
 images are pushed to GCR (Google Container Registry) and the system is deployed to a GKE (Google Kubernetes Environment)
 cluster via kubectl and a non-trivial (i.e. production quality) orchestration yaml.
 
-While you can easily enough clone the FOTASS repo for code review, deploying it to a GKE cluster will not be trivial
+While you can easily enough clone the FOTAAS repo for code review, deploying it to a GKE cluster will not be trivial
 (e.g. the GCP Cloud SQL databases would need to created and migrated and this process is not currently documented).
 
-## Usage
+## FOTAAS In Action
 
 To see the FOTAAS system in action please contact me (barry@sbcglobal.net). We can schedule a Google Meet
-(or Hangout) and I can demonstrate the FOTASS GCP deployment, CLI usage, and Console Web Application.
+(or Hangout) and I can demonstrate the FOTAAS GCP deployment, CLI usage, and Console Web Application.
