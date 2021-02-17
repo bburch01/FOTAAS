@@ -13,7 +13,7 @@
     <img src="./assets/images/docker-logo.png" width="115" align="center" hspace="10">
     <img src="./assets/images/kubernetes-logo.png" width="150" align="center" hspace="10">
     <img src="./assets/images/gcp-logo.png" width="150" align="center" hspace="10">
-    <img src="./assets/images/gke-logo.jpeg" width="150" align="center" hspace="10">
+    <img src="./assets/images/gke-logo-2.png" width="150" align="center" hspace="10">
     <img src="./assets/images/gcsql-logo.png" width="150" align="center" hspace="10">
 </p>
 
