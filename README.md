@@ -19,7 +19,6 @@
 
 ## About The Author
 Barry T. Burch<br>
-barry@sbcglobal.net<br>
 
 Barry is a digital native with over 30 years of experience in software/hardware design and engineering at:
 
