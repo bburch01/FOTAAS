@@ -13,6 +13,7 @@
     <img src="./assets/images/docker-logo.png" width="115" align="center" hspace="10">
     <img src="./assets/images/kubernetes-logo.png" width="150" align="center" hspace="10">
     <img src="./assets/images/gcp-logo.png" width="150" align="center" hspace="10">
+    <img src="./assets/images/gke-logo.jpeg" width="150" align="center" hspace="10">
 </p>
 
 ## Table of Contents
@@ -25,7 +26,7 @@
 ## About The Author
 Barry T. Burch<br>
 
-Barry is a digital native with over 30 years of experience in software/hardware design and engineering at
+Barry is a digital native with over 30 years of experience in software/hardware design and engineering at:
 
 <p align="middle">
     <img src="./assets/images/ti-logo-2.png" align="center" hspace="10">
@@ -41,18 +42,19 @@ www.linkedin.com/in/barry-burch-digital-native<br>
 
 ## About The FOTAAS Project
 
-FOTAAS is a Golang portfolio project designed to demonstrate the following proficiencies:
+FOTAAS is a Golang portfolio project designed to demonstrate technical proficiency with:
 
 * **Golang**
 * **Golang Concurrency/Parallelism**
 * **Golang Code Generation**
-* **Micro-Service Architecure**
-* **Protobuf & gRPC**
+* **Microservice Architecture**
+* **Protobuf**
+* **gRPC**
 * **Cobra**
 * **Golang Web Application Development**
 * **Docker**
 * **Kubernetes**
-* **Cloud Deployment To GCP (Google Cloud Platform) GKE (Google Kubernetes Environment)**
+* **Cloud Deployment**
 
 The FOTAAS system consists of 4 micro-services (telemetry, simulation, analysis, status), a CLI (Command Line Interface)
 application, and a Console Web application. The 4 micro-services are completely de-coupled from each other via gRPC APIs

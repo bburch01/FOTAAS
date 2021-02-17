@@ -36,20 +36,28 @@
     <section>
         <div>
           <p><h1>About The FOTAAS Project</h1></p>
-          <p>FOTAAS is a Golang portfolio project designed to demonstrate the following proficiencies:</p>
+          <p>FOTAAS is a Golang portfolio project designed to demonstrate technical proficiency with:</p>
           <p>
             <ul>
               <li>Golang</li>
               <li>Golang Concurrency/Parallelism</li>
               <li>Golang Code Generation</li>
-              <li>Golang Web Application Development</li>
+              <li>Microservice Architecture</li>
               <li>Protobuf</li>
               <li>gRPC</li>
-              <li>Microservices</li>
+              <li>Cobra</li>
+              <li>Golang Web Application Development</li>
               <li>Docker</li>
               <li>Kubernetes</li>
               <li>Cloud Deployment</li>
             </ul>
+            <br>
+            <p>
+              The FOTAAS system consists of 4 micro-services (telemetry, simulation, analysis, status), a CLI (Command Line Interface)<br>
+              application, and a Console Web application. The 4 micro-services are completely de-coupled from each other via gRPC APIs<br>
+              and each service encapsulates a private datastore that can only be accessed via API calls to the service (i.e. this is a<br>
+              true micro-services based architecture).
+            </p>
           </p>
         </div>
         <div>
@@ -62,15 +70,18 @@
             <img src="/assets/images/docker-logo.png" width="115" align="center" hspace="10">
             <img src="/assets/images/kubernetes-logo.png" width="150" align="center" hspace="10">
             <img src="/assets/images/gcp-logo.png" width="150" align="center" hspace="10">
+            <img src="/assets/images/gke-logo.jpeg" width="150" align="center" hspace="10">
         </p>
         </div>        
         <div>
           <p><h1>FOTAAS Build And Cloud Deployment</h1></p>
           <p>
-            The FOTAAS system consists of 4 micro-services (telemetry, simulation, analysis, status), a CLI (Command Line Interface)<br>
-            application, and a Console Web application. The 4 micro-services are completely de-coupled from each other via gRPC APIs<br>
-            and each service encapsulates a private datastore that can only be accessed via API calls to the service (i.e. this is a<br>
-            true micro-services based architecture).
+            The 4 FOTAAS services, console web application, and CLI application are built with docker compose. The resulting docker<br>
+            images are pushed to GCR (Google Container Registry) and the system is deployed to a GCP (Google Cloud Platform) GKE (Google<br>
+            Kubernetes Environment) cluster via kubectl and a non-trivial (i.e. production quality) orchestration yaml.<br>           
+          
+            While you can easily enough clone the FOTAAS repo for code review, deploying it to a GKE cluster will not be trivial<br>
+            (e.g. the GCP Cloud SQL databases would need to created and migrated and this process is not currently documented).
           </p>
         </div>
         <div>
@@ -79,7 +90,7 @@
             Barry T. Burch<br>
             barry@sbcglobal.net<br>
 
-            Barry is a digital native with over 30 years of experience in software/hardware design and engineering at<br>            
+            Barry is a digital native with over 30 years of experience in software/hardware design and engineering at:<br>            
           </p>
           <p>
             <img src="/assets/images/ti-logo-2.png" align="center" hspace="10">
