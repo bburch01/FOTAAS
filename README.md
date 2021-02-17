@@ -14,6 +14,7 @@
     <img src="./assets/images/kubernetes-logo.png" width="150" align="center" hspace="10">
     <img src="./assets/images/gcp-logo.png" width="150" align="center" hspace="10">
     <img src="./assets/images/gke-logo.jpeg" width="150" align="center" hspace="10">
+    <img src="./assets/images/gcsql-logo.png" width="150" align="center" hspace="10">
 </p>
 
 ## Table of Contents
@@ -56,15 +57,15 @@ FOTAAS is a Golang portfolio project designed to demonstrate technical proficien
 * **Kubernetes**
 * **Cloud Deployment**
 
-The FOTAAS system consists of 4 micro-services (telemetry, simulation, analysis, status), a CLI (Command Line Interface)
-application, and a Console Web application. The 4 micro-services are completely de-coupled from each other via gRPC APIs
-and each service encapsulates a private datastore that can only be accessed via API calls to the service (i.e. this is a
-true micro-services based architecture).
+The FOTAAS deployment consists of 4 microservices (telemetry, simulation, analysis, status), a CLI (Command Line Interface)
+application, a Console Web application, and a GCP Cloud SQL database. The 4 micro-services are completely de-coupled from
+each other via gRPC APIs and each service encapsulates a private datastore that can only be accessed via API calls to the
+that service (i.e. this is a true microservices based architecture).
 
 ## FOTAAS Build And Cloud Deployment
 
 The 4 FOTAAS services, console web application, and CLI application are built with docker compose. The resulting docker
-images are pushed to GCR (Google Container Registry) and the system is deployed to a GKE (Google Kubernetes Environment)
+images are pushed to GCR (Google Container Registry) and the system is deployed to a GKE (Google Kubernetes Engine)
 cluster via kubectl and a non-trivial (i.e. production quality) orchestration yaml.
 
 While you can easily enough clone the FOTAAS repo for code review, deploying it to a GKE cluster will not be trivial

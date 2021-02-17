@@ -51,12 +51,11 @@
               <li>Kubernetes</li>
               <li>Cloud Deployment</li>
             </ul>
-            <br>
             <p>
-              The FOTAAS system consists of 4 micro-services (telemetry, simulation, analysis, status), a CLI (Command Line Interface)<br>
-              application, and a Console Web application. The 4 micro-services are completely de-coupled from each other via gRPC APIs<br>
-              and each service encapsulates a private datastore that can only be accessed via API calls to the service (i.e. this is a<br>
-              true micro-services based architecture).
+              The FOTAAS deployment consists of 4 microservices (telemetry, simulation, analysis, status), a CLI (Command Line Interface)<br>
+              application, a Console Web application, and a GCP Cloud SQL database. The 4 micro-services are completely de-coupled from<br>
+              each other via gRPC APIs and each service encapsulates a private datastore that can only be accessed via API calls to the<br>
+              that service (i.e. this is a true microservices based architecture).
             </p>
           </p>
         </div>
@@ -71,6 +70,7 @@
             <img src="/assets/images/kubernetes-logo.png" width="150" align="center" hspace="10">
             <img src="/assets/images/gcp-logo.png" width="150" align="center" hspace="10">
             <img src="/assets/images/gke-logo.jpeg" width="150" align="center" hspace="10">
+            <img src="/assets/images/gcsql-logo.png" width="150" align="center" hspace="10">
         </p>
         </div>        
         <div>
@@ -78,8 +78,8 @@
           <p>
             The 4 FOTAAS services, console web application, and CLI application are built with docker compose. The resulting docker<br>
             images are pushed to GCR (Google Container Registry) and the system is deployed to a GCP (Google Cloud Platform) GKE (Google<br>
-            Kubernetes Environment) cluster via kubectl and a non-trivial (i.e. production quality) orchestration yaml.<br>           
-          
+            Kubernetes Engine) cluster via kubectl and a non-trivial (i.e. production quality) orchestration yaml.<br>           
+            <br>
             While you can easily enough clone the FOTAAS repo for code review, deploying it to a GKE cluster will not be trivial<br>
             (e.g. the GCP Cloud SQL databases would need to created and migrated and this process is not currently documented).
           </p>
