@@ -57,13 +57,11 @@ that service (i.e. this is a true microservices based architecture).
 
 ## FOTAAS Build And Cloud Deployment
 
-The 4 FOTAAS services, console web application, and CLI application are built with docker compose. The resulting docker
-images are pushed to GCR (Google Container Registry) and the system is deployed to a GKE (Google Kubernetes Engine)
-cluster via kubectl and a non-trivial (i.e. production quality) orchestration yaml.
-
-While you can easily enough clone the FOTAAS repo for code review, deploying it to a GKE cluster will not be trivial
-(e.g. the GCP Cloud SQL databases would need to created and migrated and this process is not currently documented).
-
+The 4 FOTAAS services, console web application, and CLI application are built with docker compose. The resulting
+docker images are pushed to GCR (Google Container Registry) and the system is then deployed via kubectl and an
+orchestration yaml. The deployment target is a GKE (Google Kubernetes Engine) environment hosted by a GCP
+(Google Cloud Platform) Compute Engine cluster comprised of 4 nodes running in the us-central1-b zone.
+        
 ## FOTAAS In Action
 
 To see the FOTAAS system in action please contact me (barry@sbcglobal.net). We can schedule a Google Meet
