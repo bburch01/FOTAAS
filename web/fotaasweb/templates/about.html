@@ -1,109 +1,168 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="/assets/css/fotaas.css">
-    <title>FOTAAS</title>
-  </head>
-  <body> 
-      <header>
-          <div class="container">
-            <div class="row">
-                <div class="column left logo">
-                    <img src="/assets/images/f1-logo-4.jpeg" alt="">
-                </div>
-                <div class="column right titles">
-                    <hgroup>
-                        <h1>FOTAAS</h1>
-                        <h2>Formula One Telemetry Aggregation and Analysis System</h2>
-                    </hgroup>
-                </div>
-              </div>
-          </div>        
-      </header>
-    <nav>
-      <div class="topnav">
-          <a class="active" href="/about">About</a>
-          <a href="/aliveness">Aliveness</a>
-          <a href="/status">Status</a>
-          <a href="/simulation">Simulation</a>
-          <a href="/analysis">Analysis</a>
-          <a href="/telemetry">Telemetry</a>
-          <!--a href="/echo">Echo</a-->          
-      </div> 
-    </nav>
-    <section>
-        <div>
-          <p><h1>About The FOTAAS Project</h1></p>
-          <p>FOTAAS is a Golang portfolio project designed to demonstrate technical proficiency with:</p>
-          <p>
-            <ul>
-              <li>Golang</li>
-              <li>Golang Concurrency/Parallelism</li>
-              <li>Golang Code Generation</li>
-              <li>Microservice Architecture</li>
-              <li>Protobuf</li>
-              <li>gRPC</li>
-              <li>Cobra</li>
-              <li>Golang Web Application Development</li>
-              <li>Docker</li>
-              <li>Kubernetes</li>
-              <li>Cloud Deployment</li>
-            </ul>
-            <p>
-              The FOTAAS deployment consists of 4 microservices (telemetry, simulation, analysis, status), a CLI (Command Line Interface)<br>
-              application, a Console Web application, and a GCP Cloud SQL database. The 4 micro-services are completely de-coupled from<br>
-              each other via gRPC APIs and each service encapsulates a private datastore that can only be accessed via API calls to the<br>
-              that service (i.e. this is a true microservices based architecture).
-            </p>
-          </p>
-        </div>
-        <div>
-          <p><h1>FOTAAS Is Powered By</h1></p>
-          <p>
-            <img src="/assets/images/go-logo-2.jpg" width="115" align="center" hspace="10">
-            <img src="/assets/images/grpc-logo.png" width="115" align="center" hspace="10">
-            <img src="/assets/images/protobuf-logo.png" width="115" align="center" hspace="10">    
-            <img src="/assets/images/microservices-logo.jpg" width="115" align="center" hspace="10">
-            <img src="/assets/images/docker-logo.png" width="115" align="center" hspace="10">
-            <img src="/assets/images/kubernetes-logo.png" width="150" align="center" hspace="10">
-            <img src="/assets/images/gcp-logo.png" width="150" align="center" hspace="10">
-            <img src="/assets/images/gke-logo-2.png" width="150" align="center" hspace="10">
-            <img src="/assets/images/gcsql-logo.png" width="150" align="center" hspace="10">
-        </p>
-        </div>        
-        <div>
-          <p><h1>FOTAAS Build And Cloud Deployment</h1></p>
-          <p>
-            The 4 FOTAAS services, console web application, and CLI application are built with docker compose. The resulting docker<br>
-            images are pushed to GCR (Google Container Registry) and the system is deployed to a GCP (Google Cloud Platform) GKE (Google<br>
-            Kubernetes Engine) cluster via kubectl and a non-trivial (i.e. production quality) orchestration yaml.<br>           
-            <br>
-            While you can easily enough clone the FOTAAS repo for code review, deploying it to a GKE cluster will not be trivial<br>
-            (e.g. the GCP Cloud SQL databases would need to created and migrated and this process is not currently documented).
-          </p>
-        </div>
-        <div>
-          <p><h1>About The Author</h1></p>
-          <p>
-            Barry T. Burch<br>
-            barry@sbcglobal.net<br>
 
-            Barry is a digital native with over 30 years of experience in software/hardware design and engineering at:<br>            
-          </p>
-          <p>
-            <img src="/assets/images/ti-logo-2.png" align="center" hspace="10">
-            <img src="/assets/images/nec-logo-2.png" align="center" hspace="10">
-            <img src="/assets/images/att-logo-2.jpeg" align="center" hspace="20">
-            <img src="/assets/images/avaya-logo-2.png" width="100" align="center" hspace="10">
-            <img src="/assets/images/sxm-logo.jpeg" width="100" align="center" hspace="10">
-            <img src="/assets/images/gf-logo.jpeg" width="100" align="center" hspace="10">
-          </p>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="/assets/css/fotaas.css">
+  <title>FOTAAS</title>
+</head>
+
+<body onload="activateFotaasButton()">
+
+  <div class=headerclass>
+    <header>
+      <div class="container">
+        <div class="row">
+          <div class="column left logo">
+            <img src="/assets/images/f1-logo-4.jpeg" alt="">
+          </div>
+          <div class="column right titles">
+            <hgroup>
+              <h1>FOTAAS</h1>
+              <h2>Formula One Telemetry Aggregation and Analysis System</h2>
+            </hgroup>
+          </div>
         </div>
-        <div>
-          <p><a href="https://github.com/bburch01/FOTAAS.git">Clone FOTAAS from GitHub</a></p>
-        </div>        
-    </section>
-  </body>  
+      </div>
+    </header>
+  </div>
+
+  <nav>
+    <div class="topnav">
+      <a class="active" href="/about">About</a>
+      <a href="/aliveness">Aliveness</a>
+      <a href="/status">Status</a>
+      <a href="/simulation">Simulation</a>
+      <a href="/analysis">Analysis</a>
+      <a href="/telemetry">Telemetry</a>
+      <a href="/echo">Echo</a>
+    </div>
+  </nav>
+
+  <div>
+    <br>
+    <br>
+  </div>
+
+  <div class="w3-container">
+
+    <div class="hovertab w3-container">
+      <button name="fotaasbtn" class="hovertablinks" onmouseover="openTabContent(event, 'FOTAAS')">FOTAAS</button>
+      <button class="hovertablinks" onmouseover="openTabContent(event, 'PoweredBy')">Powered By</button>
+      <button class="hovertablinks" onmouseover="openTabContent(event, 'BuildAndDeployment')">Build &
+        Deployment</button>
+      <button class="hovertablinks" onmouseover="openTabContent(event, 'Author')">Author</button>
+      <button class="hovertablinks" onmouseover="openTabContent(event, 'SourceCode')">Source Code</button>
+    </div>
+
+    <div id="FOTAAS" class="hovertabcontent">
+      <h3>FOTAAS</h3>
+      <p>A Golang portfolio project designed to demonstrate technical proficiency with:</p>
+      <p>
+      <ul>
+        <li>Golang</li>
+        <li>Golang Concurrency/Parallelism</li>
+        <li>Golang Code Generation</li>
+        <li>Microservice Architecture</li>
+        <li>Protobuf</li>
+        <li>gRPC</li>
+        <li>Cobra</li>
+        <li>Golang Web Application Development</li>
+        <li>Docker</li>
+        <li>Kubernetes</li>
+        <li>Cloud Deployment</li>
+      </ul>
+      <br>
+      The FOTAAS deployment consists of 4 microservices (telemetry, simulation, analysis, status), a CLI (Command Line
+      Interface)<br>
+      application, a Console Web application, and a GCP Cloud SQL database. The 4 micro-services are completely
+      de-coupled from<br>
+      each other via gRPC APIs and each service encapsulates a private datastore that can only be accessed via API calls
+      to the<br>
+      that service (i.e. this is a true microservices based architecture).
+      </p>
+    </div>
+
+    <div id="PoweredBy" class="hovertabcontent">
+      <h3>Powered By</h3>
+      <p>
+        <img src="/assets/images/go-logo-2.jpg" width="115" align="center" hspace="10">
+        <img src="/assets/images/grpc-logo.png" width="115" align="center" hspace="10">
+        <img src="/assets/images/protobuf-logo.png" width="115" align="center" hspace="10">
+        <img src="/assets/images/microservices-logo.jpg" width="115" align="center" hspace="10">
+        <img src="/assets/images/docker-logo.png" width="115" align="center" hspace="10">
+        <img src="/assets/images/kubernetes-logo.png" width="150" align="center" hspace="10">
+        <img src="/assets/images/gcp-logo.png" width="150" align="center" hspace="10">
+        <img src="/assets/images/gke-logo-2.png" width="150" align="center" hspace="10">
+        <img src="/assets/images/gcsql-logo.png" width="150" align="center" hspace="10">
+      </p>
+    </div>
+
+    <div id="BuildAndDeployment" class="hovertabcontent">
+      <h3>Build & Deployment</h3>
+      <p>
+        The 4 FOTAAS services, console web application, and CLI application are built with docker compose. The
+        resulting<br>
+        docker images are pushed to GCR (Google Container Registry) and the system is then deployed via kubectl and
+        an<br>
+        orchestration yaml. The deployment target is a GKE (Google Kubernetes Engine) environment hosted by a GCP<br>
+        (Google Cloud Platform) Compute Engine cluster comprised of 4 nodes running in the us-central1-b zone.<br>
+        <br>
+        While you can easily enough clone the FOTAAS repo for code review, deploying it to a GKE cluster will not be
+        trivial<br>
+        (e.g. the GCP Cloud SQL databases would need to created and migrated and this process is not currently
+        documented).
+      </p>
+    </div>
+
+    <div id="Author" class="hovertabcontent">
+      <h3>Author</h3>
+      <p>
+        Barry T. Burch<br>
+        barry@sbcglobal.net<br>
+        <br>
+        Barry is a digital native with over 30 years of experience in software/hardware design and engineering at:<br>
+      </p>
+      <p>
+        <img src="/assets/images/ti-logo-2.png" align="center" hspace="10">
+        <img src="/assets/images/nec-logo-2.png" align="center" hspace="10">
+        <img src="/assets/images/att-logo-2.jpeg" align="center" hspace="20">
+        <img src="/assets/images/avaya-logo-2.png" width="100" align="center" hspace="10">
+        <img src="/assets/images/sxm-logo.jpeg" width="100" align="center" hspace="10">
+        <img src="/assets/images/gf-logo.jpeg" width="100" align="center" hspace="10">
+      </p>
+    </div>
+
+    <div id="SourceCode" class="hovertabcontent">
+      <h3>Source Code</h3>
+      <p><a href="https://github.com/bburch01/FOTAAS.git">Clone FOTAAS From GitHub</a></p>
+    </div>
+
+    <div class="clearfix"></div>
+
+  </div>
+
+  <script>
+    function openTabContent(evt, cityName) {
+      var i, hovertabcontent, hovertablinks;
+      hovertabcontent = document.getElementsByClassName("hovertabcontent");
+      for (i = 0; i < hovertabcontent.length; i++) {
+        hovertabcontent[i].style.display = "none";
+      }
+      hovertablinks = document.getElementsByClassName("hovertablinks");
+      for (i = 0; i < hovertablinks.length; i++) {
+        hovertablinks[i].className = hovertablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(cityName).style.display = "block";
+      evt.currentTarget.className += " active";
+    }
+    function activateFotaasButton() {
+      document.getElementsByName("fotaasbtn")[0].dispatchEvent(new MouseEvent('mouseover', { 'bubbles': true }));
+    } 
+  </script>
+
+</body>
+
 </html>
