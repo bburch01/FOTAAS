@@ -1,42 +1,46 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
     <link rel="stylesheet" type="text/css" href="/assets/css/fotaas.css">
     <title>FOTAAS</title>
 
-  </head>
-  <body> 
-      <header>
-          <div class="container">
-            <div class="row">
-                <div class="column left logo">
-                    <img src="/assets/images/f1-logo-4.jpeg" alt="">
+</head>
+
+<body>
+    <div class=headerclass>
+        <header>
+            <div class="container">
+                <div class="row">
+                    <div class="column left logo">
+                        <img src="/assets/images/f1-logo-4.jpeg" alt="">
+                    </div>
+                    <div class="column right titles">
+                        <hgroup>
+                            <h1>FOTAAS</h1>
+                            <h2>Formula One Telemetry Aggregation and Analysis System</h2>
+                        </hgroup>
+                    </div>
                 </div>
-                <div class="column right titles">
-                    <hgroup>
-                        <h1>FOTAAS</h1>
-                        <h2>Formula One Telemetry Aggregation and Analysis System</h1>
-                    </hgroup>
-                </div>
-              </div>
-          </div>        
-      </header>
+            </div>
+        </header>
+    </div>
     <nav>
-      <div class="topnav">
-          <a class="active" href="/about">About</a>
-          <a href="/aliveness">Aliveness</a>
-          <a href="/status">Status</a>
-          <a href="/simulation">Simulation</a>
-          <a href="/analysis">Analysis</a>
-          <a href="/telemetry">Telemetry</a>
-          <a href="/echo">Echo</a>
-      </div> 
+        <div class="topnav">
+            <a class="active" href="/about">About</a>
+            <a href="/aliveness">Aliveness</a>
+            <a href="/status">Status</a>
+            <a href="/simulation">Simulation</a>
+            <a href="/analysis">Analysis</a>
+            <a href="/telemetry">Telemetry</a>
+            <a href="/echo">Echo</a>
+        </div>
     </nav>
     <section>
         <div>
-          <h1>Echo Page</h1>
+            <h1>Echo Page</h1>
         </div>
 
 
@@ -48,18 +52,18 @@
         <div>
             <form>
                 <label for="numberfield">Number</label>
-                <input type="text" id="numberfield" placeholder="12"/><br />
+                <input type="text" id="numberfield" placeholder="12" /><br />
                 <button type="button" id="sendBtn">Start Test Sequence</button>
                 <label id="fromServer">Update this label with server response.</label>
 
 
                 <tbody>
-                    <table border = "1">
+                    <table border="1">
                         <tr>
-                          <th>Test Name</th>
-                          <th>Test State</th>
-                          <th>Test Result</th>
-                        </tr>      
+                            <th>Test Name</th>
+                            <th>Test State</th>
+                            <th>Test Result</th>
+                        </tr>
                         <tr>
                             <td>Telemetry Service Alivenessness</td>
                             <td><label id=telemetryServiceAlivenessTestState>Not Run</label></td>
@@ -69,40 +73,40 @@
                             <td>Analysis Service Alivenessness</td>
                             <td><label id=analysisServiceAlivenessTestState>Not Run</label></td>
                             <td><label id=analysisServiceAlivenessTestResult>Not Run</label></td>
-                        </tr> 
-                          <tr>
+                        </tr>
+                        <tr>
                             <td>Simulation Service Alivenessness</td>
                             <td><label id=simulationServiceAlivenessTestState>Not Run</label></td>
                             <td><label id=simulationServiceAlivenessTestResult>Not Run</label></td>
-                        </tr> 
+                        </tr>
                         <tr>
                             <td>Start Simulation</td>
                             <td><label id=startSimulationTestState>Not Run</label></td>
                             <td><label id=startSimulationTestResult>Not Run</label></td>
-                        </tr>                         
+                        </tr>
                         <tr>
                             <td>Poll For Simulation Complete</td>
                             <td><label id=pollForSimulationCompleteTestState>Not Run</label></td>
                             <td><label id=pollForSimulationCompleteTestResult>Not Run</label></td>
-                        </tr>                         
+                        </tr>
                         <tr>
                             <td>Retrieve Simulation Data</td>
                             <td><label id=retrieveSimulationDataTestState>Not Run</label></td>
                             <td><label id=retrieveSimulationDataTestResult>Not Run</label></td>
-                        </tr> 
+                        </tr>
                         <tr>
                             <td>Simulation Data Analysis</td>
                             <td><label id=simulationDataAnalysisTestState>Not Run</label></td>
                             <td><label id=simulationDataAnalysisTestResult>Not Run</label></td>
-                        </tr> 
+                        </tr>
 
-                      </table>
+                    </table>
                 </tbody>
 
             </form>
         </div>
         <div id="container"></div>
-    
+
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
         <script type="text/javascript">
             $(function () {
@@ -116,7 +120,7 @@
                 function initWS() {
                     var socket = new WebSocket("ws://localhost:8080/echo_ws"),
                         container = $("#container")
-                    socket.onopen = function() {
+                    socket.onopen = function () {
                         container.append("<p>Socket is open</p>");
                     };
                     socket.onmessage = function (e) {
@@ -140,10 +144,10 @@
                         document.getElementById('telemetryServiceAlivenessTestResult').innerText = obj.statusTests[0].result
 
                         document.getElementById('analysisServiceAlivenessTestState').innerText = obj.statusTests[1].state
-                        document.getElementById('analysisServiceAlivenessTestResult').innerText = obj.statusTests[1].result 
+                        document.getElementById('analysisServiceAlivenessTestResult').innerText = obj.statusTests[1].result
 
                         document.getElementById('simulationServiceAlivenessTestState').innerText = obj.statusTests[2].state
-                        document.getElementById('simulationServiceAlivenessTestResult').innerText = obj.statusTests[2].result                                               
+                        document.getElementById('simulationServiceAlivenessTestResult').innerText = obj.statusTests[2].result
 
 
                     }
@@ -161,5 +165,6 @@
 
 
     </section>
-  </body>  
+</body>
+
 </html>
