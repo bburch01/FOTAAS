@@ -3,8 +3,7 @@
 }
 
 .headerclass {
-	/* background-color: #62a5ee; */
-	background-color: #ddd;
+	background-color: #2b71b0;
 	padding: 10px 20px;
 	box-sizing: border-box;
 }
@@ -16,7 +15,7 @@
 .titles h1 {
 	font-size: 30px;
 	font-weight: 300;
-	color: black;
+	color: #ccc;
 	margin-bottom: 13px;
 	margin-top: 5px;
 }
@@ -24,7 +23,7 @@
 .titles h2 {
 	font-weight: 300;
 	font-size: 18px;
-	color: black;
+	color: #ccc;
 	display: inline-block;
 	margin: 0;
 }
@@ -134,12 +133,12 @@ table.table tbody tr td {
 }
 
 .topnav a:hover {
-	background-color: #ddd;
+	background-color: #ccc;
 	color: black;
 }
 
 .topnav a.active {
-	background-color: #4CAF50;
+	background-color: #2b71b0;	
 	color: white;
 }
 
