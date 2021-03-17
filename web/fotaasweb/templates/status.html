@@ -34,15 +34,36 @@
       <a href="/simulation">Simulation</a>
       <a href="/analysis">Analysis</a>
       <a href="/telemetry">Telemetry</a>
+      <a href="/echo">echo</a>      
       <a href="/404">404</a>
     </div>
   </nav>
   <section>
     <div>
-      <h1>Status Page</h1>
+      <h1>System Status Page</h1>
     </div>
     <div>
-      <img src="/assets/images/coming-soon-1.jpeg" height="400px" width="800px">
+      <table class="aliveness-table">
+        <thead>
+          <tr>
+            <th>Test Name</th>
+            <th>Test Status</th>
+            <th>% Complete</th>
+            <th>Test Result</th>
+            <th>Status Code</th>
+            <th>Status Message</th>            
+          </tr>
+        </thead>
+        <tbody>
+          {{ range $key, $value := .RespMap }}
+          <tr>
+            <td>{{ $key }}</td>
+            <td>{{ $value.Details.Code }}</td>
+            <td>{{ $value.Details.Message }}</td>
+          </tr>
+          {{ end }}
+        </tbody>
+      </table>
     </div>
   </section>
 </body>

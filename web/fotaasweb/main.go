@@ -5,8 +5,8 @@ package main
 
 import (
 	"context"
+	"encoding/gob"
 
-	//	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -22,8 +22,9 @@ import (
 	"github.com/bburch01/FOTAAS/web/fotaasweb/generated/assets"
 	"github.com/bburch01/FOTAAS/web/fotaasweb/generated/templates"
 	"github.com/gorilla/mux"
-
-	//"github.com/gorilla/websocket"
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
+	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -31,7 +32,6 @@ import (
 
 var logger *zap.Logger
 
-/*
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -39,7 +39,6 @@ var upgrader = websocket.Upgrader{
 		return true
 	},
 }
-*/
 
 type msg struct {
 	Num int
@@ -56,6 +55,13 @@ type statusTestSequence struct {
 	StatusTests []statusTest `json:"statusTests"`
 }
 
+type User struct {
+	Username      string
+	Authenticated bool
+}
+
+var store *sessions.CookieStore
+
 func init() {
 	var lm logging.LogMode
 	var err error
@@ -70,6 +76,22 @@ func init() {
 		log.Panicf("failed to initialize logging subsystem with error: %v", err)
 	}
 
+	authKeyOne := securecookie.GenerateRandomKey(64)
+	encryptionKeyOne := securecookie.GenerateRandomKey(32)
+
+	store = sessions.NewCookieStore(
+		authKeyOne,
+		encryptionKeyOne,
+	)
+
+	store.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   60 * 15,
+		HttpOnly: true,
+	}
+
+	gob.Register(User{})
+
 }
 
 func main() {
@@ -79,21 +101,174 @@ func main() {
 	r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(assets.Assets)))
 
 	r.HandleFunc("/", aboutHandler).Methods("GET")
+	//r.HandleFunc("/", indexHandler).Methods("GET")
+	//r.HandleFunc("/login", loginHandler).Methods("POST")
+	//r.HandleFunc("/logout", logoutHandler).Methods("GET")
+	//r.HandleFunc("/forbidden", forbiddenHandler).Methods("GET")
 	r.HandleFunc("/about", aboutHandler).Methods("GET")
 	r.HandleFunc("/aliveness", alivenessHandler).Methods("GET")
 	r.HandleFunc("/status", statusHandler).Methods("GET")
 	r.HandleFunc("/simulation", simulationHandler).Methods("GET")
 	r.HandleFunc("/analysis", analysisHandler).Methods("GET")
 	r.HandleFunc("/telemetry", telemetryHandler).Methods("GET")
-	//r.HandleFunc("/echo", echoHandler).Methods("GET")
-	//r.HandleFunc("/echo", echoWebSocketHandler).Methods("GET")
+	r.HandleFunc("/echo", echoHandler).Methods("GET")
+	r.HandleFunc("/echo_ws", echoWebSocketHandler).Methods("GET")
 
 	r.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 	http.ListenAndServe(":8080", r)
 }
 
-/*
+func getUser(s *sessions.Session) User {
+
+	val := s.Values["user"]
+	var user = User{}
+	user, ok := val.(User)
+	if !ok {
+		return User{Authenticated: false}
+	}
+	return user
+
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+
+	session, err := store.Get(r, "cookie-name")
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if r.FormValue("code") != "code" {
+		if r.FormValue("code") == "" {
+			session.AddFlash("Must enter a code")
+		}
+		session.AddFlash("The code was incorrect")
+		err = session.Save(r, w)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		http.Redirect(w, r, "/forbidden", http.StatusFound)
+		return
+	}
+
+	username := r.FormValue("username")
+
+	user := &User{
+		Username:      username,
+		Authenticated: true,
+	}
+
+	session.Values["user"] = user
+
+	err = session.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/about", http.StatusFound)
+
+}
+
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+
+	session, err := store.Get(r, "cookie-name")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	session.Values["user"] = User{}
+	session.Options.MaxAge = -1
+
+	err = session.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusFound)
+
+}
+
+func forbiddenHandler(w http.ResponseWriter, r *http.Request) {
+
+	session, err := store.Get(r, "cookie-name")
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	flashMessages := session.Flashes()
+	err = session.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	file, err := templates.Templates.Open("/forbidden.html")
+	if err != nil {
+		log.Panicf("failed to open template with error: %v", err)
+	}
+	defer file.Close()
+
+	templateBytes, _ := ioutil.ReadAll(file)
+
+	t, _ := template.New("forbidden").Parse(string(templateBytes))
+	t.Execute(w, flashMessages)
+
+}
+
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+
+	session, err := store.Get(r, "cookie-name")
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	user := getUser(session)
+
+	file, err := templates.Templates.Open("/index.html")
+	if err != nil {
+		log.Panicf("failed to open template with error: %v", err)
+	}
+	defer file.Close()
+
+	templateBytes, _ := ioutil.ReadAll(file)
+
+	t, _ := template.New("index").Parse(string(templateBytes))
+	t.Execute(w, user)
+
+}
+
 func echoHandler(w http.ResponseWriter, r *http.Request) {
+
+	/*
+		session, err := store.Get(r, "cookie-name")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		user := getUser(session)
+
+		if auth := user.Authenticated; !auth {
+			session.AddFlash("You don't have access!")
+			err = session.Save(r, w)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/forbidden", http.StatusFound)
+			return
+		}
+	*/
 
 	file, err := templates.Templates.Open("/echo.html")
 	if err != nil {
@@ -107,66 +282,88 @@ func echoHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, nil)
 
 }
-*/
 
-/*
 func echoWebSocketHandler(w http.ResponseWriter, r *http.Request) {
 
+	logger.Debug("made it into echoWebSocketHandler()...")
+
+	/*
+		session, err := store.Get(r, "cookie-name")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		user := getUser(session)
+
+		if auth := user.Authenticated; !auth {
+			session.AddFlash("You don't have access!")
+			err = session.Save(r, w)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/forbidden", http.StatusFound)
+			return
+		}
+	*/
+
 	var sb strings.Builder
-	sb.WriteString("Origin: ")
+	sb.WriteString("Origin header: ")
 	sb.WriteString(r.Header.Get("Origin"))
 	sb.WriteString(" not allowed.")
 	sb.WriteString(" Host was: ")
 	sb.WriteString(r.Host)
 
+	if r.Header.Get("Origin") != "https://"+r.Host {
+		logger.Error("http error, origin not allowed, 403.")
+		http.Error(w, sb.String(), 403)
+		return
+	}
 
-		if r.Header.Get("Origin") != "http://"+r.Host {
+	//conn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
+	conn, err := upgrader.Upgrade(w, r, nil)
 
-			//http.Error(w, "Origin not allowed", 403)
-			http.Error(w, sb.String(), 403)
-			return
-		}
-
-
-	conn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
 	if err != nil {
+		logger.Error("Could not open websocket connection.")
 		http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
+		return
 	}
 
 	go echo(conn)
-
-
-		if r.Header.Get("Origin") != "http://"+r.Host {
-			http.Error(w, "Origin not allowed", 403)
-			return
-		}
-		conn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
-		if err != nil {
-			http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
-		}
-
-		go echo(conn)
 
 }
 
 func echo(conn *websocket.Conn) {
 
+	logger.Debug("made it into echo()...")
+
 	for {
+
 		m := msg{}
 
 		err := conn.ReadJSON(&m)
 		if err != nil {
-			fmt.Println("Error reading json.", err)
+			logger.Error(fmt.Sprintf("Error reading json.: %v", err))
+			return
+			//fmt.Println("Error reading json.", err)
 		}
 
-		fmt.Printf("Got message: %#v\n", m)
+		logger.Debug(fmt.Sprintf("Message from browser: %#v\n", m))
+		//fmt.Printf("Got message: %#v\n", m)
 
+		// echo back the message to the browser ???
 		if err = conn.WriteJSON(m); err != nil {
-			fmt.Println(err)
+			logger.Error(fmt.Sprintf("Error writing json: %v", err))
+			return
+			//fmt.Println(err)
 		}
+
+		logger.Debug("read from websocket connection completed...")
+
 	}
 
-
+	/*
 		st := make([]statusTest, 7, 7)
 
 		st[0] = statusTest{Name: "Telemetry Service Aliveness", State: "Complete", Result: "PASS"}
@@ -180,34 +377,40 @@ func echo(conn *websocket.Conn) {
 		sts := statusTestSequence{IsComplete: "false", StatusTests: st}
 
 		for {
+
 			m := msg{}
 
 			err := conn.ReadJSON(&m)
 			if err != nil {
 				//fmt.Println("Error reading json.", err)
 				if strings.Contains(err.Error(), "close 1001") {
-					fmt.Print("got close on websocket")
+					logger.Debug("got close on websocket...")
+					//fmt.Print("got close on websocket")
 					return
 				}
 			}
 
-			fmt.Printf("Got message: %#v\n", m)
+			logger.Debug(fmt.Sprintf("Got message: %#v\n", m))
+			//fmt.Printf("Got message: %#v\n", m)
 
 			stsJSON, err := json.Marshal(sts)
 			if err != nil {
-				fmt.Printf("Error: %s", err)
+				logger.Error(fmt.Sprintf("json marshal error: %v", err))
+				//fmt.Printf("Error: %s", err)
 				return
 			}
 
-			fmt.Printf("stsJSON: %v", string(stsJSON))
+			logger.Error(fmt.Sprintf("stsJSON: %v", string(stsJSON)))
+			//fmt.Printf("stsJSON: %v", string(stsJSON))
 
 			if err = conn.WriteJSON(sts); err != nil {
-				fmt.Println(err)
+				logger.Error(fmt.Sprintf("json write error: %v", err))
+				//fmt.Println(err)
 			}
-		}
 
+		}
+	*/
 }
-*/
 
 func aboutHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -229,6 +432,27 @@ func aboutHandler(w http.ResponseWriter, r *http.Request) {
 
 	*/
 
+	/*
+		session, err := store.Get(r, "cookie-name")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		user := getUser(session)
+
+		if auth := user.Authenticated; !auth {
+			session.AddFlash("You don't have access!")
+			err = session.Save(r, w)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/forbidden", http.StatusFound)
+			return
+		}
+	*/
+
 	file, err := templates.Templates.Open("/about.html")
 	if err != nil {
 		log.Panicf("failed to open template with error: %v", err)
@@ -242,6 +466,27 @@ func aboutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func alivenessHandler(w http.ResponseWriter, r *http.Request) {
+
+	/*
+		session, err := store.Get(r, "cookie-name")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		user := getUser(session)
+
+		if auth := user.Authenticated; !auth {
+			session.AddFlash("You don't have access!")
+			err = session.Save(r, w)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/forbidden", http.StatusFound)
+			return
+		}
+	*/
 
 	type AlivenessPageData struct {
 		RespMap map[string]api.AlivenessCheckResponse
@@ -290,7 +535,30 @@ func alivenessHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func statusHandler(w http.ResponseWriter, r *http.Request) {
+
+	/*
+		session, err := store.Get(r, "cookie-name")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		user := getUser(session)
+
+		if auth := user.Authenticated; !auth {
+			session.AddFlash("You don't have access!")
+			err = session.Save(r, w)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/forbidden", http.StatusFound)
+			return
+		}
+	*/
+
 	file, err := templates.Templates.Open("/status.html")
+
 	if err != nil {
 		log.Panicf("failed to open template with error: %v", err)
 	}
@@ -300,9 +568,32 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 
 	t, _ := template.New("status").Parse(string(templateBytes))
 	t.Execute(w, nil)
+
 }
 
 func simulationHandler(w http.ResponseWriter, r *http.Request) {
+
+	/*
+		session, err := store.Get(r, "cookie-name")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		user := getUser(session)
+
+		if auth := user.Authenticated; !auth {
+			session.AddFlash("You don't have access!")
+			err = session.Save(r, w)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/forbidden", http.StatusFound)
+			return
+		}
+	*/
+
 	file, err := templates.Templates.Open("/simulation.html")
 	if err != nil {
 		log.Panicf("failed to open template with error: %v", err)
@@ -313,9 +604,32 @@ func simulationHandler(w http.ResponseWriter, r *http.Request) {
 
 	t, _ := template.New("simulation").Parse(string(templateBytes))
 	t.Execute(w, nil)
+
 }
 
 func analysisHandler(w http.ResponseWriter, r *http.Request) {
+
+	/*
+		session, err := store.Get(r, "cookie-name")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		user := getUser(session)
+
+		if auth := user.Authenticated; !auth {
+			session.AddFlash("You don't have access!")
+			err = session.Save(r, w)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/forbidden", http.StatusFound)
+			return
+		}
+	*/
+
 	file, err := templates.Templates.Open("/analysis.html")
 	if err != nil {
 		log.Panicf("failed to open template with error: %v", err)
@@ -326,9 +640,32 @@ func analysisHandler(w http.ResponseWriter, r *http.Request) {
 
 	t, _ := template.New("analysis").Parse(string(templateBytes))
 	t.Execute(w, nil)
+
 }
 
 func telemetryHandler(w http.ResponseWriter, r *http.Request) {
+
+	/*
+		session, err := store.Get(r, "cookie-name")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		user := getUser(session)
+
+		if auth := user.Authenticated; !auth {
+			session.AddFlash("You don't have access!")
+			err = session.Save(r, w)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			http.Redirect(w, r, "/forbidden", http.StatusFound)
+			return
+		}
+	*/
+
 	file, err := templates.Templates.Open("/telemetry.html")
 	if err != nil {
 		log.Panicf("failed to open template with error: %v", err)
@@ -339,9 +676,11 @@ func telemetryHandler(w http.ResponseWriter, r *http.Request) {
 
 	t, _ := template.New("telemetry").Parse(string(templateBytes))
 	t.Execute(w, nil)
+
 }
 
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
+
 	file, err := templates.Templates.Open("/404space.html")
 	if err != nil {
 		log.Panicf("failed to open template with error: %v", err)
@@ -352,6 +691,7 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 
 	t, _ := template.New("404space").Parse(string(templateBytes))
 	t.Execute(w, nil)
+
 }
 
 func checkByName(svcname string) (*api.AlivenessCheckResponse, error) {

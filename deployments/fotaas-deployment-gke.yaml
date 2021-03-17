@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,11 +26,11 @@ spec:
         image: us.gcr.io/acoustic-skein-273916/fotaas/telemetry
         resources:
           requests:
-            memory: "500Mi"
-            cpu: "250m"
+            memory: "1500Mi"
+            cpu: "660m"
           limits:
-            memory: "750Mi"
-            cpu: "500m"
+            memory: "1500Mi"
+            cpu: "660m"
         ports:
         - containerPort: 50051
         readinessProbe:
@@ -124,11 +125,11 @@ spec:
         image: us.gcr.io/acoustic-skein-273916/fotaas/analysis
         resources:
           requests:
-            memory: "500Mi"
-            cpu: "250m"
+            memory: "1500Mi"
+            cpu: "660m"
           limits:
-            memory: "750Mi"
-            cpu: "500m"        
+            memory: "1500Mi"
+            cpu: "660m"
         ports:
         - containerPort: 50052
         readinessProbe:
@@ -223,11 +224,11 @@ spec:
         image: us.gcr.io/acoustic-skein-273916/fotaas/simulation
         resources:
           requests:
-            memory: "500Mi"
-            cpu: "250m"
+            memory: "1500Mi"
+            cpu: "660m"
           limits:
-            memory: "750Mi"
-            cpu: "500m"        
+            memory: "1500Mi"
+            cpu: "660m"
         ports:
         - containerPort: 50053
         readinessProbe:
@@ -322,11 +323,11 @@ spec:
         image: us.gcr.io/acoustic-skein-273916/fotaas/status
         resources:
           requests:
-            memory: "64Mi"
-            cpu: "250m"
+            memory: "1500Mi"
+            cpu: "660m"
           limits:
-            memory: "128Mi"
-            cpu: "500m"        
+            memory: "1500Mi"
+            cpu: "660m"
         ports:
         - containerPort: 50054
         readinessProbe:
@@ -421,11 +422,11 @@ spec:
         image: us.gcr.io/acoustic-skein-273916/fotaas/fotaasctl
         resources:
           requests:
-            memory: "64Mi"
-            cpu: "250m"
+            memory: "1500Mi"
+            cpu: "660m"
           limits:
-            memory: "128Mi"
-            cpu: "500m"        
+            memory: "1500Mi"
+            cpu: "660m"
       #END fotaasctl container
 ---
 apiVersion: apps/v1
@@ -455,11 +456,11 @@ spec:
         image: us.gcr.io/acoustic-skein-273916/fotaas/fotaasweb
         resources:
           requests:
-            memory: "64Mi"
-            cpu: "250m"
+            memory: "1500Mi"
+            cpu: "660m"
           limits:
-            memory: "128Mi"
-            cpu: "500m"        
+            memory: "1500Mi"
+            cpu: "660m"
         #resources:
           #requests:
             #cpu: 1
@@ -518,10 +519,23 @@ spec:
     protocol: TCP
   selector:
     app: fotaas-status
+---
+apiVersion: cloud.google.com/v1beta1
+kind: BackendConfig
+metadata:
+  name: fotaas-web-backend-config
+spec:
+  #sessionAffinity:
+    #affinityType: "CLIENT_IP"
+  timeoutSec: 1800
+  connectionDraining:
+    drainingTimeoutSec: 1800
 --- 
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+   beta.cloud.google.com/backend-config: '{"ports": {"80":"fotaas-web-backend-config"}}'
   name: fotaas-web
   labels:
     app: fotaas-web
@@ -530,7 +544,34 @@ spec:
   - port: 80
     targetPort: 8080
     protocol: TCP
-    name: http
+    #name: http
   selector:
     app: fotaas-web
-  type: LoadBalancer          
+  type: NodePort
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: fotaas-web-ingress
+  annotations:
+    # If the class annotation is not specified it defaults to "gce".
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "fotaas-web-static-ip"
+    networking.gke.io/managed-certificates: planetix-certificate
+spec:
+  rules:
+    - host: planetix.dev
+      http:
+        paths:
+          - path: /*
+            backend:
+              serviceName: fotaas-web
+              servicePort: 80
+---
+#apiVersion: networking.gke.io/v1beta1
+#kind: ManagedCertificate
+#metadata:
+#  name: planetix-certificate
+#spec:
+#  domains:
+#    - planetix.dev 
